@@ -62,9 +62,8 @@ interface ClientInterface
      * Send write query to RouterOS (with or without tag)
      *
      * @param   Query $query
-     * @param   string|null $tag
      * @return  ClientInterface
      */
-    public function write(Query $query, string $tag = null): ClientInterface;
+    public function write(Query $query): ClientInterface;
 
 }

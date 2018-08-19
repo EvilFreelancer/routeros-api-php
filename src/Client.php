@@ -89,20 +89,14 @@ class Client implements Interfaces\ClientInterface
      * Send write query to RouterOS (with or without tag)
      *
      * @param   Query $query
-     * @param   string|null $tag
      * @return  ClientInterface
      */
-    public function write(Query $query, string $tag = null): ClientInterface
+    public function write(Query $query): ClientInterface
     {
         // Send commands via loop to router
         foreach ($query->getQuery() as $command) {
             $command = trim($command);
             fwrite($this->_socket, $this->encodeLength(\strlen($command)) . $command);
-        }
-
-        // If tag is not empty, send to socket
-        if (null !== $tag) {
-            fwrite($this->_socket, $this->encodeLength(\strlen('.tag=' . $tag)) . '.tag=' . $tag);
         }
 
         // Write zero-terminator
