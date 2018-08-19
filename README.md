@@ -7,6 +7,22 @@
 
     composer require evilfreelancer/routeros-api-php
 
+This library is partly based on [this old project](https://github.com/BenMenking/routeros-api), but unlike it has many
+innovations to ease development. In addition, the project is designed
+to work with PHP7 in accordance with the PSR standards.
+
+If you want to help the project, I will be glad to any help, my twitter [@EvilFreelancer](https://twitter.com/EvilFreelancer).
+
+## Known issues
+
+This library is not ready for production usage, because yet is not implemented new
+login scheme for post 6.43 firmwares (but it works with pre 6.43).
+
+In addition, need to implement a full test of everything through phpUnit, as
+well as write more detailed documentation and add more examples.
+
+This issues will be fixed in future releases.
+
 ## Small example
 
 Get all IP addresses, analog via command line is `/ip address print`
