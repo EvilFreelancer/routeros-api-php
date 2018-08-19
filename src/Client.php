@@ -1,0 +1,368 @@
+<?php
+
+namespace RouterOS;
+
+use RouterOS\Exceptions\Exception;
+
+class Client implements Interfaces\ClientInterface
+{
+    /**
+     * Socket resource
+     * @var resource|null
+     */
+    private static $_socket;
+
+    /**
+     * Code of error
+     * @var int
+     */
+    private $_socket_err_num;
+
+    /**
+     * Description of socket error
+     * @var string
+     */
+    private $_socket_err_str;
+
+    /**
+     * Configuration of connection
+     * @var Config
+     */
+    private $_config;
+
+    /**
+     * Client constructor.
+     * @param Config $config
+     */
+    public function __construct(Config $config)
+    {
+        $this->_config = $config;
+        $this->connect();
+    }
+
+    /**
+     * Convert ordinary string to hex string
+     *
+     * @param   string $string
+     * @return  string
+     */
+    public function encodeLength(string $string): string
+    {
+        // Yeah, that's insane, but was more ugly, so you need read this post if you interesting a details:
+        // https://wiki.mikrotik.com/wiki/Manual:API#API_words
+        switch (true) {
+            case ($string < 0x80):
+                $string = \chr($string);
+                break;
+            case ($string < 0x4000):
+                $string |= 0x8000;
+                $string = \chr(($string >> 8) & 0xFF)
+                    . \chr($string & 0xFF);
+                break;
+            case ($string < 0x200000):
+                $string |= 0xC00000;
+                $string = \chr(($string >> 16) & 0xFF)
+                    . \chr(($string >> 8) & 0xFF)
+                    . \chr($string & 0xFF);
+                break;
+            case ($string < 0x10000000):
+                $string |= 0xE0000000;
+                $string = \chr(($string >> 24) & 0xFF)
+                    . \chr(($string >> 16) & 0xFF)
+                    . \chr(($string >> 8) & 0xFF)
+                    . \chr($string & 0xFF);
+                break;
+            case  ($string >= 0x10000000):
+                $string = \chr(0xF0)
+                    . \chr(($string >> 24) & 0xFF)
+                    . \chr(($string >> 16) & 0xFF)
+                    . \chr(($string >> 8) & 0xFF)
+                    . \chr($string & 0xFF);
+                break;
+        }
+
+        return $string;
+    }
+
+    /**
+     * Send write query to RouterOS (with or without tag)
+     *
+     * @param   Query $query
+     * @param   string|null $tag
+     * @return  $this
+     */
+    public function write(Query $query, string $tag = null): self
+    {
+        print_r($query);
+
+        // Send commands via loop to router
+        foreach ($query->getQuery() as $command) {
+            $command = trim($command);
+            fwrite(self::$_socket, $this->encodeLength(\strlen($command)) . $command);
+        }
+
+        // If tag is not empty, send to socket
+        if (null !== $tag) {
+            fwrite(self::$_socket, $this->encodeLength(\strlen('.tag=' . $tag)) . '.tag=' . $tag);
+        }
+
+        // Write zero-terminator
+        fwrite(self::$_socket, \chr(0));
+
+        return $this;
+    }
+
+    /**
+     * Read answer from server after query was executed
+     *
+     * @param   bool $parse
+     * @return  array|string
+     */
+    public function read($parse = true)
+    {
+        // By default response is empty
+        $response = [];
+
+        // Not done by default
+        $done = false;
+
+        // Read answer from socket in loop
+        while (true) {
+            // Read the first byte of input which gives us some or all of the length
+            // of the remaining reply.
+            $byte = \ord(fread(self::$_socket, 1));
+
+            // If the first bit is set then we need to remove the first four bits, shift left 8
+            // and then read another byte in.
+            // We repeat this for the second and third bits.
+            // If the fourth bit is set, we need to remove anything left in the first byte
+            // and then read in yet another byte.
+            if ($byte & 128) {
+                if (($byte & 192) === 128) {
+                    $length = (($byte & 63) << 8) + \ord(fread(self::$_socket, 1));
+                } else {
+                    if (($byte & 224) === 192) {
+                        $length = (($byte & 31) << 8) + \ord(fread(self::$_socket, 1));
+                        $length = ($length << 8) + \ord(fread(self::$_socket, 1));
+                    } else {
+                        if (($byte & 240) === 224) {
+                            $length = (($byte & 15) << 8) + \ord(fread(self::$_socket, 1));
+                            $length = ($length << 8) + \ord(fread(self::$_socket, 1));
+                            $length = ($length << 8) + \ord(fread(self::$_socket, 1));
+                        } else {
+                            $length = \ord(fread(self::$_socket, 1));
+                            $length = ($length << 8) + \ord(fread(self::$_socket, 1));
+                            $length = ($length << 8) + \ord(fread(self::$_socket, 1));
+                            $length = ($length << 8) + \ord(fread(self::$_socket, 1));
+                        }
+                    }
+                }
+            } else {
+                $length = $byte;
+            }
+
+            $_ = '';
+
+            // If we have got more characters to read, read them in.
+            if ($length > 0) {
+                $_ = '';
+                $retlen = 0;
+                while ($retlen < $length) {
+                    $toread = $length - $retlen;
+                    $_ .= fread(self::$_socket, $toread);
+                    $retlen = \strlen($_);
+                }
+                $response[] = $_;
+            }
+
+            // If we get a !done, make a note of it.
+            if ($_ === '!done') {
+                $done = true;
+            }
+
+            // Get status about latest operation
+            $status = stream_get_meta_data(self::$_socket);
+
+            // If we do not have unread bytes from socket or <-same and is done, then exit from loop
+            if ((!$status['unread_bytes']) || (!$status['unread_bytes'] && $done)) {
+                break;
+            }
+        }
+
+        // Parse results and return
+        return $parse ? $this->parseResponse($response) : $response;
+    }
+
+    /**
+     * Parse response from Router OS
+     *
+     * @param   array $response Response data
+     * @return  array Array with parsed data
+     */
+    public function parseResponse(array $response): array
+    {
+        $parsed = [];
+        $current = null;
+        $single = null;
+        foreach ($response as $x) {
+            if (\in_array($x, array('!fatal', '!re', '!trap'))) {
+                if ($x === '!re') {
+                    $current =& $parsed[];
+                } else {
+                    $current =& $parsed[$x][];
+                }
+            } elseif ($x !== '!done') {
+                $matches = [];
+                if (preg_match_all('/[^=]+/i', $x, $matches)) {
+                    if ($matches[0][0] === 'ret') {
+                        $single = $matches[0][1];
+                    }
+                    $current[$matches[0][0]] = $matches[0][1] ?? '';
+                }
+            }
+        }
+
+        if (empty($parsed) && null !== $single) {
+            $parsed[] = $single;
+        }
+
+        return $parsed;
+    }
+
+    /**
+     * Authorization logic
+     *
+     * @return  bool
+     */
+    public function login(): bool
+    {
+        // For the first we need get hash with salt
+        $query = new Query('/login');
+        $response = $this->write($query)->read();
+
+        // Now need use this hash for authorization
+        $query = new Query('/login');
+        $query->add('=name=' . $this->_config->user);
+        $query->add('=response=00' . md5(\chr(0) . $this->_config->pass . pack('H*', $response[0])));
+
+        // Execute query and get response
+        $response = $this->write($query)->read(false);
+
+        // Return true if we have only one line from server and this line is !done
+        return isset($response[0]) && $response[0] === '!done';
+
+    }
+
+    /**
+     * Connect to socket server
+     *
+     * @return  bool
+     */
+    public function connect(): bool
+    {
+        // Few attempts in loop
+        for ($attempt = 1; $attempt <= $this->_config->attempts; $attempt++) {
+
+            // Initiate socket session
+            $this->openSocket();
+
+            // If socket is active
+            if ($this->getSocket()) {
+
+                echo 'z';
+
+                // If we logged in then exit from loop
+                if ($this->login()) {
+                    break;
+                }
+
+                // Else close socket and start from begin
+                $this->closeSocket();
+            }
+
+            // Sleep some time between tries
+            sleep($this->_config->delay);
+        }
+
+        // Return status of connection
+        return true;
+    }
+
+    /**
+     * Save socket resource to static variable
+     *
+     * @param   resource|null $socket
+     * @return  bool
+     */
+    private function setSocket($socket): bool
+    {
+        if (\is_resource($socket)) {
+            self::$_socket = $socket;
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Return socket resource if is exist
+     *
+     * @return  bool|resource
+     */
+    public function getSocket()
+    {
+        return \is_resource(self::$_socket)
+            ? self::$_socket
+            : false;
+    }
+
+    /**
+     * Initiate socket session
+     *
+     * @return  bool
+     */
+    private function openSocket(): bool
+    {
+        // Connect to server
+        $socket = false;
+
+        // Default: Context for ssl
+        $context = stream_context_create(['ssl' => ['ciphers' => 'ADH:ALL', 'verify_peer' => false, 'verify_peer_name' => false]]);
+
+        // Default: Proto tcp:// but for ssl we need ssl://
+        $proto = $this->_config->ssl ? 'ssl://' : '';
+
+        try {
+            // Initiate socket client
+            $socket = stream_socket_client(
+                $proto . $this->_config->host . ':' . $this->_config->port,
+                $this->_socket_err_num,
+                $this->_socket_err_str,
+                $this->_config->timeout,
+                STREAM_CLIENT_CONNECT,
+                $context
+            );
+            // Throw error is socket is not initiated
+            if (false === $socket) {
+                throw new Exception('stream_socket_client() failed: reason: ' . socket_strerror(socket_last_error()));
+            }
+
+        } catch (Exception $e) {
+            // __construct
+        }
+
+        // Save socket to static variable
+        return $this->setSocket($socket);
+    }
+
+    /**
+     * Close socket session
+     *
+     * @return bool
+     */
+    public function closeSocket(): bool
+    {
+        fclose(self::$_socket);
+        return true;
+    }
+
+}
