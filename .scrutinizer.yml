@@ -1,0 +1,7 @@
+checks:
+    php: true
+
+filter:
+    excluded_paths:
+        - "extra/"
+        - "tests/"
