@@ -3,6 +3,7 @@
 namespace RouterOS;
 
 use RouterOS\Exceptions\Exception;
+use RouterOS\Interfaces\ClientInterface;
 
 class Client implements Interfaces\ClientInterface
 {
@@ -10,7 +11,7 @@ class Client implements Interfaces\ClientInterface
      * Socket resource
      * @var resource|null
      */
-    private static $_socket;
+    private $_socket;
 
     /**
      * Code of error
@@ -46,7 +47,7 @@ class Client implements Interfaces\ClientInterface
      * @param   string $string
      * @return  string
      */
-    public function encodeLength(string $string): string
+    private function encodeLength(string $string): string
     {
         // Yeah, that's insane, but was more ugly, so you need read this post if you interesting a details:
         // https://wiki.mikrotik.com/wiki/Manual:API#API_words
@@ -89,25 +90,23 @@ class Client implements Interfaces\ClientInterface
      *
      * @param   Query $query
      * @param   string|null $tag
-     * @return  $this
+     * @return  ClientInterface
      */
-    public function write(Query $query, string $tag = null): self
+    public function write(Query $query, string $tag = null): ClientInterface
     {
-        print_r($query);
-
         // Send commands via loop to router
         foreach ($query->getQuery() as $command) {
             $command = trim($command);
-            fwrite(self::$_socket, $this->encodeLength(\strlen($command)) . $command);
+            fwrite($this->_socket, $this->encodeLength(\strlen($command)) . $command);
         }
 
         // If tag is not empty, send to socket
         if (null !== $tag) {
-            fwrite(self::$_socket, $this->encodeLength(\strlen('.tag=' . $tag)) . '.tag=' . $tag);
+            fwrite($this->_socket, $this->encodeLength(\strlen('.tag=' . $tag)) . '.tag=' . $tag);
         }
 
         // Write zero-terminator
-        fwrite(self::$_socket, \chr(0));
+        fwrite($this->_socket, \chr(0));
 
         return $this;
     }
@@ -116,9 +115,9 @@ class Client implements Interfaces\ClientInterface
      * Read answer from server after query was executed
      *
      * @param   bool $parse
-     * @return  array|string
+     * @return  array
      */
-    public function read($parse = true)
+    public function read(bool $parse = true): array
     {
         // By default response is empty
         $response = [];
@@ -130,7 +129,7 @@ class Client implements Interfaces\ClientInterface
         while (true) {
             // Read the first byte of input which gives us some or all of the length
             // of the remaining reply.
-            $byte = \ord(fread(self::$_socket, 1));
+            $byte = \ord(fread($this->_socket, 1));
 
             // If the first bit is set then we need to remove the first four bits, shift left 8
             // and then read another byte in.
@@ -139,21 +138,21 @@ class Client implements Interfaces\ClientInterface
             // and then read in yet another byte.
             if ($byte & 128) {
                 if (($byte & 192) === 128) {
-                    $length = (($byte & 63) << 8) + \ord(fread(self::$_socket, 1));
+                    $length = (($byte & 63) << 8) + \ord(fread($this->_socket, 1));
                 } else {
                     if (($byte & 224) === 192) {
-                        $length = (($byte & 31) << 8) + \ord(fread(self::$_socket, 1));
-                        $length = ($length << 8) + \ord(fread(self::$_socket, 1));
+                        $length = (($byte & 31) << 8) + \ord(fread($this->_socket, 1));
+                        $length = ($length << 8) + \ord(fread($this->_socket, 1));
                     } else {
                         if (($byte & 240) === 224) {
-                            $length = (($byte & 15) << 8) + \ord(fread(self::$_socket, 1));
-                            $length = ($length << 8) + \ord(fread(self::$_socket, 1));
-                            $length = ($length << 8) + \ord(fread(self::$_socket, 1));
+                            $length = (($byte & 15) << 8) + \ord(fread($this->_socket, 1));
+                            $length = ($length << 8) + \ord(fread($this->_socket, 1));
+                            $length = ($length << 8) + \ord(fread($this->_socket, 1));
                         } else {
-                            $length = \ord(fread(self::$_socket, 1));
-                            $length = ($length << 8) + \ord(fread(self::$_socket, 1));
-                            $length = ($length << 8) + \ord(fread(self::$_socket, 1));
-                            $length = ($length << 8) + \ord(fread(self::$_socket, 1));
+                            $length = \ord(fread($this->_socket, 1));
+                            $length = ($length << 8) + \ord(fread($this->_socket, 1)) * 3;
+                            $length = ($length << 8) + \ord(fread($this->_socket, 1));
+                            $length = ($length << 8) + \ord(fread($this->_socket, 1));
                         }
                     }
                 }
@@ -169,7 +168,7 @@ class Client implements Interfaces\ClientInterface
                 $retlen = 0;
                 while ($retlen < $length) {
                     $toread = $length - $retlen;
-                    $_ .= fread(self::$_socket, $toread);
+                    $_ .= fread($this->_socket, $toread);
                     $retlen = \strlen($_);
                 }
                 $response[] = $_;
@@ -181,7 +180,7 @@ class Client implements Interfaces\ClientInterface
             }
 
             // Get status about latest operation
-            $status = stream_get_meta_data(self::$_socket);
+            $status = stream_get_meta_data($this->_socket);
 
             // If we do not have unread bytes from socket or <-same and is done, then exit from loop
             if ((!$status['unread_bytes']) || (!$status['unread_bytes'] && $done)) {
@@ -199,13 +198,13 @@ class Client implements Interfaces\ClientInterface
      * @param   array $response Response data
      * @return  array Array with parsed data
      */
-    public function parseResponse(array $response): array
+    private function parseResponse(array $response): array
     {
         $parsed = [];
         $current = null;
         $single = null;
         foreach ($response as $x) {
-            if (\in_array($x, array('!fatal', '!re', '!trap'))) {
+            if (\in_array($x, ['!fatal', '!re', '!trap'])) {
                 if ($x === '!re') {
                     $current =& $parsed[];
                 } else {
@@ -234,16 +233,16 @@ class Client implements Interfaces\ClientInterface
      *
      * @return  bool
      */
-    public function login(): bool
+    private function login(): bool
     {
         // For the first we need get hash with salt
         $query = new Query('/login');
         $response = $this->write($query)->read();
 
         // Now need use this hash for authorization
-        $query = new Query('/login');
-        $query->add('=name=' . $this->_config->user);
-        $query->add('=response=00' . md5(\chr(0) . $this->_config->pass . pack('H*', $response[0])));
+        $query = (new Query('/login'))
+            ->add('=name=' . $this->_config->user)
+            ->add('=response=00' . md5(\chr(0) . $this->_config->pass . pack('H*', $response[0])));
 
         // Execute query and get response
         $response = $this->write($query)->read(false);
@@ -269,10 +268,8 @@ class Client implements Interfaces\ClientInterface
             // If socket is active
             if ($this->getSocket()) {
 
-                echo 'z';
-
                 // If we logged in then exit from loop
-                if ($this->login()) {
+                if (true === $this->login()) {
                     break;
                 }
 
@@ -297,7 +294,7 @@ class Client implements Interfaces\ClientInterface
     private function setSocket($socket): bool
     {
         if (\is_resource($socket)) {
-            self::$_socket = $socket;
+            $this->_socket = $socket;
             return true;
         }
         return false;
@@ -310,8 +307,8 @@ class Client implements Interfaces\ClientInterface
      */
     public function getSocket()
     {
-        return \is_resource(self::$_socket)
-            ? self::$_socket
+        return \is_resource($this->_socket)
+            ? $this->_socket
             : false;
     }
 
@@ -359,9 +356,9 @@ class Client implements Interfaces\ClientInterface
      *
      * @return bool
      */
-    public function closeSocket(): bool
+    private function closeSocket(): bool
     {
-        fclose(self::$_socket);
+        fclose($this->_socket);
         return true;
     }
 
