@@ -1,7 +1,7 @@
 {
   "name": "evilfreelancer/routeros-api-php",
   "type": "library",
-  "description": "Mikrotik RouterOS API client for your PHP applications",
+  "description": "Modern Mikrotik RouterOS API PHP7 client for your applications",
   "keywords": [
     "socket-client",
     "psr-4",
