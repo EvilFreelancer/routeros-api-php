@@ -4,7 +4,14 @@ namespace RouterOS;
 
 use RouterOS\Exceptions\Exception;
 use RouterOS\Interfaces\ClientInterface;
+use RouterOS\Interfaces\ConfigInterface;
+use RouterOS\Interfaces\QueryInterface;
 
+/**
+ * Class Client
+ * @package RouterOS
+ * @since 0.1
+ */
 class Client implements Interfaces\ClientInterface
 {
     /**
@@ -33,12 +40,23 @@ class Client implements Interfaces\ClientInterface
 
     /**
      * Client constructor.
-     * @param Config $config
+     * @param   ConfigInterface $config
      */
-    public function __construct(Config $config)
+    public function __construct(ConfigInterface $config)
     {
         $this->_config = $config;
         $this->connect();
+    }
+
+    /**
+     * Get some parameter from config
+     *
+     * @param   string $parameter
+     * @return  mixed
+     */
+    private function config(string $parameter)
+    {
+        return $this->_config->get($parameter);
     }
 
     /**
@@ -49,7 +67,7 @@ class Client implements Interfaces\ClientInterface
      */
     private function encodeLength(string $string): string
     {
-        // Yeah, that's insane, but was more ugly, so you need read this post if you interesting a details:
+        // Yeah, that's insane, but was more ugly, you need read this post if you interesting a details:
         // https://wiki.mikrotik.com/wiki/Manual:API#API_words
         switch (true) {
             case ($string < 0x80):
@@ -88,10 +106,10 @@ class Client implements Interfaces\ClientInterface
     /**
      * Send write query to RouterOS (with or without tag)
      *
-     * @param   Query $query
+     * @param   QueryInterface $query
      * @return  ClientInterface
      */
-    public function write(Query $query): ClientInterface
+    public function write(QueryInterface $query): ClientInterface
     {
         // Send commands via loop to router
         foreach ($query->getQuery() as $command) {
@@ -206,7 +224,7 @@ class Client implements Interfaces\ClientInterface
                 }
             } elseif ($x !== '!done') {
                 $matches = [];
-                if (preg_match_all('/[^=]+/i', $x, $matches)) {
+                if (preg_match_all('/[^=]+/', $x, $matches)) {
                     if ($matches[0][0] === 'ret') {
                         $single = $matches[0][1];
                     }
@@ -229,21 +247,28 @@ class Client implements Interfaces\ClientInterface
      */
     private function login(): bool
     {
-        // For the first we need get hash with salt
-        $query = new Query('/login');
-        $response = $this->write($query)->read();
+        // If legacy login scheme is enabled
+        if ($this->config('legacy')) {
+            // For the first we need get hash with salt
+            $query = new Query('/login');
+            $response = $this->write($query)->read();
 
-        // Now need use this hash for authorization
-        $query = (new Query('/login'))
-            ->add('=name=' . $this->_config->user)
-            ->add('=response=00' . md5(\chr(0) . $this->_config->pass . pack('H*', $response[0])));
+            // Now need use this hash for authorization
+            $query = (new Query('/login'))
+                ->add('=name=' . $this->config('user'))
+                ->add('=response=00' . md5(\chr(0) . $this->config('pass') . pack('H*', $response[0])));
+        } else {
+            // Just login with our credentials
+            $query = (new Query('/login'))
+                ->add('=name=' . $this->config('user'))
+                ->add('=password=' . $this->config('pass'));
+        }
 
         // Execute query and get response
         $response = $this->write($query)->read(false);
 
         // Return true if we have only one line from server and this line is !done
         return isset($response[0]) && $response[0] === '!done';
-
     }
 
     /**
@@ -254,7 +279,7 @@ class Client implements Interfaces\ClientInterface
     public function connect(): bool
     {
         // Few attempts in loop
-        for ($attempt = 1; $attempt <= $this->_config->attempts; $attempt++) {
+        for ($attempt = 1; $attempt <= $this->config('attempts'); $attempt++) {
 
             // Initiate socket session
             $this->openSocket();
@@ -272,7 +297,7 @@ class Client implements Interfaces\ClientInterface
             }
 
             // Sleep some time between tries
-            sleep($this->_config->delay);
+            sleep($this->config('delay'));
         }
 
         // Return status of connection
@@ -317,24 +342,30 @@ class Client implements Interfaces\ClientInterface
         $socket = false;
 
         // Default: Context for ssl
-        $context = stream_context_create(['ssl' => ['ciphers' => 'ADH:ALL', 'verify_peer' => false, 'verify_peer_name' => false]]);
+        $context = stream_context_create([
+            'ssl' => [
+                'ciphers' => 'ADH:ALL',
+                'verify_peer' => false,
+                'verify_peer_name' => false
+            ]
+        ]);
 
         // Default: Proto tcp:// but for ssl we need ssl://
-        $proto = $this->_config->ssl ? 'ssl://' : '';
+        $proto = $this->config('ssl') ? 'ssl://' : '';
 
         try {
             // Initiate socket client
             $socket = stream_socket_client(
-                $proto . $this->_config->host . ':' . $this->_config->port,
+                $proto . $this->config('host') . ':' . $this->config('port'),
                 $this->_socket_err_num,
                 $this->_socket_err_str,
-                $this->_config->timeout,
+                $this->config('timeout'),
                 STREAM_CLIENT_CONNECT,
                 $context
             );
             // Throw error is socket is not initiated
             if (false === $socket) {
-                throw new Exception('stream_socket_client() failed: reason: ' . socket_strerror(socket_last_error()));
+                throw new Exception('stream_socket_client() failed: code: ' . $this->_socket_err_num . ' reason:' . $this->_socket_err_str);
             }
 
         } catch (Exception $e) {
@@ -355,5 +386,4 @@ class Client implements Interfaces\ClientInterface
         fclose($this->_socket);
         return true;
     }
-
 }

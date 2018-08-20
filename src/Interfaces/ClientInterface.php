@@ -2,10 +2,18 @@
 
 namespace RouterOS\Interfaces;
 
-use RouterOS\Query;
-
+/**
+ * Interface ClientInterface
+ * @package RouterOS\Interfaces
+ * @since 0.1
+ */
 interface ClientInterface
 {
+    /**
+     * By default legacy login on RouterOS pre-6.43 is not supported
+     */
+    const LEGACY = false;
+
     /**
      * Default port number
      */
@@ -32,7 +40,7 @@ interface ClientInterface
     const ATTEMPTS = 10;
 
     /**
-     * Delay between attempts
+     * Delay between attempts in seconds
      */
     const ATTEMPTS_DELAY = 1;
 
@@ -61,9 +69,8 @@ interface ClientInterface
     /**
      * Send write query to RouterOS (with or without tag)
      *
-     * @param   Query $query
+     * @param   QueryInterface $query
      * @return  ClientInterface
      */
-    public function write(Query $query): ClientInterface;
-
+    public function write(QueryInterface $query): ClientInterface;
 }
