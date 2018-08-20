@@ -2,6 +2,11 @@
 
 namespace RouterOS\Exceptions;
 
+/**
+ * Class Exception
+ * @package RouterOS\Exceptions
+ * @since 0.1
+ */
 class Exception extends \Exception
 {
     public function __construct(string $message = '', int $code = 0, \Throwable $previous = null)
