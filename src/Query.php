@@ -2,9 +2,15 @@
 
 namespace RouterOS;
 
-class Query
-{
+use RouterOS\Interfaces\QueryInterface;
 
+/**
+ * Class Query
+ * @package RouterOS
+ * @since 0.1
+ */
+class Query implements QueryInterface
+{
     /**
      * Array of query attributes
      * @var array
@@ -31,16 +37,18 @@ class Query
      * Append to array yet another attribute of query
      *
      * @param   string $word
-     * @return  $this
+     * @return  QueryInterface
      */
-    public function add(string $word): self
+    public function add(string $word): QueryInterface
     {
         $this->_attributes[] = $word;
         return $this;
     }
 
     /**
-     * @return array
+     * Get attributes array of current query
+     *
+     * @return  array
      */
     public function getAttributes(): array
     {
@@ -48,7 +56,9 @@ class Query
     }
 
     /**
-     * @return string
+     * Get endpoint of current query
+     *
+     * @return  string
      */
     public function getEndpoint(): string
     {
