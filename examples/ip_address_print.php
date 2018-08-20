@@ -7,32 +7,22 @@ use \RouterOS\Config;
 use \RouterOS\Client;
 use \RouterOS\Query;
 
-/**
- * Set the params
- */
-$config = new Config();
-$config->host = '192.168.1.104';
-$config->user = 'admin';
-$config->pass = 'admin';
+// Create config object with parameters
+$config =
+    (new Config())
+        ->set('host', '192.168.1.3')
+        ->set('user', 'admin')
+        ->set('pass', 'admin');
 
-/**
- * Initiate client with parameters
- */
+// Initiate client with config object
 $client = new Client($config);
 
-/**
- * Build query
- */
+// Build query
 $query = new Query('/ip/address/print');
 
-/**
- * Send query to socket server
- */
+// Send query to RouterOS
 $request = $client->write($query);
-var_dump($request);
 
-/**
- * Read answer from server
- */
+// Read answer from RouterOS
 $response = $client->read();
 var_dump($response);
