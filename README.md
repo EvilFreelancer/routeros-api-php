@@ -11,68 +11,116 @@ This library is partly based on [this old project](https://github.com/BenMenking
 innovations to ease development. In addition, the project is designed
 to work with PHP7 in accordance with the PSR standards.
 
-If you want to help the project, I will be glad to any help, my twitter [@EvilFreelancer](https://twitter.com/EvilFreelancer).
+You can use this library with pre-6.43 and post-6.43 versions of
+RouterOS firmware, for switching you just need set `legacy`
+parameter of config to required state (`false` by default).
 
-## Known issues
+## How to use
 
-This library is not ready for production usage, because yet is not implemented new
-login scheme for post 6.43 firmwares (but it works with pre 6.43).
+### Basic example
 
-In addition, need to implement a full test of everything through phpUnit, as
-well as write more detailed documentation and add more examples.
+More examples you can find [here](https://github.com/EvilFreelancer/routeros-api-php/tree/master/examples).
 
-This issues will be fixed in future releases.
-
-## Small example
-
-Get all IP addresses, analog via command line is `/ip address print`
+Get all IP addresses (analogue via command line is `/ip address print`):
 
 ```php
 <?php
 require_once __DIR__ . '/vendor/autoload.php';
 
-error_reporting(E_ALL);
+use \RouterOS\Config;
+use \RouterOS\Client;
+use \RouterOS\Query;
+
+// Create object of class and set parameters
+$config =
+    (new Config())
+        ->set('host', '192.168.1.3')
+        ->set('user', 'admin')
+        ->set('pass', 'admin');
+
+// Initiate client with config object
+$client = new Client($config);
+
+// Build query
+$query = new Query('/ip/address/print');
+
+// Send query to RouterOS
+$request = $client->write($query);
+
+// Read answer from RouterOS
+$response = $client->read();
+var_dump($response);
+```
+
+You can simplify your code and send then read from socket in one line:
+
+```php
+$response = $client->write($query)->read();
+var_dump($response);
+```
+
+By the way, you can send few queries to your router without result:
+
+```php
+$client->write($query1)->write($query2)->write($query3);
+```
+
+### How to configure the client
+
+```php
+// Enable config class
+use \RouterOS\Config;
+
+// Create object of class
+$config = new Config();
+
+// Set parameters of config
+$config->set('host', '192.168.1.3')
+$config->set('user', 'admin')
+$config->set('pass', 'admin');
+
+// `set()` method supported inlines style of syntax
+$config
+    ->set('host', '192.168.1.3')
+    ->set('user', 'admin')
+    ->set('pass', 'admin');
+```
+
+#### List of available configuration parameters
+
+| Parameter | Type   | Default | Description |
+|-----------|--------|---------|-------------|
+| host      | string |         | Address of Mikrotik RouterOS |
+| user      | string |         | Username |
+| pass      | string |         | Password |
+| port      | int    |         | RouterOS API port number for access (if not set use 8728 or 8729 if SSL enabled) |
+| ssl       | bool   | false   | Enable ssl support (if port is not set this parameter must change default port to ssl port) |
+| legacy    | bool   | false   | Support of legacy login scheme (true - pre 6.43, false - post 6.43) |
+| timeout   | int    | 10      | Max timeout for answer from RouterOS |
+| attempts  | int    | 10      | Count of attempts to establish TCP session |
+| delay     | int    | 1       | Delay between attempts in seconds |
+
+### How to enable support of legacy login schema (RouterOS pre-6.43)
+
+```php
+<?php
+require_once __DIR__ . '/vendor/autoload.php';
 
 use \RouterOS\Config;
 use \RouterOS\Client;
 use \RouterOS\Query;
 
-/**
- * Set the params
- */
-$config = new Config();
-$config->host = '192.168.1.104';
-$config->user = 'admin';
-$config->pass = 'admin';
+// Create object of class and set parameters
+$config =
+    (new Config())
+        ->set('host', '192.168.1.3')
+        ->set('user', 'admin')
+        ->set('pass', 'admin')
+        ->set('legacy', true); // you need set `legacy` parameter with `true` value
 
-/**
- * Initiate client with parameters
- */
+// Initiate client with config object
 $client = new Client($config);
-
-/**
- * Build query
- */
-$query = new Query('/ip/address/print');
-
-/**
- * Send query to socket server
- */
-$request = $client->write($query);
-var_dump($request);
-
-/**
- * Read answer from server
- */
-$response = $client->read();
-var_dump($response);
-```
-
-You can simplify your code and write then read from socket in one line:
-
-```php
-$response = $client->write($query)->read();
-var_dump($response);
+......
 ```
 
 ### How to write queries
