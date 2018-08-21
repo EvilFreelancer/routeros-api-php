@@ -34,7 +34,7 @@ class Client implements Interfaces\ClientInterface
 
     /**
      * Configuration of connection
-     * @var Config
+     * @var ConfigInterface
      */
     private $_config;
 
