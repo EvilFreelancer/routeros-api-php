@@ -85,7 +85,7 @@ class Client implements Interfaces\ClientInterface
                 $string |= 0xE0000000;
                 $string = \chr(($string >> 24) & 0xFF) . \chr(($string >> 16) & 0xFF) . \chr(($string >> 8) & 0xFF) . \chr($string & 0xFF);
                 break;
-            case  ($string >= 0x10000000):
+            case ($string >= 0x10000000):
                 $string = \chr(0xF0) . \chr(($string >> 24) & 0xFF) . \chr(($string >> 16) & 0xFF) . \chr(($string >> 8) & 0xFF) . \chr($string & 0xFF);
                 break;
         }
@@ -114,6 +114,47 @@ class Client implements Interfaces\ClientInterface
     }
 
     /**
+     * Read length of line
+     *
+     * @param   int $byte
+     * @return  int
+     */
+    private function getLength(int $byte): int
+    {
+        // If the first bit is set then we need to remove the first four bits, shift
+        // left 8 and then read another byte in.
+        //
+        // We repeat this for the second and third bits.
+        //
+        // If the fourth bit is set, we need to remove anything left in the first byte
+        // and then read in yet another byte.
+        switch (true) {
+            case ($byte & 128) && (($byte & 192) === 128):
+                $length = (($byte & 63) << 8) + \ord(fread($this->_socket, 1));
+                break;
+            case ($byte & 128) && (($byte & 224) === 192):
+                $length = (($byte & 31) << 8) + \ord(fread($this->_socket, 1));
+                $length = ($length << 8) + \ord(fread($this->_socket, 1));
+                break;
+            case ($byte & 128) && (($byte & 240) === 224):
+                $length = (($byte & 15) << 8) + \ord(fread($this->_socket, 1));
+                $length = ($length << 8) + \ord(fread($this->_socket, 1));
+                $length = ($length << 8) + \ord(fread($this->_socket, 1));
+                break;
+            case ($byte & 128) && (($byte & 256) === 240):
+                $length = \ord(fread($this->_socket, 1));
+                $length = ($length << 8) + \ord(fread($this->_socket, 1));
+                $length = ($length << 8) + \ord(fread($this->_socket, 1));
+                $length = ($length << 8) + \ord(fread($this->_socket, 1));
+                break;
+            default:
+                $length = $byte;
+        }
+
+        return $length;
+    }
+
+    /**
      * Read answer from server after query was executed
      *
      * @param   bool $parse
@@ -124,44 +165,14 @@ class Client implements Interfaces\ClientInterface
         // By default response is empty
         $response = [];
 
-        // Not done by default
-        $done = false;
-
         // Read answer from socket in loop
         while (true) {
             // Read the first byte of input which gives us some or all of the length
             // of the remaining reply.
             $byte = \ord(fread($this->_socket, 1));
 
-            // If the first bit is set then we need to remove the first four bits, shift
-            // left 8 and then read another byte in.
-            //
-            // We repeat this for the second and third bits.
-            //
-            // If the fourth bit is set, we need to remove anything left in the first byte
-            // and then read in yet another byte.
-            switch (true) {
-                case ($byte & 128) && (($byte & 192) === 128):
-                    $length = (($byte & 63) << 8) + \ord(fread($this->_socket, 1));
-                    break;
-                case ($byte & 128) && (($byte & 224) === 192):
-                    $length = (($byte & 31) << 8) + \ord(fread($this->_socket, 1));
-                    $length = ($length << 8) + \ord(fread($this->_socket, 1));
-                    break;
-                case ($byte & 128) && (($byte & 240) === 224):
-                    $length = (($byte & 15) << 8) + \ord(fread($this->_socket, 1));
-                    $length = ($length << 8) + \ord(fread($this->_socket, 1));
-                    $length = ($length << 8) + \ord(fread($this->_socket, 1));
-                    break;
-                case ($byte & 128) && (($byte & 256) === 240):
-                    $length = \ord(fread($this->_socket, 1));
-                    $length = ($length << 8) + \ord(fread($this->_socket, 1));
-                    $length = ($length << 8) + \ord(fread($this->_socket, 1));
-                    $length = ($length << 8) + \ord(fread($this->_socket, 1));
-                    break;
-                default:
-                    $length = $byte;
-            }
+            // Read length of line
+            $length = $this->getLength($byte);
 
             // By default line is empty
             $line = '';
@@ -179,14 +190,12 @@ class Client implements Interfaces\ClientInterface
             }
 
             // If we get a !done, change state of done variable
-            if ($line === '!done') {
-                $done = true;
-            }
+            $done = ($line === '!done');
 
             // Get status about latest operation
             $status = stream_get_meta_data($this->_socket);
 
-            // If we do not have unread bytes from socket or <-same and is done, then exit from loop
+            // If we do not have unread bytes from socket or <-same and if done, then exit from loop
             if ((!$status['unread_bytes']) || (!$status['unread_bytes'] && $done)) {
                 break;
             }
