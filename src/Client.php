@@ -114,47 +114,6 @@ class Client implements Interfaces\ClientInterface
     }
 
     /**
-     * Read length of line
-     *
-     * @param   int $byte
-     * @return  int
-     */
-    private function getLength(int $byte): int
-    {
-        // If the first bit is set then we need to remove the first four bits, shift
-        // left 8 and then read another byte in.
-        //
-        // We repeat this for the second and third bits.
-        //
-        // If the fourth bit is set, we need to remove anything left in the first byte
-        // and then read in yet another byte.
-        switch (true) {
-            case ($byte & 128) && (($byte & 192) === 128):
-                $length = (($byte & 63) << 8) + \ord(fread($this->_socket, 1));
-                break;
-            case ($byte & 128) && (($byte & 224) === 192):
-                $length = (($byte & 31) << 8) + \ord(fread($this->_socket, 1));
-                $length = ($length << 8) + \ord(fread($this->_socket, 1));
-                break;
-            case ($byte & 128) && (($byte & 240) === 224):
-                $length = (($byte & 15) << 8) + \ord(fread($this->_socket, 1));
-                $length = ($length << 8) + \ord(fread($this->_socket, 1));
-                $length = ($length << 8) + \ord(fread($this->_socket, 1));
-                break;
-            case ($byte & 128) && (($byte & 256) === 240):
-                $length = \ord(fread($this->_socket, 1));
-                $length = ($length << 8) + \ord(fread($this->_socket, 1));
-                $length = ($length << 8) + \ord(fread($this->_socket, 1));
-                $length = ($length << 8) + \ord(fread($this->_socket, 1));
-                break;
-            default:
-                $length = $byte;
-        }
-
-        return $length;
-    }
-
-    /**
      * Read answer from server after query was executed
      *
      * @param   bool $parse
@@ -171,11 +130,8 @@ class Client implements Interfaces\ClientInterface
             // of the remaining reply.
             $byte = \ord(fread($this->_socket, 1));
 
-            // Read length of line
-            $length = $this->getLength($byte);
-
             // Save output line to response array
-            $response[] = stream_get_contents($this->_socket, $length);
+            $response[] = stream_get_contents($this->_socket, $byte);
 
             // If we get a !done line in response, change state of $isDone variable
             $isDone = ('!done' === end($response));
@@ -202,22 +158,21 @@ class Client implements Interfaces\ClientInterface
     private function parseResponse(array $response): array
     {
         $parsed = [];
-        $current = null;
         $single = null;
-        foreach ($response as $x) {
-            if (\in_array($x, ['!fatal', '!re', '!trap'])) {
-                if ($x === '!re') {
+        foreach ($response as $item) {
+            if (\in_array($item, ['!fatal', '!re', '!trap'])) {
+                if ($item === '!re') {
                     $current =& $parsed[];
                 } else {
-                    $current =& $parsed[$x][];
+                    $current =& $parsed[$item][];
                 }
-            } elseif ($x !== '!done') {
+            } elseif ($item !== '!done') {
                 $matches = [];
-                if (preg_match_all('/[^=]+/', $x, $matches)) {
-                    if ($matches[0][0] === 'ret') {
-                        $single = $matches[0][1];
+                if (preg_match_all('/^=(.*)=(.*)/', $item, $matches)) {
+                    if ($matches[1][0] === 'ret') {
+                        $single = $matches[2][0];
                     }
-                    $current[$matches[0][0]] = $matches[0][1] ?? '';
+                    $current[$matches[1][0]] = $matches[2][0] ?? '';
                 }
             }
         }
