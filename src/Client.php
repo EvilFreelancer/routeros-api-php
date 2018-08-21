@@ -75,28 +75,18 @@ class Client implements Interfaces\ClientInterface
                 break;
             case ($string < 0x4000):
                 $string |= 0x8000;
-                $string = \chr(($string >> 8) & 0xFF)
-                    . \chr($string & 0xFF);
+                $string = \chr(($string >> 8) & 0xFF) . \chr($string & 0xFF);
                 break;
             case ($string < 0x200000):
                 $string |= 0xC00000;
-                $string = \chr(($string >> 16) & 0xFF)
-                    . \chr(($string >> 8) & 0xFF)
-                    . \chr($string & 0xFF);
+                $string = \chr(($string >> 16) & 0xFF) . \chr(($string >> 8) & 0xFF) . \chr($string & 0xFF);
                 break;
             case ($string < 0x10000000):
                 $string |= 0xE0000000;
-                $string = \chr(($string >> 24) & 0xFF)
-                    . \chr(($string >> 16) & 0xFF)
-                    . \chr(($string >> 8) & 0xFF)
-                    . \chr($string & 0xFF);
+                $string = \chr(($string >> 24) & 0xFF) . \chr(($string >> 16) & 0xFF) . \chr(($string >> 8) & 0xFF) . \chr($string & 0xFF);
                 break;
             case  ($string >= 0x10000000):
-                $string = \chr(0xF0)
-                    . \chr(($string >> 24) & 0xFF)
-                    . \chr(($string >> 16) & 0xFF)
-                    . \chr(($string >> 8) & 0xFF)
-                    . \chr($string & 0xFF);
+                $string = \chr(0xF0) . \chr(($string >> 24) & 0xFF) . \chr(($string >> 16) & 0xFF) . \chr(($string >> 8) & 0xFF) . \chr($string & 0xFF);
                 break;
         }
 
@@ -143,51 +133,53 @@ class Client implements Interfaces\ClientInterface
             // of the remaining reply.
             $byte = \ord(fread($this->_socket, 1));
 
-            // If the first bit is set then we need to remove the first four bits, shift left 8
-            // and then read another byte in.
+            // If the first bit is set then we need to remove the first four bits, shift
+            // left 8 and then read another byte in.
+            //
             // We repeat this for the second and third bits.
+            //
             // If the fourth bit is set, we need to remove anything left in the first byte
             // and then read in yet another byte.
-            if ($byte & 128) {
-                if (($byte & 192) === 128) {
+            switch (true) {
+                case ($byte & 128) && (($byte & 192) === 128):
                     $length = (($byte & 63) << 8) + \ord(fread($this->_socket, 1));
-                } else {
-                    if (($byte & 224) === 192) {
-                        $length = (($byte & 31) << 8) + \ord(fread($this->_socket, 1));
-                        $length = ($length << 8) + \ord(fread($this->_socket, 1));
-                    } else {
-                        if (($byte & 240) === 224) {
-                            $length = (($byte & 15) << 8) + \ord(fread($this->_socket, 1));
-                            $length = ($length << 8) + \ord(fread($this->_socket, 1));
-                            $length = ($length << 8) + \ord(fread($this->_socket, 1));
-                        } else {
-                            $length = \ord(fread($this->_socket, 1));
-                            $length = ($length << 8) + \ord(fread($this->_socket, 1)) * 3;
-                            $length = ($length << 8) + \ord(fread($this->_socket, 1));
-                            $length = ($length << 8) + \ord(fread($this->_socket, 1));
-                        }
-                    }
-                }
-            } else {
-                $length = $byte;
+                    break;
+                case ($byte & 128) && (($byte & 224) === 192):
+                    $length = (($byte & 31) << 8) + \ord(fread($this->_socket, 1));
+                    $length = ($length << 8) + \ord(fread($this->_socket, 1));
+                    break;
+                case ($byte & 128) && (($byte & 240) === 224):
+                    $length = (($byte & 15) << 8) + \ord(fread($this->_socket, 1));
+                    $length = ($length << 8) + \ord(fread($this->_socket, 1));
+                    $length = ($length << 8) + \ord(fread($this->_socket, 1));
+                    break;
+                case ($byte & 128) && (($byte & 256) === 240):
+                    $length = \ord(fread($this->_socket, 1));
+                    $length = ($length << 8) + \ord(fread($this->_socket, 1));
+                    $length = ($length << 8) + \ord(fread($this->_socket, 1));
+                    $length = ($length << 8) + \ord(fread($this->_socket, 1));
+                    break;
+                default:
+                    $length = $byte;
             }
 
-            $_ = '';
+            // By default line is empty
+            $line = '';
 
             // If we have got more characters to read, read them in.
             if ($length > 0) {
-                $_ = '';
-                $retlen = 0;
-                while ($retlen < $length) {
-                    $toread = $length - $retlen;
-                    $_ .= fread($this->_socket, $toread);
-                    $retlen = \strlen($_);
+                $line = '';
+                $retLen = 0;
+                while ($retLen < $length) {
+                    $toRead = $length - $retLen;
+                    $line .= fread($this->_socket, $toRead);
+                    $retLen = \strlen($line);
                 }
-                $response[] = $_;
+                $response[] = $line;
             }
 
-            // If we get a !done, make a note of it.
-            if ($_ === '!done') {
+            // If we get a !done, change state of done variable
+            if ($line === '!done') {
                 $done = true;
             }
 

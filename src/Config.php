@@ -25,6 +25,22 @@ class Config implements ConfigInterface
     ];
 
     /**
+     * Check if key in array
+     *
+     * @param   string $key
+     * @param   array $array
+     * @throws  Exception
+     */
+    private function keyAllowed(string $key, array $array)
+    {
+        // Check if parameter in list of allowed parameters
+        if (!array_key_exists($key, $array)) {
+            throw new Exception("Requested parameter \"$key\" not found in allowed list [" . implode(',',
+                    array_keys($array)) . ']');
+        }
+    }
+
+    /**
      * Set parameter into array
      *
      * @param   string $name
@@ -35,11 +51,8 @@ class Config implements ConfigInterface
     {
         try {
 
-            // Check if parameter in list of allowed parameters
-            if (!array_key_exists($name, self::ALLOWED)) {
-                throw new Exception("Requested parameter \"$name\" not found in allowed list [" . implode(',',
-                        array_keys(self::ALLOWED)) . ']');
-            }
+            // Check of key in array
+            $this->keyAllowed($name, self::ALLOWED);
 
             // Get type of current variable
             $whatType = \gettype($value);
@@ -71,11 +84,9 @@ class Config implements ConfigInterface
     public function get(string $parameter)
     {
         try {
-            // Check if parameter in list of allowed parameters
-            if (!array_key_exists($parameter, self::ALLOWED)) {
-                throw new Exception("Requested parameter \"$parameter\" is not found in allowed list [" . implode(',',
-                        array_keys(self::ALLOWED)) . ']');
-            }
+            // Check of key in array
+            $this->keyAllowed($parameter, self::ALLOWED);
+
         } catch (Exception $e) {
             // __construct
         }

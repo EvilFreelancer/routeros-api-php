@@ -13,9 +13,9 @@ interface QueryInterface
      * Append to array yet another attribute of query
      *
      * @param   string $word
-     * @return  $this
+     * @return  QueryInterface
      */
-    public function add(string $word): self;
+    public function add(string $word): QueryInterface;
 
     /**
      * Get attributes array of current query
