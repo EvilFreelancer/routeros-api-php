@@ -73,6 +73,24 @@ class Config implements ConfigInterface
     }
 
     /**
+     * Return port number (get from defaults if port is not set by user)
+     *
+     * @param   string $parameter
+     * @return  bool|int
+     */
+    private function getPort(string $parameter)
+    {
+        // If client need port number and port is not set
+        if ($parameter === 'port' && !isset($this->_parameters['port'])) {
+            // then use default with or without ssl encryption
+            return (isset($this->_parameters['ssl']) && $this->_parameters['ssl'])
+                ? Client::PORT_SSL
+                : Client::PORT;
+        }
+        return null;
+    }
+
+    /**
      * Return parameter of current config by name
      *
      * @param   string $parameter
@@ -88,15 +106,7 @@ class Config implements ConfigInterface
             // __construct
         }
 
-        // If client need port number and port is not set
-        if ($parameter === 'port' && !isset($this->_parameters['port'])) {
-            // then use default with or without ssl encryption
-            return (isset($this->_parameters['ssl']) && $this->_parameters['ssl'])
-                ? Client::PORT_SSL
-                : Client::PORT;
-        }
-
-        return $this->_parameters[$parameter];
+        return $this->getPort($parameter) ?? $this->_parameters[$parameter];
     }
 
     /**
