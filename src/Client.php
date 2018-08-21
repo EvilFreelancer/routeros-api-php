@@ -328,7 +328,6 @@ class Client implements Interfaces\ClientInterface
      */
     private function closeSocket(): bool
     {
-        fclose($this->_socket);
-        return true;
+        return fclose($this->_socket);
     }
 }
