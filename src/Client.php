@@ -159,6 +159,7 @@ class Client implements Interfaces\ClientInterface
     {
         $parsed = [];
         $single = null;
+        $current = null;
         foreach ($response as $item) {
             if (\in_array($item, ['!fatal', '!re', '!trap'])) {
                 if ($item === '!re') {
