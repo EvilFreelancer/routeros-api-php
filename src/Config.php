@@ -35,7 +35,7 @@ class Config implements ConfigInterface
     {
         // Check if parameter in list of allowed parameters
         if (!array_key_exists($key, $array)) {
-            throw new Exception("Requested parameter \"$key\" not found in allowed list [" . implode(',',
+            throw new Exception("Requested parameter '$key' not found in allowed list [" . implode(',',
                     array_keys($array)) . ']');
         }
     }
@@ -54,15 +54,12 @@ class Config implements ConfigInterface
             // Check of key in array
             $this->keyAllowed($name, self::ALLOWED);
 
-            // Get type of current variable
             $whatType = \gettype($value);
-            // Get allowed type of parameter
-            $type = self::ALLOWED[$name];
-            $isType = 'is_' . $type;
+            $isType = self::ALLOWED[$name];
 
             // Check what type has this value
-            if (!$isType($value)) {
-                throw new Exception("Parameter \"$name\" has wrong type \"$whatType\" but should be \"$type\"");
+            if ($whatType !== $isType) {
+                throw new Exception("Parameter '$name' has wrong type '$whatType'' but should be '$isType''");
             }
 
         } catch (Exception $e) {
