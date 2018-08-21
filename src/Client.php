@@ -174,29 +174,17 @@ class Client implements Interfaces\ClientInterface
             // Read length of line
             $length = $this->getLength($byte);
 
-            // By default line is empty
-            $line = '';
+            // Save output line to response array
+            $response[] = stream_get_contents($this->_socket, $length);
 
-            // If we have got more characters to read, read them in.
-            if ($length > 0) {
-                $line = '';
-                $retLen = 0;
-                while ($retLen < $length) {
-                    $toRead = $length - $retLen;
-                    $line .= fread($this->_socket, $toRead);
-                    $retLen = \strlen($line);
-                }
-                $response[] = $line;
-            }
-
-            // If we get a !done, change state of done variable
-            $done = ($line === '!done');
+            // If we get a !done line in response, change state of $isDone variable
+            $isDone = ('!done' === end($response));
 
             // Get status about latest operation
             $status = stream_get_meta_data($this->_socket);
 
             // If we do not have unread bytes from socket or <-same and if done, then exit from loop
-            if ((!$status['unread_bytes']) || (!$status['unread_bytes'] && $done)) {
+            if ((!$status['unread_bytes']) || (!$status['unread_bytes'] && $isDone)) {
                 break;
             }
         }
