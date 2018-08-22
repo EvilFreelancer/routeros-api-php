@@ -1,5 +1,5 @@
 [![Latest Stable Version](https://poser.pugx.org/evilfreelancer/routeros-api-php/v/stable)](https://packagist.org/packages/evilfreelancer/routeros-api-php)
-[![Build Status](https://travis-ci.org/evilfreelancer/routeros-api-php.svg?branch=master)](https://travis-ci.org/evilfreelancer/routeros-api-php)
+[![Build Status](https://travis-ci.org/evilfreelancer/routeros-api-php.svg?branch=master)](https://travis-ci.org/EvilFreelancer/routeros-api-php)
 [![Total Downloads](https://poser.pugx.org/evilfreelancer/routeros-api-php/downloads)](https://packagist.org/packages/evilfreelancer/routeros-api-php)
 [![License](https://poser.pugx.org/evilfreelancer/routeros-api-php/license)](https://packagist.org/packages/evilfreelancer/routeros-api-php)
 [![PHP 7 ready](https://php7ready.timesplinter.ch/EvilFreelancer/routeros-api-php/master/badge.svg)](https://travis-ci.org/EvilFreelancer/routeros-api-php)
