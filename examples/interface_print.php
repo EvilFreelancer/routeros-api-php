@@ -18,7 +18,7 @@ $config =
 $client = new Client($config);
 
 // Build query
-$query = new Query('/ip/address/print');
+$query = new Query('/interface/getall');
 
 // Send query to RouterOS
 $request = $client->write($query);

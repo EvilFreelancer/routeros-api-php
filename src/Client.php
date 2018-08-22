@@ -94,6 +94,46 @@ class Client implements Interfaces\ClientInterface
     }
 
     /**
+     * Read length of line
+     *
+     * @param   int $byte
+     * @return  int
+     */
+    private function getLength(int $byte): int
+    {
+        // If the first bit is set then we need to remove the first four bits, shift left 8
+        // and then read another byte in.
+        // We repeat this for the second and third bits.
+        // If the fourth bit is set, we need to remove anything left in the first byte
+        // and then read in yet another byte.
+        $length = 0;
+        if ($byte & 128) {
+            if (($byte & 192) === 128) {
+                $length = (($byte & 63) << 8) + \ord(fread($this->_socket, 1));
+            } else {
+                if (($byte & 224) === 192) {
+                    $length = (($byte & 31) << 8) + \ord(fread($this->_socket, 1));
+                    $length = ($length << 8) + \ord(fread($this->_socket, 1));
+                } else {
+                    if (($byte & 240) === 224) {
+                        $length = (($byte & 15) << 8) + \ord(fread($this->_socket, 1));
+                        $length = ($length << 8) + \ord(fread($this->_socket, 1));
+                        $length = ($length << 8) + \ord(fread($this->_socket, 1));
+                    } else {
+                        $length = \ord(fread($this->_socket, 1));
+                        $length = ($length << 8) + \ord(fread($this->_socket, 1)) * 3;
+                        $length = ($length << 8) + \ord(fread($this->_socket, 1));
+                        $length = ($length << 8) + \ord(fread($this->_socket, 1));
+                    }
+                }
+            }
+        } else {
+            $length = $byte;
+        }
+        return $length;
+    }
+
+    /**
      * Send write query to RouterOS (with or without tag)
      *
      * @param   QueryInterface $query
@@ -113,6 +153,25 @@ class Client implements Interfaces\ClientInterface
         return $this;
     }
 
+    public function read2(bool $parse = true): array
+    {
+        while (true) {
+
+            $res = '';
+            while ($buf = fread($this->_socket, 1)) {
+                if (substr($res, -5) === '!done') {
+                    echo 'done';
+                    break 2;
+                }
+                echo "$buf\n";
+                $res .= $buf;
+            }
+            $result[] = $res;
+        }
+        print_r($result);
+        die();
+    }
+
     /**
      * Read answer from server after query was executed
      *
@@ -130,8 +189,11 @@ class Client implements Interfaces\ClientInterface
             // of the remaining reply.
             $byte = \ord(fread($this->_socket, 1));
 
+            // Read length of line
+            $length = $this->getLength($byte);
+
             // Save output line to response array
-            $response[] = stream_get_contents($this->_socket, $byte);
+            $response[] = stream_get_contents($this->_socket, $length);
 
             // If we get a !done line in response, change state of $isDone variable
             $isDone = ('!done' === end($response));
@@ -157,32 +219,27 @@ class Client implements Interfaces\ClientInterface
      */
     private function parseResponse(array $response): array
     {
-        $parsed = [];
-        $single = null;
-        $current = null;
-        foreach ($response as $item) {
-            if (\in_array($item, ['!fatal', '!re', '!trap'])) {
-                if ($item === '!re') {
-                    $current =& $parsed[];
-                } else {
-                    $current =& $parsed[$item][];
-                }
-            } elseif ($item !== '!done') {
-                $matches = [];
-                if (preg_match_all('/^=(.*)=(.*)/', $item, $matches)) {
-                    if ($matches[1][0] === 'ret') {
-                        $single = $matches[2][0];
+        print_r($response);
+
+        $result = [];
+        $i = -1;
+        foreach ($response as $value) {
+            switch ($value) {
+                case '!re':
+                    $i++;
+                    break;
+                case '!fatal':
+                case '!trap':
+                case '!done':
+                    break 2;
+                default:
+                    if (preg_match_all('/^=(.*)=(.*)/', $value, $matches)) {
+                        $result[$i][$matches[1][0]] = $matches[2][0];
                     }
-                    $current[$matches[1][0]] = $matches[2][0] ?? '';
-                }
+                    break;
             }
         }
-
-        if (empty($parsed) && null !== $single) {
-            $parsed[] = $single;
-        }
-
-        return $parsed;
+        return $result;
     }
 
     /**
