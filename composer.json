@@ -14,6 +14,9 @@
       "RouterOS\\": "./src/"
     }
   },
+  "autoload-dev": {
+    "psr-4": { "RouterOS\\Tests\\": "./tests/" }
+  },
   "authors": [
     {
       "name": "Paul Rock",
@@ -27,6 +30,6 @@
     "ext-sockets": "*"
   },
   "require-dev": {
-    "phpunit/phpunit": "^6.0"
+    "phpunit/phpunit": "^7.0"
   }
 }
