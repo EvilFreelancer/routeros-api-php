@@ -20,17 +20,17 @@ interface ConfigInterface
         // Password
         'pass' => 'string',
         // RouterOS API port number for access (if not set use default or default with SSL if SSL enabled)
-        'port' => 'int',
+        'port' => 'integer',
         // Enable ssl support (if port is not set this parameter must change default port to ssl port)
-        'ssl' => 'bool',
+        'ssl' => 'boolean',
         // Support of legacy login scheme (true - pre 6.43, false - post 6.43)
-        'legacy' => 'bool',
+        'legacy' => 'boolean',
         // Max timeout for answer from RouterOS
-        'timeout' => 'int',
+        'timeout' => 'integer',
         // Count of attempts to establish TCP session
-        'attempts' => 'int',
+        'attempts' => 'integer',
         // Delay between attempts in seconds
-        'delay' => 'int',
+        'delay' => 'integer',
     ];
 
     /**
@@ -41,6 +41,14 @@ interface ConfigInterface
      * @return  ConfigInterface
      */
     public function set(string $name, $value): ConfigInterface;
+
+    /**
+     * Remove parameter from array by name
+     *
+     * @param   string $parameter
+     * @return  ConfigInterface
+     */
+    public function delete(string $parameter): ConfigInterface;
 
     /**
      * Return parameter of current config by name

@@ -46,24 +46,19 @@ class Config implements ConfigInterface
      * @param   string $name
      * @param   mixed $value
      * @return  ConfigInterface
+     * @throws  Exception
      */
     public function set(string $name, $value): ConfigInterface
     {
-        try {
+        // Check of key in array
+        $this->keyAllowed($name, self::ALLOWED);
 
-            // Check of key in array
-            $this->keyAllowed($name, self::ALLOWED);
+        $whatType = \gettype($value);
+        $isType = self::ALLOWED[$name];
 
-            $whatType = \gettype($value);
-            $isType = self::ALLOWED[$name];
-
-            // Check what type has this value
-            if ($whatType !== $isType) {
-                throw new Exception("Parameter '$name' has wrong type '$whatType'' but should be '$isType''");
-            }
-
-        } catch (Exception $e) {
-            // __construct
+        // Check what type has this value
+        if ($whatType !== $isType) {
+            throw new Exception("Parameter '$name' has wrong type '$whatType'' but should be '$isType''");
         }
 
         // Save value to array
@@ -91,20 +86,34 @@ class Config implements ConfigInterface
     }
 
     /**
+     * Remove parameter from array by name
+     *
+     * @param   string $parameter
+     * @return  ConfigInterface
+     * @throws  Exception
+     */
+    public function delete(string $parameter): ConfigInterface
+    {
+        // Check of key in array
+        $this->keyAllowed($parameter, self::ALLOWED);
+
+        // Save value to array
+        unset($this->_parameters[$parameter]);
+
+        return $this;
+    }
+
+    /**
      * Return parameter of current config by name
      *
      * @param   string $parameter
      * @return  mixed
+     * @throws  Exception
      */
     public function get(string $parameter)
     {
-        try {
-            // Check of key in array
-            $this->keyAllowed($parameter, self::ALLOWED);
-
-        } catch (Exception $e) {
-            // __construct
-        }
+        // Check of key in array
+        $this->keyAllowed($parameter, self::ALLOWED);
 
         return $this->getPort($parameter) ?? $this->_parameters[$parameter];
     }
