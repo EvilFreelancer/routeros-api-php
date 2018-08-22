@@ -5,3 +5,18 @@ filter:
     excluded_paths:
         - "extra/"
         - "tests/"
+
+coding_style:
+    php:
+        spaces:
+            around_operators:
+                concatenation: true
+
+build:
+    tests:
+        override:
+          -
+            command: 'php ./vendor/bin/phpunit --coverage-clover=coverage-clover'
+            coverage:
+              file: 'coverage-clover'
+              format: 'php-clover'
