@@ -136,7 +136,6 @@ class Client implements Interfaces\ClientInterface
         // We repeat this for the second and third bits.
         // If the fourth bit is set, we need to remove anything left in the first byte
         // and then read in yet another byte.
-        $length = 0;
         if ($byte & 128) {
             if (($byte & 192) === 128) {
                 $length = (($byte & 63) << 8) + \ord(fread($this->_socket, 1));
@@ -182,25 +181,6 @@ class Client implements Interfaces\ClientInterface
 
         return $this;
     }
-
-//    public function read2(bool $parse = true): array
-//    {
-//        while (true) {
-//
-//            $res = '';
-//            while ($buf = fread($this->_socket, 1)) {
-//                if (substr($res, -5) === '!done') {
-//                    echo 'done';
-//                    break 2;
-//                }
-//                echo "$buf\n";
-//                $res .= $buf;
-//            }
-//            $result[] = $res;
-//        }
-//        print_r($result);
-//        die();
-//    }
 
     /**
      * Read answer from server after query was executed
