@@ -1,22 +1,33 @@
 checks:
-    php: true
+  php: true
 
 filter:
-    excluded_paths:
-        - "examples/"
-        - "tests/"
+  excluded_paths:
+  - "examples/"
+  - "tests/"
 
 coding_style:
-    php:
-        spaces:
-            around_operators:
-                concatenation: true
+  php:
+    spaces:
+      around_operators:
+        concatenation: true
 
 build:
-    tests:
-        override:
-          -
-            command: 'php ./vendor/bin/phpunit --coverage-clover=coverage-clover'
-            coverage:
-              file: 'coverage-clover'
-              format: 'php-clover'
+  tests:
+    environment:
+      docker: true
+      commands:
+      - docker pull evilfreelancer/docker-routeros:6.42
+      - docker pull evilfreelancer/docker-routeros:latest
+      - docker run -d -p 12223:23 -p 18728:8728 -p 18729:8729 -ti evilfreelancer/docker-routeros:6.42
+      - docker run -d -p 2223:23 -p 8728:8728 -p 8729:8729 -ti evilfreelancer/docker-routeros:latest
+      - docker ps -a
+      - sleep 30
+    dependencies:
+      before:
+      - sudo apt-get install -y expect
+    override:
+    - command: 'php ./vendor/bin/phpunit --coverage-clover=coverage-clover'
+      coverage:
+        file: 'coverage-clover'
+        format: 'php-clover'
