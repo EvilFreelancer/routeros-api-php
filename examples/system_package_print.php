@@ -18,11 +18,11 @@ $config =
 $client = new Client($config);
 
 // Build query
-$query = new Query('/system/package/getall');
+$query = new Query('/system/package/print');
 
 // Send query to RouterOS
 $request = $client->write($query);
 
 // Read answer from RouterOS
-$response = $client->read2();
+$response = $client->read();
 print_r($response);
