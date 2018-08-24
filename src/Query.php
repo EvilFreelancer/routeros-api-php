@@ -5,7 +5,7 @@ namespace RouterOS;
 use RouterOS\Interfaces\QueryInterface;
 
 /**
- * Class Query
+ * Class Query for building queries
  * @package RouterOS
  * @since 0.1
  */

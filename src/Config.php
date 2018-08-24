@@ -2,18 +2,18 @@
 
 namespace RouterOS;
 
-use RouterOS\Exceptions\Exception;
+use RouterOS\Exceptions\ConfigException;
 use RouterOS\Interfaces\ConfigInterface;
 
 /**
- * Class Config
+ * Class Config with array of parameters
  * @package RouterOS
  * @since 0.1
  */
 class Config implements ConfigInterface
 {
     /**
-     * Array of parameters (with defaults)
+     * Array of parameters (with some default values)
      * @var array
      */
     private $_parameters = [
@@ -25,18 +25,32 @@ class Config implements ConfigInterface
     ];
 
     /**
-     * Check if key in array
+     * Check if key in list of allowed parameters
      *
      * @param   string $key
      * @param   array $array
-     * @throws  Exception
+     * @throws  ConfigException
      */
     private function keyAllowed(string $key, array $array)
     {
-        // Check if parameter in list of allowed parameters
         if (!array_key_exists($key, $array)) {
-            throw new Exception("Requested parameter '$key' not found in allowed list [" . implode(',',
+            throw new ConfigException("Requested parameter '$key' not found in allowed list [" . implode(',',
                     array_keys($array)) . ']');
+        }
+    }
+
+    /**
+     * Compare data types of some value
+     *
+     * @param   string $name Name of value
+     * @param   mixed $whatType What type has value
+     * @param   mixed $isType What type should be
+     * @throws  ConfigException
+     */
+    private function keyType(string $name, $whatType, $isType)
+    {
+        if ($whatType !== $isType) {
+            throw new ConfigException("Parameter '$name' has wrong type '$whatType'' but should be '$isType''");
         }
     }
 
@@ -46,20 +60,15 @@ class Config implements ConfigInterface
      * @param   string $name
      * @param   mixed $value
      * @return  ConfigInterface
-     * @throws  Exception
+     * @throws  ConfigException
      */
     public function set(string $name, $value): ConfigInterface
     {
         // Check of key in array
         $this->keyAllowed($name, self::ALLOWED);
 
-        $whatType = \gettype($value);
-        $isType = self::ALLOWED[$name];
-
         // Check what type has this value
-        if ($whatType !== $isType) {
-            throw new Exception("Parameter '$name' has wrong type '$whatType'' but should be '$isType''");
-        }
+        $this->keyType($name, \gettype($value), self::ALLOWED[$name]);
 
         // Save value to array
         $this->_parameters[$name] = $value;
@@ -90,7 +99,7 @@ class Config implements ConfigInterface
      *
      * @param   string $parameter
      * @return  ConfigInterface
-     * @throws  Exception
+     * @throws  ConfigException
      */
     public function delete(string $parameter): ConfigInterface
     {
@@ -108,7 +117,7 @@ class Config implements ConfigInterface
      *
      * @param   string $parameter
      * @return  mixed
-     * @throws  Exception
+     * @throws  ConfigException
      */
     public function get(string $parameter)
     {

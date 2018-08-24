@@ -2,13 +2,15 @@
 
 namespace RouterOS;
 
+use RouterOS\Exceptions\ClientException;
+use RouterOS\Exceptions\ConfigException;
 use RouterOS\Exceptions\Exception;
 use RouterOS\Interfaces\ClientInterface;
 use RouterOS\Interfaces\ConfigInterface;
 use RouterOS\Interfaces\QueryInterface;
 
 /**
- * Class Client
+ * Class Client for RouterOS management
  * @package RouterOS
  * @since 0.1
  */
@@ -40,12 +42,40 @@ class Client implements Interfaces\ClientInterface
 
     /**
      * Client constructor.
+     *
      * @param   ConfigInterface $config
+     * @throws  ConfigException
+     * @throws  ClientException
      */
     public function __construct(ConfigInterface $config)
     {
+        // Check for important keys
+        $this->keysCheck(['host', 'user', 'pass'], $config);
+
+        // Save config if everything is okay
         $this->_config = $config;
-        $this->connect();
+
+        // Throw error if cannot to connect
+        if (false === $this->connect()) {
+            throw new ClientException('Unable to connect to ' . $config->get('host') . ':' . $config->get('port'));
+        }
+    }
+
+    /**
+     * Check for important keys
+     *
+     * @param   array $keys
+     * @param   ConfigInterface $config
+     * @throws  ConfigException
+     */
+    private function keysCheck(array $keys, ConfigInterface $config)
+    {
+        $parameters = $config->getParameters();
+        foreach ($keys as $key) {
+            if (false === (array_key_exists($key, $parameters) && isset($parameters[$key]))) {
+                throw new ConfigException("Parameter '$key' of Config is not set or empty");
+            }
+        }
     }
 
     /**
@@ -153,24 +183,24 @@ class Client implements Interfaces\ClientInterface
         return $this;
     }
 
-    public function read2(bool $parse = true): array
-    {
-        while (true) {
-
-            $res = '';
-            while ($buf = fread($this->_socket, 1)) {
-                if (substr($res, -5) === '!done') {
-                    echo 'done';
-                    break 2;
-                }
-                echo "$buf\n";
-                $res .= $buf;
-            }
-            $result[] = $res;
-        }
-        print_r($result);
-        die();
-    }
+//    public function read2(bool $parse = true): array
+//    {
+//        while (true) {
+//
+//            $res = '';
+//            while ($buf = fread($this->_socket, 1)) {
+//                if (substr($res, -5) === '!done') {
+//                    echo 'done';
+//                    break 2;
+//                }
+//                echo "$buf\n";
+//                $res .= $buf;
+//            }
+//            $result[] = $res;
+//        }
+//        print_r($result);
+//        die();
+//    }
 
     /**
      * Read answer from server after query was executed
@@ -219,8 +249,6 @@ class Client implements Interfaces\ClientInterface
      */
     private function parseResponse(array $response): array
     {
-        print_r($response);
-
         $result = [];
         $i = -1;
         foreach ($response as $value) {
@@ -253,12 +281,12 @@ class Client implements Interfaces\ClientInterface
         if ($this->config('legacy')) {
             // For the first we need get hash with salt
             $query = new Query('/login');
-            $response = $this->write($query)->read();
+            $response = $this->write($query)->read(false);
 
             // Now need use this hash for authorization
             $query = (new Query('/login'))
                 ->add('=name=' . $this->config('user'))
-                ->add('=response=00' . md5(\chr(0) . $this->config('pass') . pack('H*', $response[0])));
+                ->add('=response=00' . md5(\chr(0) . $this->config('pass') . pack('H*', $response[1])));
         } else {
             // Just login with our credentials
             $query = (new Query('/login'))
@@ -280,6 +308,9 @@ class Client implements Interfaces\ClientInterface
      */
     public function connect(): bool
     {
+        // By default we not connected
+        $connected = false;
+
         // Few attempts in loop
         for ($attempt = 1; $attempt <= $this->config('attempts'); $attempt++) {
 
@@ -291,6 +322,7 @@ class Client implements Interfaces\ClientInterface
 
                 // If we logged in then exit from loop
                 if (true === $this->login()) {
+                    $connected = true;
                     break;
                 }
 
@@ -303,7 +335,7 @@ class Client implements Interfaces\ClientInterface
         }
 
         // Return status of connection
-        return true;
+        return $connected;
     }
 
     /**
@@ -337,6 +369,7 @@ class Client implements Interfaces\ClientInterface
      * Initiate socket session
      *
      * @return  bool
+     * @throws  ClientException
      */
     private function openSocket(): bool
     {
@@ -355,23 +388,19 @@ class Client implements Interfaces\ClientInterface
         // Default: Proto tcp:// but for ssl we need ssl://
         $proto = $this->config('ssl') ? 'ssl://' : '';
 
-        try {
-            // Initiate socket client
-            $socket = stream_socket_client(
-                $proto . $this->config('host') . ':' . $this->config('port'),
-                $this->_socket_err_num,
-                $this->_socket_err_str,
-                $this->config('timeout'),
-                STREAM_CLIENT_CONNECT,
-                $context
-            );
-            // Throw error is socket is not initiated
-            if (false === $socket) {
-                throw new Exception('stream_socket_client() failed: code: ' . $this->_socket_err_num . ' reason:' . $this->_socket_err_str);
-            }
+        // Initiate socket client
+        $socket = stream_socket_client(
+            $proto . $this->config('host') . ':' . $this->config('port'),
+            $this->_socket_err_num,
+            $this->_socket_err_str,
+            $this->config('timeout'),
+            STREAM_CLIENT_CONNECT,
+            $context
+        );
 
-        } catch (Exception $e) {
-            // __construct
+        // Throw error is socket is not initiated
+        if (false === $socket) {
+            throw new ClientException('stream_socket_client() failed: code: ' . $this->_socket_err_num . ' reason: ' . $this->_socket_err_str);
         }
 
         // Save socket to static variable
