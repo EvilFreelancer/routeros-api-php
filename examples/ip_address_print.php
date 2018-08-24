@@ -12,7 +12,8 @@ $config =
     (new Config())
         ->set('host', '192.168.1.3')
         ->set('user', 'admin')
-        ->set('pass', 'admin');
+        ->set('pass', 'admin')
+        ->set('legacy', true);
 
 // Initiate client with config object
 $client = new Client($config);
@@ -21,8 +22,5 @@ $client = new Client($config);
 $query = new Query('/ip/address/print');
 
 // Send query to RouterOS
-$request = $client->write($query);
-
-// Read answer from RouterOS
-$response = $client->read();
+$response = $client->write($query)->read();
 print_r($response);

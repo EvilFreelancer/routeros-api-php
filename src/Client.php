@@ -222,8 +222,14 @@ class Client implements Interfaces\ClientInterface
             // Read length of line
             $length = $this->getLength($byte);
 
-            // Save output line to response array
-            $response[] = stream_get_contents($this->_socket, $length);
+            // Save only non empty strings
+            if ($length > 0) {
+                // Save output line to response array
+                $response[] = stream_get_contents($this->_socket, $length);
+            } else {
+                // Read next line
+                stream_get_contents($this->_socket, $length);
+            }
 
             // If we get a !done line in response, change state of $isDone variable
             $isDone = ('!done' === end($response));
@@ -251,7 +257,8 @@ class Client implements Interfaces\ClientInterface
     {
         $result = [];
         $i = -1;
-        foreach ($response as $value) {
+        $lines = \count($response);
+        foreach ($response as $key => $value) {
             switch ($value) {
                 case '!re':
                     $i++;
@@ -259,15 +266,31 @@ class Client implements Interfaces\ClientInterface
                 case '!fatal':
                 case '!trap':
                 case '!done':
+                    // Check for =ret=, .tag and any other following messages
+                    for ($j = $key + 1; $j <= $lines; $j++) {
+                        // If we have lines after current one
+                        if (isset($response[$j])) {
+                            $this->pregResponse($response[$j], $matches);
+                            if (!empty($matches)) {
+                                $result['after'][$matches[1][0]] = $matches[2][0];
+                            }
+                        }
+                    }
                     break 2;
                 default:
-                    if (preg_match_all('/^=(.*)=(.*)/', $value, $matches)) {
+                    $this->pregResponse($value, $matches);
+                    if (!empty($matches)) {
                         $result[$i][$matches[1][0]] = $matches[2][0];
                     }
                     break;
             }
         }
         return $result;
+    }
+
+    private function pregResponse(string $value, &$matches)
+    {
+        preg_match_all('/^[=|\.](.*)=(.*)/', $value, $matches);
     }
 
     /**
@@ -281,12 +304,12 @@ class Client implements Interfaces\ClientInterface
         if ($this->config('legacy')) {
             // For the first we need get hash with salt
             $query = new Query('/login');
-            $response = $this->write($query)->read(false);
+            $response = $this->write($query)->read();
 
             // Now need use this hash for authorization
             $query = (new Query('/login'))
                 ->add('=name=' . $this->config('user'))
-                ->add('=response=00' . md5(\chr(0) . $this->config('pass') . pack('H*', $response[1])));
+                ->add('=response=00' . md5(\chr(0) . $this->config('pass') . pack('H*', $response['after']['ret'])));
         } else {
             // Just login with our credentials
             $query = (new Query('/login'))
@@ -305,6 +328,7 @@ class Client implements Interfaces\ClientInterface
      * Connect to socket server
      *
      * @return  bool
+     * @throws  ClientException
      */
     public function connect(): bool
     {
@@ -373,9 +397,6 @@ class Client implements Interfaces\ClientInterface
      */
     private function openSocket(): bool
     {
-        // Connect to server
-        $socket = false;
-
         // Default: Context for ssl
         $context = stream_context_create([
             'ssl' => [
