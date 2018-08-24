@@ -27,18 +27,18 @@ class ClientTest extends TestCase
         }
     }
 
-//    public function test__constructLegacy()
-//    {
-//        try {
-//            $config = new Config();
-//            $config->set('user', 'admin')->set('pass', 'admin')
-//                ->set('host', '127.0.0.1')->set('port', 18728)->set('legacy', true);
-//            $obj = new Client($config);
-//            $this->assertInternalType('object', $obj);
-//        } catch (\Exception $e) {
-//            $this->assertContains('Must be initialized ', $e->getMessage());
-//        }
-//    }
+    public function test__constructLegacy()
+    {
+        try {
+            $config = new Config();
+            $config->set('user', 'admin')->set('pass', 'admin')
+                ->set('host', '127.0.0.1')->set('port', 18728)->set('legacy', true);
+            $obj = new Client($config);
+            $this->assertInternalType('object', $obj);
+        } catch (\Exception $e) {
+            $this->assertContains('Must be initialized ', $e->getMessage());
+        }
+    }
 
     public function test__constructWrongPass()
     {
@@ -78,7 +78,7 @@ class ClientTest extends TestCase
         $this->assertEquals('*1', $read[0]['.id']);
 
         $query = new Query('/interface');
-        $readTrap = $obj->write($query)->read();
+        $readTrap = $obj->write($query)->read(false);
         $this->assertCount(3, $readTrap);
         $this->assertEquals('!trap', $readTrap[0]);
     }
