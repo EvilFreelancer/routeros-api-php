@@ -12,25 +12,5 @@ coding_style:
       around_operators:
         concatenation: true
 
-build:
-  nodes:
-    coverage:
-      environment:
-        docker: true
-      tests:
-        override:
-        - sudo apt-get update
-        - sudo apt-get install -y expect
-        - docker pull evilfreelancer/docker-routeros:6.42
-        - docker pull evilfreelancer/docker-routeros:latest
-        - docker run -d -p 12223:23 -p 18728:8728 -p 18729:8729 -ti evilfreelancer/docker-routeros:6.42
-        - docker run -d -p 2223:23 -p 8728:8728 -p 8729:8729 -ti evilfreelancer/docker-routeros:latest
-        - docker ps -a
-        - sleep 60
-        - ./preconf.tcl 12223 > /dev/null || true
-        - ./preconf.tcl 2223 > /dev/null || true
-        - sleep 60
-        - command: 'php ./vendor/bin/phpunit --coverage-clover=coverage-clover'
-          coverage:
-            file: 'coverage-clover'
-            format: 'php-clover'
+tools:
+  external_code_coverage: true
