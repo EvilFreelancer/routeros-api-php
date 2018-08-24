@@ -4,7 +4,7 @@ namespace RouterOS\Tests;
 
 use PHPUnit\Framework\TestCase;
 use RouterOS\Config;
-use RouterOS\Exceptions\Exception;
+use RouterOS\Exceptions\ConfigException;
 
 class ConfigTest extends TestCase
 {
@@ -51,18 +51,15 @@ class ConfigTest extends TestCase
 
     public function testDeleteEx()
     {
-        $this->expectException(Exception::class);
+        $this->expectException(ConfigException::class);
 
         $obj = new Config();
         $obj->delete('wrong');
     }
 
-    /**
-     * @throws Exception
-     */
     public function testSetEx1()
     {
-        $this->expectException(Exception::class);
+        $this->expectException(ConfigException::class);
 
         $obj = new Config();
         $obj->set('delay', 'some string');
@@ -70,7 +67,7 @@ class ConfigTest extends TestCase
 
     public function testSetEx2()
     {
-        $this->expectException(Exception::class);
+        $this->expectException(ConfigException::class);
 
         $obj = new Config();
         $obj->set('wrong', 'some string');
@@ -98,9 +95,9 @@ class ConfigTest extends TestCase
 
     public function testGetEx()
     {
-        $this->expectException(Exception::class);
+        $this->expectException(ConfigException::class);
 
         $obj = new Config();
-        $test = $obj->get('wrong');
+        $obj->get('wrong');
     }
 }

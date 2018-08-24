@@ -47,16 +47,9 @@ interface ClientInterface
     /**
      * Return socket resource if is exist
      *
-     * @return  bool|resource
+     * @return  resource
      */
     public function getSocket();
-
-    /**
-     * Connect to socket server
-     *
-     * @return  bool
-     */
-    public function connect(): bool;
 
     /**
      * Read answer from server after query was executed

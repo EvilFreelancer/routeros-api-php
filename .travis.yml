@@ -21,12 +21,12 @@ before_script:
 - sudo apt-get install -y expect
 - docker pull evilfreelancer/docker-routeros:6.42
 - docker pull evilfreelancer/docker-routeros:latest
-- docker run -d -p 12222:22 -p 18728:8728 -p 18729:8729 -ti evilfreelancer/docker-routeros:6.42
-- docker run -d -p 2222:22 -p 8728:8728 -p 8729:8729 -ti evilfreelancer/docker-routeros:latest
+- docker run -d -p 12223:23 -p 18728:8728 -p 18729:8729 -ti evilfreelancer/docker-routeros:6.42
+- docker run -d -p 2223:23 -p 8728:8728 -p 8729:8729 -ti evilfreelancer/docker-routeros:latest
 - docker ps -a
 - sleep 30
-- ./preconfig.sh 12222 || true
-- ./preconfig.sh 2222  || true
+- ./preconf.tcl 12223 > /dev/null || true
+- ./preconf.tcl 2223 > /dev/null || true
 - composer self-update
 - composer install --prefer-source --no-interaction --dev
 

@@ -3,10 +3,9 @@
 namespace RouterOS;
 
 use RouterOS\Exceptions\ClientException;
-use RouterOS\Exceptions\ConfigException;
-use RouterOS\Exceptions\Exception;
 use RouterOS\Interfaces\ClientInterface;
 use RouterOS\Interfaces\ConfigInterface;
+use RouterOS\Exceptions\ConfigException;
 use RouterOS\Interfaces\QueryInterface;
 
 /**
@@ -310,7 +309,7 @@ class Client implements Interfaces\ClientInterface
      * @return  bool
      * @throws  ClientException
      */
-    public function connect(): bool
+    private function connect(): bool
     {
         // By default we not connected
         $connected = false;
@@ -345,37 +344,29 @@ class Client implements Interfaces\ClientInterface
     /**
      * Save socket resource to static variable
      *
-     * @param   resource|null $socket
-     * @return  bool
+     * @param   resource $socket
      */
-    private function setSocket($socket): bool
+    private function setSocket($socket)
     {
-        if (\is_resource($socket)) {
-            $this->_socket = $socket;
-            return true;
-        }
-        return false;
+        $this->_socket = $socket;
     }
 
     /**
      * Return socket resource if is exist
      *
-     * @return  bool|resource
+     * @return  resource
      */
     public function getSocket()
     {
-        return \is_resource($this->_socket)
-            ? $this->_socket
-            : false;
+        return $this->_socket;
     }
 
     /**
      * Initiate socket session
      *
-     * @return  bool
      * @throws  ClientException
      */
-    private function openSocket(): bool
+    private function openSocket()
     {
         // Default: Context for ssl
         $context = stream_context_create([
@@ -390,7 +381,7 @@ class Client implements Interfaces\ClientInterface
         $proto = $this->config('ssl') ? 'ssl://' : '';
 
         // Initiate socket client
-        $socket = stream_socket_client(
+        $socket = @stream_socket_client(
             $proto . $this->config('host') . ':' . $this->config('port'),
             $this->_socket_err_num,
             $this->_socket_err_str,
@@ -400,8 +391,8 @@ class Client implements Interfaces\ClientInterface
         );
 
         // Throw error is socket is not initiated
-        if (false === $socket) {
-            throw new ClientException('stream_socket_client() failed: code: ' . $this->_socket_err_num . ' reason: ' . $this->_socket_err_str);
+        if (!$socket) {
+            throw new ClientException('Unable to establish socket session, ' . $this->_socket_err_str);
         }
 
         // Save socket to static variable

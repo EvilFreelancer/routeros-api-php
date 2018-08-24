@@ -30,6 +30,8 @@
     "ext-sockets": "*"
   },
   "require-dev": {
-    "phpunit/phpunit": "^6.0"
+    "phpunit/phpunit": "^6.0",
+    "graze/telnet-client": "^2.1",
+    "miyahan/telnet": "^1.1"
   }
 }
