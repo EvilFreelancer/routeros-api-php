@@ -49,7 +49,7 @@ foreach ($vlans as $vlanId => $ports) {
     // Add untaged ports to bridge with tagging
     foreach ($ports as $port) {
         $vlan = new Query('/interface/bridge/vlan/add');
-        $vlan->add("=bridge=vlan$vlanId-bridge")->add("=untagged=ether$port")->add("=vlan-ids=5");
+        $vlan->add("=bridge=vlan$vlanId-bridge")->add("=untagged=ether$port")->add("=vlan-ids=$vlanId");
         $response = $client->write($vlan)->read(false);
         print_r($response);
     }
