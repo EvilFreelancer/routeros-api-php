@@ -3,7 +3,7 @@ checks:
 
 filter:
     excluded_paths:
-        - "extra/"
+        - "examples/"
         - "tests/"
 
 coding_style:
