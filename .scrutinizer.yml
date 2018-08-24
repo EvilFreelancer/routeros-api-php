@@ -13,7 +13,7 @@ coding_style:
         concatenation: true
 
 build:
-  tests:
+  nodes:
     docker-build:
       environment:
         docker: true
@@ -28,6 +28,7 @@ build:
         - sleep 30
         - ./preconf.tcl 12223 > /dev/null || true
         - ./preconf.tcl 2223 > /dev/null || true
+  tests:
     override:
     - command: 'php ./vendor/bin/phpunit --coverage-clover=coverage-clover'
       coverage:
