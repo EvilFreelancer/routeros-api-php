@@ -10,6 +10,7 @@ use \RouterOS\Query;
 // Create config object with parameters
 $config =
     (new Config())
+        ->set('timeout', 1)
         ->set('host', '127.0.0.1')
         ->set('user', 'admin')
         ->set('pass', 'admin');
@@ -18,11 +19,8 @@ $config =
 $client = new Client($config);
 
 // Build query
-$query = new Query('/interface/getall');
+$query = new Query('/interface/bridge/host/print');
 
 // Send query to RouterOS
-$request = $client->write($query);
-
-// Read answer from RouterOS
-$response = $client->read();
+$response = $client->write($query)->read();
 print_r($response);

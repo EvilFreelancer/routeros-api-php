@@ -89,37 +89,48 @@ class Client implements Interfaces\ClientInterface
     }
 
     /**
-     * Convert ordinary string to hex string
+     * Encode given length in RouterOS format
      *
      * @param   string $string
-     * @return  string
+     * @return  string Encoded length
+     * @throws  ClientException
      */
     private function encodeLength(string $string): string
     {
-        // Yeah, that's insane, but was more ugly, you need read this post if you interesting a details:
-        // https://wiki.mikrotik.com/wiki/Manual:API#API_words
-        switch (true) {
-            case ($string < 0x80):
-                $string = \chr($string);
-                break;
-            case ($string < 0x4000):
-                $string |= 0x8000;
-                $string = \chr(($string >> 8) & 0xFF) . \chr($string & 0xFF);
-                break;
-            case ($string < 0x200000):
-                $string |= 0xC00000;
-                $string = \chr(($string >> 16) & 0xFF) . \chr(($string >> 8) & 0xFF) . \chr($string & 0xFF);
-                break;
-            case ($string < 0x10000000):
-                $string |= 0xE0000000;
-                $string = \chr(($string >> 24) & 0xFF) . \chr(($string >> 16) & 0xFF) . \chr(($string >> 8) & 0xFF) . \chr($string & 0xFF);
-                break;
-            case ($string >= 0x10000000):
-                $string = \chr(0xF0) . \chr(($string >> 24) & 0xFF) . \chr(($string >> 16) & 0xFF) . \chr(($string >> 8) & 0xFF) . \chr($string & 0xFF);
-                break;
+        $length = \strlen($string);
+
+        if ($length < 128) {
+            $orig_length = $length;
+            $offset = -1;
+        } elseif ($length < 16384) {
+            $orig_length = $length | 0x8000;
+            $offset = -2;
+        } elseif ($length < 2097152) {
+            $orig_length = $length | 0xC00000;
+            $offset = -3;
+        } elseif ($length < 268435456) {
+            $orig_length = $length | 0xE0000000;
+            $offset = -4;
+        } else {
+            throw new ClientException("Unable to encode length of '$string'");
         }
 
-        return $string;
+        // Pack string to binary format
+        $result = pack('I*', $orig_length);
+        // Parse binary string to array
+        $result = str_split($result);
+        // Reverse array
+        $result = array_reverse($result);
+        // Extract values from offset to end of array
+        $result = \array_slice($result, $offset);
+
+        // Sew items into one line
+        $output = null;
+        foreach ($result as $item) {
+            $output .= $item;
+        }
+
+        return $output;
     }
 
     /**
@@ -166,13 +177,14 @@ class Client implements Interfaces\ClientInterface
      *
      * @param   QueryInterface $query
      * @return  ClientInterface
+     * @throws  ClientException
      */
     public function write(QueryInterface $query): ClientInterface
     {
         // Send commands via loop to router
         foreach ($query->getQuery() as $command) {
             $command = trim($command);
-            fwrite($this->_socket, $this->encodeLength(\strlen($command)) . $command);
+            fwrite($this->_socket, $this->encodeLength($command) . $command);
         }
 
         // Write zero-terminator
@@ -196,10 +208,8 @@ class Client implements Interfaces\ClientInterface
         while (true) {
             // Read the first byte of input which gives us some or all of the length
             // of the remaining reply.
-            $byte = \ord(fread($this->_socket, 1));
-
-            // Read length of line
-            $length = $this->getLength($byte);
+            $byte = fread($this->_socket, 1);
+            $length = $this->getLength(\ord($byte));
 
             // Save only non empty strings
             if ($length > 0) {
@@ -267,6 +277,12 @@ class Client implements Interfaces\ClientInterface
         return $result;
     }
 
+    /**
+     * Parse result from RouterOS by regular expression
+     *
+     * @param   string $value
+     * @param   array $matches
+     */
     private function pregResponse(string $value, &$matches)
     {
         preg_match_all('/^[=|\.](.*)=(.*)/', $value, $matches);
@@ -276,6 +292,7 @@ class Client implements Interfaces\ClientInterface
      * Authorization logic
      *
      * @return  bool
+     * @throws  ClientException
      */
     private function login(): bool
     {
@@ -288,7 +305,8 @@ class Client implements Interfaces\ClientInterface
             // Now need use this hash for authorization
             $query = (new Query('/login'))
                 ->add('=name=' . $this->config('user'))
-                ->add('=response=00' . md5(\chr(0) . $this->config('pass') . pack('H*', $response['after']['ret'])));
+                ->add('=response=00' . md5(\chr(0) . $this->config('pass') . pack('H*',
+                            $response['after']['ret'])));
         } else {
             // Just login with our credentials
             $query = (new Query('/login'))
