@@ -49,7 +49,7 @@ class Client implements Interfaces\ClientInterface
     public function __construct(ConfigInterface $config)
     {
         // Check for important keys
-        $this->keysCheck(['host', 'user', 'pass'], $config);
+        $this->exceptionIfKeyNotExist(['host', 'user', 'pass'], $config);
 
         // Save config if everything is okay
         $this->_config = $config;
@@ -67,11 +67,11 @@ class Client implements Interfaces\ClientInterface
      * @param   ConfigInterface $config
      * @throws  ConfigException
      */
-    private function keysCheck(array $keys, ConfigInterface $config)
+    private function exceptionIfKeyNotExist(array $keys, ConfigInterface $config)
     {
         $parameters = $config->getParameters();
         foreach ($keys as $key) {
-            if (false === (array_key_exists($key, $parameters) && isset($parameters[$key]))) {
+            if (!array_key_exists($key, $parameters) && isset($parameters[$key])) {
                 throw new ConfigException("Parameter '$key' of Config is not set or empty");
             }
         }

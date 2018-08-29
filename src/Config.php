@@ -25,16 +25,16 @@ class Config implements ConfigInterface
     ];
 
     /**
-     * Check if key in list of allowed parameters
+     * Check if key in list of parameters
      *
      * @param   string $key
      * @param   array $array
      * @throws  ConfigException
      */
-    private function keyAllowed(string $key, array $array)
+    private function exceptionIfKeyNotExist(string $key, array $array)
     {
         if (!array_key_exists($key, $array)) {
-            throw new ConfigException("Requested parameter '$key' not found in allowed list [" . implode(',',
+            throw new ConfigException("Requested parameter '$key' not found in list [" . implode(',',
                     array_keys($array)) . ']');
         }
     }
@@ -47,10 +47,10 @@ class Config implements ConfigInterface
      * @param   mixed $isType What type should be
      * @throws  ConfigException
      */
-    private function keyType(string $name, $whatType, $isType)
+    private function exceptionIfTypeMismatch(string $name, $whatType, $isType)
     {
         if ($whatType !== $isType) {
-            throw new ConfigException("Parameter '$name' has wrong type '$whatType'' but should be '$isType''");
+            throw new ConfigException("Parameter '$name' has wrong type '$whatType' but should be '$isType'");
         }
     }
 
@@ -65,10 +65,10 @@ class Config implements ConfigInterface
     public function set(string $name, $value): ConfigInterface
     {
         // Check of key in array
-        $this->keyAllowed($name, self::ALLOWED);
+        $this->exceptionIfKeyNotExist($name, self::ALLOWED);
 
         // Check what type has this value
-        $this->keyType($name, \gettype($value), self::ALLOWED[$name]);
+        $this->exceptionIfTypeMismatch($name, \gettype($value), self::ALLOWED[$name]);
 
         // Save value to array
         $this->_parameters[$name] = $value;
@@ -104,7 +104,7 @@ class Config implements ConfigInterface
     public function delete(string $parameter): ConfigInterface
     {
         // Check of key in array
-        $this->keyAllowed($parameter, self::ALLOWED);
+        $this->exceptionIfKeyNotExist($parameter, self::ALLOWED);
 
         // Save value to array
         unset($this->_parameters[$parameter]);
@@ -122,7 +122,7 @@ class Config implements ConfigInterface
     public function get(string $parameter)
     {
         // Check of key in array
-        $this->keyAllowed($parameter, self::ALLOWED);
+        $this->exceptionIfKeyNotExist($parameter, self::ALLOWED);
 
         return $this->getPort($parameter) ?? $this->_parameters[$parameter];
     }
