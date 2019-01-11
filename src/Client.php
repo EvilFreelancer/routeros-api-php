@@ -253,6 +253,8 @@ class Client implements Interfaces\ClientInterface
                     $i++;
                     break;
                 case '!fatal':
+                    $result = $response;
+                    break 2;
                 case '!trap':
                 case '!done':
                     // Check for =ret=, .tag and any other following messages
