@@ -1,4 +1,4 @@
-#!/usr/bin/expect
+#!/usr/bin/env expect
 
 set timeout 10
 
@@ -19,5 +19,5 @@ send "\r\n"
 expect ">\ "
 send "/user set admin password=admin\r\n"
 expect ">"
-send "quit\n"
+send "quit\r\n"
 expect eof
