@@ -10,7 +10,7 @@ use \RouterOS\Query;
 // Create config object with parameters
 $config =
     (new Config())
-        ->set('host', '192.168.1.3')
+        ->set('host', '127.0.0.1')
         ->set('pass', 'admin')
         ->set('user', 'admin');
 

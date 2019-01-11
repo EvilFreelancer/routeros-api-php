@@ -6,9 +6,7 @@ use PHPUnit\Framework\TestCase;
 use RouterOS\Client;
 use RouterOS\Query;
 use RouterOS\Config;
-use RouterOS\Exceptions\Exception;
 use RouterOS\Exceptions\ClientException;
-use RouterOS\Exceptions\ConfigException;
 
 class ClientTest extends TestCase
 {
