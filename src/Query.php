@@ -6,19 +6,22 @@ use RouterOS\Interfaces\QueryInterface;
 
 /**
  * Class Query for building queries
+ *
  * @package RouterOS
- * @since 0.1
+ * @since   0.1
  */
 class Query implements QueryInterface
 {
     /**
      * Array of query attributes
+     *
      * @var array
      */
     private $_attributes = [];
 
     /**
      * Endpoint of query
+     *
      * @var string
      */
     private $_endpoint;
@@ -37,9 +40,9 @@ class Query implements QueryInterface
      * Append to array yet another attribute of query
      *
      * @param   string $word
-     * @return  QueryInterface
+     * @return  \RouterOS\Query
      */
-    public function add(string $word): QueryInterface
+    public function add(string $word): Query
     {
         $this->_attributes[] = $word;
         return $this;
@@ -72,7 +75,7 @@ class Query implements QueryInterface
      */
     public function getQuery(): array
     {
-        $endpoint = $this->getEndpoint();
+        $endpoint   = $this->getEndpoint();
         $attributes = $this->getAttributes();
         array_unshift($attributes, $endpoint);
 

@@ -2,10 +2,13 @@
 
 namespace RouterOS\Interfaces;
 
+use RouterOS\Query;
+
 /**
  * Interface QueryInterface
+ *
  * @package RouterOS\Interfaces
- * @since 0.2
+ * @since   0.2
  */
 interface QueryInterface
 {
@@ -13,9 +16,9 @@ interface QueryInterface
      * Append to array yet another attribute of query
      *
      * @param   string $word
-     * @return  QueryInterface
+     * @return  Query
      */
-    public function add(string $word): QueryInterface;
+    public function add(string $word): Query;
 
     /**
      * Get attributes array of current query
