@@ -35,15 +35,12 @@ use \RouterOS\Config;
 use \RouterOS\Client;
 use \RouterOS\Query;
 
-// Create object of class and set parameters
-$config =
-    (new Config())
-        ->set('host', '192.168.1.3')
-        ->set('user', 'admin')
-        ->set('pass', 'admin');
-
 // Initiate client with config object
-$client = new Client($config);
+$client = new Client([
+    'host' => '192.168.1.3',
+    'user' => 'admin',
+    'pass' => 'admin'
+]);
 
 // Build query
 $query = new Query('/ip/address/print');
@@ -61,6 +58,10 @@ You can simplify your code and send then read from socket in one line:
 ```php
 $response = $client->write($query)->read();
 var_dump($response);
+
+// Single method analog of line above is
+$response = $client->wr($query);
+var_dump($response);
 ```
 
 By the way, you can send few queries to your router without result:
@@ -75,6 +76,13 @@ $client->write($query1)->write($query2)->write($query3);
 // Enable config class
 use \RouterOS\Config;
 
+// Create object of config class in one call
+$config = new Config([
+    'host' => '192.168.1.3',
+    'user' => 'admin',
+    'pass' => 'admin'
+]);
+
 // Create object of class
 $config = new Config();
 
@@ -88,6 +96,20 @@ $config
     ->set('host', '192.168.1.3')
     ->set('user', 'admin')
     ->set('pass', 'admin');
+```
+
+Or you can just create preconfigured client object with all
+required settings:
+
+```php
+// Enable config class
+use \RouterOS\Client;
+
+$client = new Client([
+    'host' => '192.168.1.3',
+    'user' => 'admin',
+    'pass' => 'admin'
+]);
 ```
 
 #### List of available configuration parameters
