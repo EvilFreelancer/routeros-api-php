@@ -3,51 +3,58 @@
 namespace RouterOS;
 
 use RouterOS\Exceptions\ClientException;
-use RouterOS\Interfaces\ClientInterface;
-use RouterOS\Interfaces\ConfigInterface;
 use RouterOS\Exceptions\ConfigException;
-use RouterOS\Interfaces\QueryInterface;
 
 /**
  * Class Client for RouterOS management
+ *
  * @package RouterOS
- * @since 0.1
+ * @since   0.1
  */
 class Client implements Interfaces\ClientInterface
 {
     /**
      * Socket resource
+     *
      * @var resource|null
      */
     private $_socket;
 
     /**
      * Code of error
+     *
      * @var int
      */
     private $_socket_err_num;
 
     /**
      * Description of socket error
+     *
      * @var string
      */
     private $_socket_err_str;
 
     /**
      * Configuration of connection
-     * @var ConfigInterface
+     *
+     * @var \RouterOS\Config
      */
     private $_config;
 
     /**
      * Client constructor.
      *
-     * @param   ConfigInterface $config
+     * @param   array|\RouterOS\Config $config
      * @throws  ConfigException
      * @throws  ClientException
      */
-    public function __construct(ConfigInterface $config)
+    public function __construct($config)
     {
+        // If array then need create object
+        if (\is_array($config)) {
+            $config = new Config($config);
+        }
+
         // Check for important keys
         $this->exceptionIfKeyNotExist(['host', 'user', 'pass'], $config);
 
@@ -63,11 +70,11 @@ class Client implements Interfaces\ClientInterface
     /**
      * Check for important keys
      *
-     * @param   array $keys
-     * @param   ConfigInterface $config
+     * @param   array  $keys
+     * @param   Config $config
      * @throws  ConfigException
      */
-    private function exceptionIfKeyNotExist(array $keys, ConfigInterface $config)
+    private function exceptionIfKeyNotExist(array $keys, Config $config)
     {
         $parameters = $config->getParameters();
         foreach ($keys as $key) {
@@ -80,12 +87,24 @@ class Client implements Interfaces\ClientInterface
     /**
      * Get some parameter from config
      *
-     * @param   string $parameter
+     * @param   string $parameter Name of required parameter
      * @return  mixed
+     * @throws  ConfigException
      */
     private function config(string $parameter)
     {
         return $this->_config->get($parameter);
+    }
+
+    /**
+     * Return socket resource if is exist
+     *
+     * @return  \RouterOS\Config
+     * @since   0.6
+     */
+    public function getConfig(): Config
+    {
+        return $this->_config;
     }
 
     /**
@@ -101,16 +120,16 @@ class Client implements Interfaces\ClientInterface
 
         if ($length < 128) {
             $orig_length = $length;
-            $offset = -1;
+            $offset      = -1;
         } elseif ($length < 16384) {
             $orig_length = $length | 0x8000;
-            $offset = -2;
+            $offset      = -2;
         } elseif ($length < 2097152) {
             $orig_length = $length | 0xC00000;
-            $offset = -3;
+            $offset      = -3;
         } elseif ($length < 268435456) {
             $orig_length = $length | 0xE0000000;
-            $offset = -4;
+            $offset      = -4;
         } else {
             throw new ClientException("Unable to encode length of '$string'");
         }
@@ -173,13 +192,27 @@ class Client implements Interfaces\ClientInterface
     }
 
     /**
+     * Alias for ->write()->read() combination of methods
+     *
+     * @param   Query $query
+     * @param   bool  $parse
+     * @return  array
+     * @throws  ClientException
+     * @since   0.6
+     */
+    public function wr(Query $query, bool $parse = true): array
+    {
+        return $this->write($query)->read($parse);
+    }
+
+    /**
      * Send write query to RouterOS (with or without tag)
      *
-     * @param   QueryInterface $query
-     * @return  ClientInterface
+     * @param   Query $query
+     * @return  Client
      * @throws  ClientException
      */
-    public function write(QueryInterface $query): ClientInterface
+    public function write(Query $query): Client
     {
         // Send commands via loop to router
         foreach ($query->getQuery() as $command) {
@@ -208,7 +241,7 @@ class Client implements Interfaces\ClientInterface
         while (true) {
             // Read the first byte of input which gives us some or all of the length
             // of the remaining reply.
-            $byte = fread($this->_socket, 1);
+            $byte   = fread($this->_socket, 1);
             $length = $this->getLength(\ord($byte));
 
             // Save only non empty strings
@@ -245,8 +278,8 @@ class Client implements Interfaces\ClientInterface
     private function parseResponse(array $response): array
     {
         $result = [];
-        $i = -1;
-        $lines = \count($response);
+        $i      = -1;
+        $lines  = \count($response);
         foreach ($response as $key => $value) {
             switch ($value) {
                 case '!re':
@@ -283,7 +316,7 @@ class Client implements Interfaces\ClientInterface
      * Parse result from RouterOS by regular expression
      *
      * @param   string $value
-     * @param   array $matches
+     * @param   array  $matches
      */
     private function pregResponse(string $value, &$matches)
     {
@@ -295,20 +328,20 @@ class Client implements Interfaces\ClientInterface
      *
      * @return  bool
      * @throws  ClientException
+     * @throws  ConfigException
      */
     private function login(): bool
     {
         // If legacy login scheme is enabled
         if ($this->config('legacy')) {
             // For the first we need get hash with salt
-            $query = new Query('/login');
+            $query    = new Query('/login');
             $response = $this->write($query)->read();
 
             // Now need use this hash for authorization
             $query = (new Query('/login'))
                 ->add('=name=' . $this->config('user'))
-                ->add('=response=00' . md5(\chr(0) . $this->config('pass') . pack('H*',
-                            $response['after']['ret'])));
+                ->add('=response=00' . md5(\chr(0) . $this->config('pass') . pack('H*', $response['after']['ret'])));
         } else {
             // Just login with our credentials
             $query = (new Query('/login'))
@@ -328,6 +361,7 @@ class Client implements Interfaces\ClientInterface
      *
      * @return  bool
      * @throws  ClientException
+     * @throws  ConfigException
      */
     private function connect(): bool
     {
@@ -385,14 +419,15 @@ class Client implements Interfaces\ClientInterface
      * Initiate socket session
      *
      * @throws  ClientException
+     * @throws  ConfigException
      */
     private function openSocket()
     {
         // Default: Context for ssl
         $context = stream_context_create([
             'ssl' => [
-                'ciphers' => 'ADH:ALL',
-                'verify_peer' => false,
+                'ciphers'          => 'ADH:ALL',
+                'verify_peer'      => false,
                 'verify_peer_name' => false
             ]
         ]);
