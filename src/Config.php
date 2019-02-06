@@ -7,44 +7,59 @@ use RouterOS\Interfaces\ConfigInterface;
 
 /**
  * Class Config with array of parameters
+ *
  * @package RouterOS
- * @since 0.1
+ * @since   0.1
  */
 class Config implements ConfigInterface
 {
     /**
      * Array of parameters (with some default values)
+     *
      * @var array
      */
     private $_parameters = [
-        'legacy' => Client::LEGACY,
-        'ssl' => Client::SSL,
-        'timeout' => Client::TIMEOUT,
+        'legacy'   => Client::LEGACY,
+        'ssl'      => Client::SSL,
+        'timeout'  => Client::TIMEOUT,
         'attempts' => Client::ATTEMPTS,
-        'delay' => Client::ATTEMPTS_DELAY
+        'delay'    => Client::ATTEMPTS_DELAY
     ];
+
+    /**
+     * Config constructor.
+     *
+     * @param   array $parameters List of parameters which can be set on object creation stage
+     * @throws  ConfigException
+     * @since   0.6
+     */
+    public function __construct(array $parameters = [])
+    {
+        foreach ($parameters as $key => $value) {
+            $this->set($key, $value);
+        }
+    }
 
     /**
      * Check if key in list of parameters
      *
      * @param   string $key
-     * @param   array $array
+     * @param   array  $array
      * @throws  ConfigException
      */
     private function exceptionIfKeyNotExist(string $key, array $array)
     {
         if (!array_key_exists($key, $array)) {
-            throw new ConfigException("Requested parameter '$key' not found in list [" . implode(',',
-                    array_keys($array)) . ']');
+            throw new ConfigException("Requested parameter '$key' not found in list [" . implode(',', array_keys($array)) . ']');
         }
     }
 
     /**
      * Compare data types of some value
      *
-     * @param   string $name Name of value
-     * @param   mixed $whatType What type has value
-     * @param   mixed $isType What type should be
+     * @param   string $name     Name of value
+     * @param   mixed  $whatType What type has value
+     * @param   mixed  $isType   What type should be
      * @throws  ConfigException
      */
     private function exceptionIfTypeMismatch(string $name, $whatType, $isType)
@@ -58,11 +73,11 @@ class Config implements ConfigInterface
      * Set parameter into array
      *
      * @param   string $name
-     * @param   mixed $value
-     * @return  ConfigInterface
+     * @param   mixed  $value
+     * @return  \RouterOS\Config
      * @throws  ConfigException
      */
-    public function set(string $name, $value): ConfigInterface
+    public function set(string $name, $value): Config
     {
         // Check of key in array
         $this->exceptionIfKeyNotExist($name, self::ALLOWED);
@@ -98,10 +113,10 @@ class Config implements ConfigInterface
      * Remove parameter from array by name
      *
      * @param   string $parameter
-     * @return  ConfigInterface
+     * @return  \RouterOS\Config
      * @throws  ConfigException
      */
-    public function delete(string $parameter): ConfigInterface
+    public function delete(string $parameter): Config
     {
         // Check of key in array
         $this->exceptionIfKeyNotExist($parameter, self::ALLOWED);
