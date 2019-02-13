@@ -3,6 +3,7 @@
 namespace RouterOS\Tests;
 
 use PHPUnit\Framework\TestCase;
+use RouterOS\Exceptions\QueryException;
 use RouterOS\Query;
 
 class QueryTest extends TestCase
@@ -18,18 +19,44 @@ class QueryTest extends TestCase
         }
     }
 
+    public function test__construct_arr()
+    {
+        try {
+            $obj = new Query('test', ['line1', 'line2', 'line3']);
+            $this->assertInternalType('object', $obj);
+        } catch (\Exception $e) {
+            $this->assertContains('Must be initialized ', $e->getMessage());
+        }
+    }
+
     public function testGetEndpoint()
     {
-        $obj = new Query('test');
+        $obj  = new Query('test');
         $test = $obj->getEndpoint();
         $this->assertEquals($test, 'test');
     }
 
-    public function testGetAttributes()
+    public function testSetEndpoint()
     {
         $obj = new Query('test');
+        $obj->setEndpoint('zzz');
+        $test = $obj->getEndpoint();
+        $this->assertEquals($test, 'zzz');
+    }
+
+    public function testGetAttributes()
+    {
+        $obj  = new Query('test');
         $test = $obj->getAttributes();
         $this->assertCount(0, $test);
+    }
+
+    public function testSetAttributes()
+    {
+        $obj = new Query('test');
+        $obj->setAttributes(['line1', 'line2', 'line3']);
+        $test = $obj->getAttributes();
+        $this->assertCount(3, $test);
     }
 
     public function testAdd()
@@ -53,4 +80,11 @@ class QueryTest extends TestCase
         $this->assertEquals($query[1], 'line');
     }
 
+    public function testGetQueryEx()
+    {
+        $this->expectException(QueryException::class);
+
+        $obj = new Query(null);
+        $obj->getQuery();
+    }
 }

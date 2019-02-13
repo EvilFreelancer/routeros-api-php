@@ -28,16 +28,35 @@ interface QueryInterface
     public function getAttributes(): array;
 
     /**
+     * Set array of attributes
+     *
+     * @param   array $attributes
+     * @since   0.7
+     * @return  \RouterOS\Query
+     */
+    public function setAttributes(array $attributes): Query;
+
+    /**
      * Get endpoint of current query
      *
-     * @return  string
+     * @return  string|null
      */
-    public function getEndpoint(): string;
+    public function getEndpoint();
+
+    /**
+     * Set endpoint of query
+     *
+     * @param   string $endpoint
+     * @since   0.7
+     * @return  \RouterOS\Query
+     */
+    public function setEndpoint(string $endpoint): Query;
 
     /**
      * Build body of query
      *
      * @return  array
+     * @throws  \RouterOS\Exceptions\QueryException
      */
     public function getQuery(): array;
 }
