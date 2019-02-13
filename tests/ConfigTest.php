@@ -40,6 +40,16 @@ class ConfigTest extends TestCase
         $this->assertEquals($params['timeout'], 111);
     }
 
+    public function testSetArr()
+    {
+        $obj = new Config([
+            'timeout' => 111
+        ]);
+        $params = $obj->getParameters();
+
+        $this->assertEquals($params['timeout'], 111);
+    }
+
     public function testDelete()
     {
         $obj = new Config();
