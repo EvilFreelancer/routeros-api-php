@@ -3,11 +3,11 @@
 namespace RouterOS\Exceptions;
 
 /**
- * Class ClientException
+ * Class QueryException
  *
  * @package RouterOS\Exceptions
- * @since   0.4
+ * @since   0.7
  */
-class ClientException extends \Exception
+class QueryException extends \Exception
 {
 }
