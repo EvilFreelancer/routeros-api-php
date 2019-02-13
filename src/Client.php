@@ -45,8 +45,9 @@ class Client implements Interfaces\ClientInterface
      * Client constructor.
      *
      * @param   array|\RouterOS\Config $config
-     * @throws  ConfigException
-     * @throws  ClientException
+     * @throws  \RouterOS\Exceptions\ClientException
+     * @throws  \RouterOS\Exceptions\ConfigException
+     * @throws  \RouterOS\Exceptions\QueryException
      */
     public function __construct($config)
     {
@@ -59,7 +60,7 @@ class Client implements Interfaces\ClientInterface
         $this->exceptionIfKeyNotExist(['host', 'user', 'pass'], $config);
 
         // Save config if everything is okay
-        $this->_config = $config;
+        $this->setConfig($config);
 
         // Throw error if cannot to connect
         if (false === $this->connect()) {
@@ -70,9 +71,9 @@ class Client implements Interfaces\ClientInterface
     /**
      * Check for important keys
      *
-     * @param   array  $keys
-     * @param   Config $config
-     * @throws  ConfigException
+     * @param   array            $keys
+     * @param   \RouterOS\Config $config
+     * @throws  \RouterOS\Exceptions\ConfigException
      */
     private function exceptionIfKeyNotExist(array $keys, Config $config)
     {
@@ -89,7 +90,7 @@ class Client implements Interfaces\ClientInterface
      *
      * @param   string $parameter Name of required parameter
      * @return  mixed
-     * @throws  ConfigException
+     * @throws  \RouterOS\Exceptions\ConfigException
      */
     private function config(string $parameter)
     {
@@ -108,11 +109,22 @@ class Client implements Interfaces\ClientInterface
     }
 
     /**
+     * Set configuration of client
+     *
+     * @param   \RouterOS\Config $config
+     * @since   0.7
+     */
+    public function setConfig(Config $config)
+    {
+        $this->_config = $config;
+    }
+
+    /**
      * Encode given length in RouterOS format
      *
      * @param   string $string
      * @return  string Encoded length
-     * @throws  ClientException
+     * @throws  \RouterOS\Exceptions\ClientException
      */
     private function encodeLength(string $string): string
     {
@@ -192,25 +204,12 @@ class Client implements Interfaces\ClientInterface
     }
 
     /**
-     * Alias for ->write()->read() combination of methods
-     *
-     * @param   Query $query
-     * @param   bool  $parse
-     * @return  array
-     * @throws  ClientException
-     * @since   0.6
-     */
-    public function wr(Query $query, bool $parse = true): array
-    {
-        return $this->write($query)->read($parse);
-    }
-
-    /**
      * Send write query to RouterOS (with or without tag)
      *
-     * @param   Query $query
-     * @return  Client
-     * @throws  ClientException
+     * @param   \RouterOS\Query $query
+     * @return  \RouterOS\Client
+     * @throws  \RouterOS\Exceptions\ClientException
+     * @throws  \RouterOS\Exceptions\QueryException
      */
     public function write(Query $query): Client
     {
@@ -267,6 +266,46 @@ class Client implements Interfaces\ClientInterface
 
         // Parse results and return
         return $parse ? $this->parseResponse($response) : $response;
+    }
+
+    /**
+     * Alias for ->write() method
+     *
+     * @param   \RouterOS\Query $query
+     * @return  \RouterOS\Client
+     * @throws  \RouterOS\Exceptions\ClientException
+     * @throws  \RouterOS\Exceptions\QueryException
+     */
+    public function w(Query $query): Client
+    {
+        return $this->write($query);
+    }
+
+    /**
+     * Alias for ->read() method
+     *
+     * @param   bool $parse
+     * @return  array
+     * @since   0.7
+     */
+    public function r(bool $parse = true): array
+    {
+        return $this->read($parse);
+    }
+
+    /**
+     * Alias for ->write()->read() combination of methods
+     *
+     * @param   \RouterOS\Query $query
+     * @param   bool            $parse
+     * @return  array
+     * @throws  \RouterOS\Exceptions\ClientException
+     * @throws  \RouterOS\Exceptions\QueryException
+     * @since   0.6
+     */
+    public function wr(Query $query, bool $parse = true): array
+    {
+        return $this->write($query)->read($parse);
     }
 
     /**
@@ -327,8 +366,9 @@ class Client implements Interfaces\ClientInterface
      * Authorization logic
      *
      * @return  bool
-     * @throws  ClientException
-     * @throws  ConfigException
+     * @throws  \RouterOS\Exceptions\ClientException
+     * @throws  \RouterOS\Exceptions\ConfigException
+     * @throws  \RouterOS\Exceptions\QueryException
      */
     private function login(): bool
     {
@@ -360,8 +400,9 @@ class Client implements Interfaces\ClientInterface
      * Connect to socket server
      *
      * @return  bool
-     * @throws  ClientException
-     * @throws  ConfigException
+     * @throws  \RouterOS\Exceptions\ClientException
+     * @throws  \RouterOS\Exceptions\ConfigException
+     * @throws  \RouterOS\Exceptions\QueryException
      */
     private function connect(): bool
     {
@@ -418,8 +459,8 @@ class Client implements Interfaces\ClientInterface
     /**
      * Initiate socket session
      *
-     * @throws  ClientException
-     * @throws  ConfigException
+     * @throws  \RouterOS\Exceptions\ClientException
+     * @throws  \RouterOS\Exceptions\ConfigException
      */
     private function openSocket()
     {
