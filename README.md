@@ -1,5 +1,5 @@
 [![Latest Stable Version](https://poser.pugx.org/evilfreelancer/routeros-api-php/v/stable)](https://packagist.org/packages/evilfreelancer/routeros-api-php)
-[![Build Status](https://travis-ci.org/evilfreelancer/routeros-api-php.svg?branch=master)](https://travis-ci.org/EvilFreelancer/routeros-api-php)
+[![Build Status](https://travis-ci.org/EvilFreelancer/routeros-api-php.svg?branch=master)](https://travis-ci.org/EvilFreelancer/routeros-api-php)
 [![Total Downloads](https://poser.pugx.org/evilfreelancer/routeros-api-php/downloads)](https://packagist.org/packages/evilfreelancer/routeros-api-php)
 [![License](https://poser.pugx.org/evilfreelancer/routeros-api-php/license)](https://packagist.org/packages/evilfreelancer/routeros-api-php)
 [![PHP 7 ready](https://php7ready.timesplinter.ch/EvilFreelancer/routeros-api-php/master/badge.svg)](https://travis-ci.org/EvilFreelancer/routeros-api-php)
@@ -23,7 +23,7 @@ parameter of config to required state (`false` by default).
 
 ### Basic example
 
-More examples you can find [here](https://github.com/EvilFreelancer/routeros-api-php/tree/master/examples).
+> All available examples you can find [here](https://github.com/EvilFreelancer/routeros-api-php/tree/master/examples).
 
 Get all IP addresses (analogue via command line is `/ip address print`):
 
@@ -31,7 +31,6 @@ Get all IP addresses (analogue via command line is `/ip address print`):
 <?php
 require_once __DIR__ . '/vendor/autoload.php';
 
-use \RouterOS\Config;
 use \RouterOS\Client;
 use \RouterOS\Query;
 
@@ -59,7 +58,11 @@ You can simplify your code and send then read from socket in one line:
 $response = $client->write($query)->read();
 var_dump($response);
 
-// Single method analog of line above is
+// Or
+$response = $client->w($query)->r();
+var_dump($response);
+
+// Single method analog of lines above is
 $response = $client->wr($query);
 var_dump($response);
 ```
@@ -68,6 +71,9 @@ By the way, you can send few queries to your router without result:
 
 ```php
 $client->write($query1)->write($query2)->write($query3);
+
+// Or
+$client->w($query1)->w($query2)->w($query3);
 ```
 
 ### How to configure the client
@@ -91,18 +97,32 @@ $config->set('host', '192.168.1.3')
 $config->set('user', 'admin')
 $config->set('pass', 'admin');
 
-// `set()` method supported inlines style of syntax
+// `set()` method supported inline style of syntax
 $config
     ->set('host', '192.168.1.3')
     ->set('user', 'admin')
     ->set('pass', 'admin');
 ```
 
-Or you can just create preconfigured client object with all
-required settings:
+Sample of basic code:
 
 ```php
-// Enable config class
+use \RouterOS\Config;
+use \RouterOS\Client;
+
+$config = new Config([
+    'host' => '192.168.1.3',
+    'user' => 'admin',
+    'pass' => 'admin'
+]);
+
+$client = new Client($config);
+```
+
+Or you can just create preconfigured client object with all
+required settings like below:
+
+```php
 use \RouterOS\Client;
 
 $client = new Client([
@@ -132,21 +152,17 @@ $client = new Client([
 <?php
 require_once __DIR__ . '/vendor/autoload.php';
 
-use \RouterOS\Config;
 use \RouterOS\Client;
-use \RouterOS\Query;
-
-// Create object of class and set parameters
-$config =
-    (new Config())
-        ->set('host', '192.168.1.3')
-        ->set('user', 'admin')
-        ->set('pass', 'admin')
-        ->set('legacy', true); // you need set `legacy` parameter with `true` value
 
 // Initiate client with config object
-$client = new Client($config);
-......
+$client = new Client([
+    'host'   => '192.168.1.3',
+    'user'   => 'admin',
+    'pass'   => 'admin',
+    'legacy' => true // you need set `legacy` parameter with `true` value
+]);
+
+// Your code below...
 ```
 
 ### How to write queries
@@ -159,11 +175,32 @@ command to "Query" object.
 More about attributes and "words" from which this attributes
 should be created [here](https://wiki.mikrotik.com/wiki/Manual:API#Command_word). 
 
+Simple usage examples of Query class:
+
 ```php
 use \RouterOS\Query;
 
 // One line query: Get all packages
 $query = new Query('/system/package/getall');
+
+// Multiline query: Enable interface and add tag
+$query = new Query('/interface/set', [
+    '=disabled=no',
+    '=.id=ether1',
+    '.tag=4'
+]);
+```
+
+Advanced usage examples of Query class:
+
+```php
+use \RouterOS\Query;
+
+// One line query: Get all packages
+$query = new Query('/system/package/getall');
+
+$query = new Query();
+$query->setEndpoint('/system/package/getall');
 
 // Multiline query: Enable interface and add tag
 $query = new Query('/interface/set');
@@ -172,12 +209,13 @@ $query
     ->add('=.id=ether1')
     ->add('.tag=4');
 
-// Multiline query: Get all ethernet and VLAN interfaces
+// Multiline query (via setter): Get all ethernet and VLAN interfaces
 $query = new Query('/interface/print');
-$query
-    ->add('?type=ether')
-    ->add('?type=vlan')
-    ->add('?#|');
+$query->setAttributes([
+    '?type=ether',
+    '?type=vlan',
+    '?#|'
+]);
 
 // Multiline query: Get all routes that have non-empty comment
 $query = new Query('/ip/route/print');
