@@ -58,7 +58,7 @@ class Config implements ConfigInterface
         }
 
         // Check what type has this value
-        if (TypeHelper::checkIfTypeMismatch($name, \gettype($value), self::ALLOWED[$name])) {
+        if (TypeHelper::checkIfTypeMismatch(\gettype($value), self::ALLOWED[$name])) {
             throw new ConfigException("Parameter '$name' has wrong type '" . \gettype($value) . "' but should be '" . self::ALLOWED[$name] . "'");
         }
 
