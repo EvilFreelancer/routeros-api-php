@@ -66,8 +66,35 @@ interface ClientInterface
     /**
      * Send write query to RouterOS (with or without tag)
      *
-     * @param   Query $query
-     * @return  Client
+     * @param   \RouterOS\Query $query
+     * @return  \RouterOS\Client
      */
     public function write(Query $query): Client;
+
+    /**
+     * Alias for ->read() method
+     *
+     * @param   bool $parse
+     * @return  array
+     * @since   0.7
+     */
+    public function r(bool $parse = true): array;
+
+    /**
+     * Alias for ->write() method
+     *
+     * @param   \RouterOS\Query $query
+     * @return  \RouterOS\Client
+     */
+    public function w(Query $query): Client;
+
+    /**
+     * Alias for ->write()->read() combination of methods
+     *
+     * @param   \RouterOS\Query $query
+     * @param   bool            $parse
+     * @return  array
+     * @since   0.6
+     */
+    public function wr(Query $query, bool $parse = true): array;
 }
