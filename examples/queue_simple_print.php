@@ -14,13 +14,17 @@ $client = new Client([
     'pass'    => 'admin'
 ]);
 
-// Build query
-$query = new Query('/ip/address/print');
+$ips = [
+    '192.168.1.1',
+    '192.168.1.2',
+    '192.168.1.3',
+    '192.168.1.4',
+    '192.168.1.5',
+    '192.168.1.6',
+];
 
-for ($i = 0; $i < 100; $i++) {
-    // Send query to RouterOS
-    $response = $client->write($query)->read();
+foreach ($ips as $ip) {
+    $query    = new Query('/queue/simple/print', ['?target=' . $ip . '/32']);
+    $response = $client->wr($query);
     print_r($response);
 }
-
-$query = new Query('/queue/simple/print');
