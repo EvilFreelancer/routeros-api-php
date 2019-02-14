@@ -4,6 +4,7 @@ namespace RouterOS;
 
 use RouterOS\Exceptions\ClientException;
 use RouterOS\Exceptions\ConfigException;
+use RouterOS\Helpers\ArrayHelper;
 
 /**
  * Class Client for RouterOS management
@@ -57,7 +58,9 @@ class Client implements Interfaces\ClientInterface
         }
 
         // Check for important keys
-        $this->exceptionIfKeyNotExist(['host', 'user', 'pass'], $config);
+        if (true !== $key = ArrayHelper::checkIfKeysNotExist(['host', 'user', 'pass'], $config->getParameters())) {
+            throw new ConfigException("Parameter '$key' of Config is not set or empty");
+        }
 
         // Save config if everything is okay
         $this->setConfig($config);
@@ -65,23 +68,6 @@ class Client implements Interfaces\ClientInterface
         // Throw error if cannot to connect
         if (false === $this->connect()) {
             throw new ClientException('Unable to connect to ' . $config->get('host') . ':' . $config->get('port'));
-        }
-    }
-
-    /**
-     * Check for important keys
-     *
-     * @param   array            $keys
-     * @param   \RouterOS\Config $config
-     * @throws  \RouterOS\Exceptions\ConfigException
-     */
-    private function exceptionIfKeyNotExist(array $keys, Config $config)
-    {
-        $parameters = $config->getParameters();
-        foreach ($keys as $key) {
-            if (!array_key_exists($key, $parameters) && isset($parameters[$key])) {
-                throw new ConfigException("Parameter '$key' of Config is not set or empty");
-            }
         }
     }
 

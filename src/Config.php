@@ -3,6 +3,8 @@
 namespace RouterOS;
 
 use RouterOS\Exceptions\ConfigException;
+use RouterOS\Helpers\ArrayHelper;
+use RouterOS\Helpers\TypeHelper;
 use RouterOS\Interfaces\ConfigInterface;
 
 /**
@@ -41,35 +43,6 @@ class Config implements ConfigInterface
     }
 
     /**
-     * Check if key in list of parameters
-     *
-     * @param   string $key
-     * @param   array  $array
-     * @throws  ConfigException
-     */
-    private function exceptionIfKeyNotExist(string $key, array $array)
-    {
-        if (!array_key_exists($key, $array)) {
-            throw new ConfigException("Requested parameter '$key' not found in list [" . implode(',', array_keys($array)) . ']');
-        }
-    }
-
-    /**
-     * Compare data types of some value
-     *
-     * @param   string $name     Name of value
-     * @param   mixed  $whatType What type has value
-     * @param   mixed  $isType   What type should be
-     * @throws  ConfigException
-     */
-    private function exceptionIfTypeMismatch(string $name, $whatType, $isType)
-    {
-        if ($whatType !== $isType) {
-            throw new ConfigException("Parameter '$name' has wrong type '$whatType' but should be '$isType'");
-        }
-    }
-
-    /**
      * Set parameter into array
      *
      * @param   string $name
@@ -80,10 +53,14 @@ class Config implements ConfigInterface
     public function set(string $name, $value): Config
     {
         // Check of key in array
-        $this->exceptionIfKeyNotExist($name, self::ALLOWED);
+        if (ArrayHelper::checkIfKeyNotExist($name, self::ALLOWED)) {
+            throw new ConfigException("Requested parameter '$name' not found in list [" . implode(',', array_keys(self::ALLOWED)) . ']');
+        }
 
         // Check what type has this value
-        $this->exceptionIfTypeMismatch($name, \gettype($value), self::ALLOWED[$name]);
+        if (TypeHelper::checkIfTypeMismatch($name, \gettype($value), self::ALLOWED[$name])) {
+            throw new ConfigException("Parameter '$name' has wrong type '" . \gettype($value) . "' but should be '" . self::ALLOWED[$name] . "'");
+        }
 
         // Save value to array
         $this->_parameters[$name] = $value;
@@ -112,17 +89,19 @@ class Config implements ConfigInterface
     /**
      * Remove parameter from array by name
      *
-     * @param   string $parameter
+     * @param   string $name
      * @return  \RouterOS\Config
-     * @throws  ConfigException
+     * @throws  \RouterOS\Exceptions\ConfigException
      */
-    public function delete(string $parameter): Config
+    public function delete(string $name): Config
     {
         // Check of key in array
-        $this->exceptionIfKeyNotExist($parameter, self::ALLOWED);
+        if (ArrayHelper::checkIfKeyNotExist($name, self::ALLOWED)) {
+            throw new ConfigException("Requested parameter '$name' not found in list [" . implode(',', array_keys(self::ALLOWED)) . ']');
+        }
 
         // Save value to array
-        unset($this->_parameters[$parameter]);
+        unset($this->_parameters[$name]);
 
         return $this;
     }
@@ -130,16 +109,18 @@ class Config implements ConfigInterface
     /**
      * Return parameter of current config by name
      *
-     * @param   string $parameter
+     * @param   string $name
      * @return  mixed
      * @throws  ConfigException
      */
-    public function get(string $parameter)
+    public function get(string $name)
     {
         // Check of key in array
-        $this->exceptionIfKeyNotExist($parameter, self::ALLOWED);
+        if (ArrayHelper::checkIfKeyNotExist($name, self::ALLOWED)) {
+            throw new ConfigException("Requested parameter '$name' not found in list [" . implode(',', array_keys(self::ALLOWED)) . ']');
+        }
 
-        return $this->getPort($parameter) ?? $this->_parameters[$parameter];
+        return $this->getPort($name) ?? $this->_parameters[$name];
     }
 
     /**
