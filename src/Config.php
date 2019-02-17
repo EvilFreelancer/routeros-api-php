@@ -111,7 +111,7 @@ class Config implements ConfigInterface
      *
      * @param   string $name
      * @return  mixed
-     * @throws  ConfigException
+     * @throws  \RouterOS\Exceptions\ConfigException
      */
     public function get(string $name)
     {
