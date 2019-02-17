@@ -1,8 +1,9 @@
 <?php
 
-namespace RouterOS\Helpers;
+namespace RouterOS\Tests\Helpers;
 
 use PHPUnit\Framework\TestCase;
+use RouterOS\Helpers\ArrayHelper;
 
 class ArrayHelperTest extends TestCase
 {
