@@ -241,9 +241,6 @@ class Client implements Interfaces\ClientInterface
             if ($length > 0) {
                 // Save output line to response array
                 $response[] = stream_get_contents($this->_socket, $length);
-            } else {
-                // Read next line
-                stream_get_contents($this->_socket, $length);
             }
 
             // If we get a !done line in response, change state of $isDone variable
