@@ -8,7 +8,6 @@ use RouterOS\Query;
 
 class QueryTest extends TestCase
 {
-
     public function test__construct()
     {
         try {

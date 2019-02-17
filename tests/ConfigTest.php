@@ -20,7 +20,7 @@ class ConfigTest extends TestCase
 
     public function testGetParameters()
     {
-        $obj = new Config();
+        $obj    = new Config();
         $params = $obj->getParameters();
 
         $this->assertCount(5, $params);
@@ -29,6 +29,15 @@ class ConfigTest extends TestCase
         $this->assertEquals($params['timeout'], 10);
         $this->assertEquals($params['attempts'], 10);
         $this->assertEquals($params['delay'], 1);
+    }
+
+    public function testGetParameters2()
+    {
+        $obj    = new Config(['timeout' => 100]);
+        $params = $obj->getParameters();
+
+        $this->assertCount(5, $params);
+        $this->assertEquals($params['timeout'], 100);
     }
 
     public function testSet()
@@ -42,7 +51,7 @@ class ConfigTest extends TestCase
 
     public function testSetArr()
     {
-        $obj = new Config([
+        $obj    = new Config([
             'timeout' => 111
         ]);
         $params = $obj->getParameters();
@@ -85,7 +94,7 @@ class ConfigTest extends TestCase
 
     public function testGet()
     {
-        $obj = new Config();
+        $obj   = new Config();
         $test1 = $obj->get('legacy');
         $this->assertEquals($test1, false);
 

@@ -10,13 +10,45 @@ use RouterOS\Exceptions\ClientException;
 
 class ClientTest extends TestCase
 {
-
     public function test__construct()
     {
         try {
             $config = new Config();
             $config->set('user', 'admin')->set('pass', 'admin')->set('host', '127.0.0.1');
             $obj = new Client($config);
+            $this->assertInternalType('object', $obj);
+            $socket = $obj->getSocket();
+            $this->assertInternalType('resource', $socket);
+        } catch (\Exception $e) {
+            $this->assertContains('Must be initialized ', $e->getMessage());
+        }
+    }
+
+    public function test__construct2()
+    {
+        try {
+            $config = new Config([
+                'user' => 'admin',
+                'pass' => 'admin',
+                'host' => '127.0.0.1'
+            ]);
+            $obj = new Client($config);
+            $this->assertInternalType('object', $obj);
+            $socket = $obj->getSocket();
+            $this->assertInternalType('resource', $socket);
+        } catch (\Exception $e) {
+            $this->assertContains('Must be initialized ', $e->getMessage());
+        }
+    }
+
+    public function test__construct3()
+    {
+        try {
+            $obj = new Client([
+                'user' => 'admin',
+                'pass' => 'admin',
+                'host' => '127.0.0.1'
+            ]);
             $this->assertInternalType('object', $obj);
             $socket = $obj->getSocket();
             $this->assertInternalType('resource', $socket);
@@ -80,5 +112,4 @@ class ClientTest extends TestCase
         $this->assertCount(3, $readTrap);
         $this->assertEquals('!trap', $readTrap[0]);
     }
-
 }
