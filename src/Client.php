@@ -429,25 +429,4 @@ class Client implements Interfaces\ClientInterface
         return $connected;
     }
 
-    /**
-     * Save socket resource to static variable
-     *
-     * @param   resource $socket
-     * @return  Client
-     */
-    private function setSocket($socket): Client
-    {
-        $this->_socket = $socket;
-        return $this;
-    }
-
-    /**
-     * Return socket resource if is exist
-     *
-     * @return  resource
-     */
-    public function getSocket()
-    {
-        return $this->_socket;
-    }
 }

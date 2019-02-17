@@ -9,6 +9,7 @@ trait SocketTrait
     /**
      * Initiate socket session
      *
+     * @return  void
      * @throws  \RouterOS\Exceptions\ClientException
      * @throws  \RouterOS\Exceptions\ConfigException
      */
@@ -42,7 +43,7 @@ trait SocketTrait
         }
 
         // Save socket to static variable
-        return $this->setSocket($socket);
+        $this->setSocket($socket);
     }
 
     /**
@@ -53,5 +54,26 @@ trait SocketTrait
     private function closeSocket(): bool
     {
         return fclose($this->_socket);
+    }
+
+    /**
+     * Save socket resource to static variable
+     *
+     * @param   resource $socket
+     * @return  void
+     */
+    private function setSocket($socket)
+    {
+        $this->_socket = $socket;
+    }
+
+    /**
+     * Return socket resource if is exist
+     *
+     * @return  resource
+     */
+    public function getSocket()
+    {
+        return $this->_socket;
     }
 }
