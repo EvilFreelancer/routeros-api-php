@@ -4,6 +4,7 @@ namespace RouterOS;
 
 use RouterOS\Exceptions\ClientException;
 use RouterOS\Exceptions\ConfigException;
+use RouterOS\Exceptions\QueryException;
 use RouterOS\Helpers\ArrayHelper;
 
 /**
@@ -166,22 +167,18 @@ class Client implements Interfaces\ClientInterface
         if ($byte & 128) {
             if (($byte & 192) === 128) {
                 $length = (($byte & 63) << 8) + \ord(fread($this->_socket, 1));
+            } elseif (($byte & 224) === 192) {
+                $length = (($byte & 31) << 8) + \ord(fread($this->_socket, 1));
+                $length = ($length << 8) + \ord(fread($this->_socket, 1));
+            } elseif (($byte & 240) === 224) {
+                $length = (($byte & 15) << 8) + \ord(fread($this->_socket, 1));
+                $length = ($length << 8) + \ord(fread($this->_socket, 1));
+                $length = ($length << 8) + \ord(fread($this->_socket, 1));
             } else {
-                if (($byte & 224) === 192) {
-                    $length = (($byte & 31) << 8) + \ord(fread($this->_socket, 1));
-                    $length = ($length << 8) + \ord(fread($this->_socket, 1));
-                } else {
-                    if (($byte & 240) === 224) {
-                        $length = (($byte & 15) << 8) + \ord(fread($this->_socket, 1));
-                        $length = ($length << 8) + \ord(fread($this->_socket, 1));
-                        $length = ($length << 8) + \ord(fread($this->_socket, 1));
-                    } else {
-                        $length = \ord(fread($this->_socket, 1));
-                        $length = ($length << 8) + \ord(fread($this->_socket, 1)) * 3;
-                        $length = ($length << 8) + \ord(fread($this->_socket, 1));
-                        $length = ($length << 8) + \ord(fread($this->_socket, 1));
-                    }
-                }
+                $length = \ord(fread($this->_socket, 1));
+                $length = ($length << 8) + \ord(fread($this->_socket, 1)) * 3;
+                $length = ($length << 8) + \ord(fread($this->_socket, 1));
+                $length = ($length << 8) + \ord(fread($this->_socket, 1));
             }
         } else {
             $length = $byte;
@@ -192,13 +189,24 @@ class Client implements Interfaces\ClientInterface
     /**
      * Send write query to RouterOS (with or without tag)
      *
-     * @param   \RouterOS\Query $query
+     * @param   string|array|\RouterOS\Query $query
      * @return  \RouterOS\Client
      * @throws  \RouterOS\Exceptions\ClientException
      * @throws  \RouterOS\Exceptions\QueryException
      */
-    public function write(Query $query): Client
+    public function write($query): Client
     {
+        if (\is_string($query)) {
+            $query = new Query($query);
+        } elseif (\is_array($query)) {
+            $endpoint = array_shift($query);
+            $query    = new Query($endpoint, $query);
+        }
+
+        if (!$query instanceof Query) {
+            throw new QueryException('Parameters cannot be processed');
+        }
+
         // Send commands via loop to router
         foreach ($query->getQuery() as $command) {
             $command = trim($command);
@@ -257,12 +265,12 @@ class Client implements Interfaces\ClientInterface
     /**
      * Alias for ->write() method
      *
-     * @param   \RouterOS\Query $query
+     * @param   string|array|\RouterOS\Query $query
      * @return  \RouterOS\Client
      * @throws  \RouterOS\Exceptions\ClientException
      * @throws  \RouterOS\Exceptions\QueryException
      */
-    public function w(Query $query): Client
+    public function w($query): Client
     {
         return $this->write($query);
     }
@@ -282,14 +290,14 @@ class Client implements Interfaces\ClientInterface
     /**
      * Alias for ->write()->read() combination of methods
      *
-     * @param   \RouterOS\Query $query
-     * @param   bool            $parse
+     * @param   string|array|\RouterOS\Query $query
+     * @param   bool                         $parse
      * @return  array
      * @throws  \RouterOS\Exceptions\ClientException
      * @throws  \RouterOS\Exceptions\QueryException
      * @since   0.6
      */
-    public function wr(Query $query, bool $parse = true): array
+    public function wr($query, bool $parse = true): array
     {
         return $this->write($query)->read($parse);
     }

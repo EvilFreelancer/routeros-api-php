@@ -30,14 +30,22 @@ class Query implements QueryInterface
     /**
      * Query constructor.
      *
-     * @param   string $endpoint   Path of endpoint
-     * @param   array  $attributes List of attributes which should be set
+     * @param   array|string $endpoint   Path of endpoint
+     * @param   array        $attributes List of attributes which should be set
+     * @throws  QueryException
      */
-    public function __construct(string $endpoint = null, array $attributes = [])
+    public function __construct($endpoint, array $attributes = [])
     {
-        // TODO: Endpoint may be array, first line will be endpoint, any other attributes
-        $this->setEndpoint($endpoint);
-        $this->setAttributes($attributes);
+        if (\is_string($endpoint)) {
+            $this->setEndpoint($endpoint);
+            $this->setAttributes($attributes);
+        } elseif (\is_array($endpoint)) {
+            $query = array_shift($endpoint);
+            $this->setEndpoint($query);
+            $this->setAttributes($endpoint);
+        } else {
+            throw new QueryException('Specified endpoint is not correct');
+        }
     }
 
     /**
