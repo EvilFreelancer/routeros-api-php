@@ -28,11 +28,28 @@ class QueryTest extends TestCase
         }
     }
 
+    public function test__construct_arr2()
+    {
+        try {
+            $obj = new Query(['test', 'line1', 'line2', 'line3']);
+            $this->assertInternalType('object', $obj);
+        } catch (\Exception $e) {
+            $this->assertContains('Must be initialized ', $e->getMessage());
+        }
+    }
+
     public function testGetEndpoint()
     {
         $obj  = new Query('test');
         $test = $obj->getEndpoint();
         $this->assertEquals($test, 'test');
+    }
+
+    public function testGetEndpoint2()
+    {
+        $obj  = new Query(['zzz', 'line1', 'line2', 'line3']);
+        $test = $obj->getEndpoint();
+        $this->assertEquals($test, 'zzz');
     }
 
     public function testSetEndpoint()
