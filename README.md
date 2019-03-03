@@ -223,6 +223,29 @@ $query
     ->add('?>comment=');
 ```
 
+## Testing
+
+You can use my [other project](https://github.com/EvilFreelancer/docker-routeros)
+with RouterOS in Docker container for running unit testing on your
+computer, for this you just need to have [Expect](https://wiki.debian.org/Expect),
+[Docker](https://docs.docker.com/install/) and [Docker Compose](https://docs.docker.com/compose/install/).
+
+Next clone the repo with RouterOS in Docker and exec
+`docker-compose up -d`, then you need preconfigure virtual routers
+via [preconf.tcl](https://github.com/EvilFreelancer/routeros-api-php/blob/master/preconf.tcl)
+script from root of routeros-api-php:
+
+```
+./preconf.tcl 12223
+./preconf.tcl 22223
+```
+
+And after this you can run tests:
+
+```
+./vendor/bin/phpunit
+```
+
 ## Links
 
 * [Cloud Hosted Router](https://mikrotik.com/download#chr) - Virtual images of RouterOS for your hypervisor 
