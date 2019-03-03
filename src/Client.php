@@ -409,7 +409,7 @@ class Client implements Interfaces\ClientInterface
             $this->openSocket();
 
             // If socket is active
-            if ($this->getSocket()) {
+            if (null !== $this->getSocket()) {
 
                 // If we logged in then exit from loop
                 if (true === $this->login()) {

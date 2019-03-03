@@ -38,7 +38,7 @@ trait SocketTrait
         );
 
         // Throw error is socket is not initiated
-        if (!$socket) {
+        if (false === $socket) {
             throw new ClientException('Unable to establish socket session, ' . $this->_socket_err_str);
         }
 

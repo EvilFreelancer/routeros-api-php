@@ -33,7 +33,7 @@ class ArrayHelper
     {
         $output = [];
         foreach ($keys as $key) {
-            if (!array_key_exists($key, $array) && empty($array[$key])) {
+            if (self::checkIfKeyNotExist($key, $array)) {
                 $output[] = $key;
             }
         }
