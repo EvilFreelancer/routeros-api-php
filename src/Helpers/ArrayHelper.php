@@ -37,6 +37,6 @@ class ArrayHelper
                 $output[] = $key;
             }
         }
-        return !empty($output) ? $output : true;
+        return !empty($output) ? implode(',', $output) : true;
     }
 }

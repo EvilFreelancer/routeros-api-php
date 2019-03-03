@@ -4,6 +4,8 @@ namespace RouterOS\Tests;
 
 use PHPUnit\Framework\TestCase;
 use RouterOS\Client;
+use RouterOS\Exceptions\ConfigException;
+use RouterOS\Exceptions\QueryException;
 use RouterOS\Query;
 use RouterOS\Config;
 use RouterOS\Exceptions\ClientException;
@@ -32,7 +34,7 @@ class ClientTest extends TestCase
                 'pass' => 'admin',
                 'host' => '127.0.0.1'
             ]);
-            $obj = new Client($config);
+            $obj    = new Client($config);
             $this->assertInternalType('object', $obj);
             $socket = $obj->getSocket();
             $this->assertInternalType('resource', $socket);
@@ -55,6 +57,16 @@ class ClientTest extends TestCase
         } catch (\Exception $e) {
             $this->assertContains('Must be initialized ', $e->getMessage());
         }
+    }
+
+    public function test__constructEx()
+    {
+        $this->expectException(ConfigException::class);
+
+        $obj = new Client([
+            'user' => 'admin',
+            'pass' => 'admin',
+        ]);
     }
 
     public function test__constructLegacy()
@@ -97,19 +109,73 @@ class ClientTest extends TestCase
         $config->set('user', 'admin')->set('pass', 'admin')->set('host', '127.0.0.1');
         $obj = new Client($config);
 
-        $query = new Query('/ip/address/print');
+        $query   = new Query('/ip/address/print');
         $readRaw = $obj->write($query)->read(false);
         $this->assertCount(10, $readRaw);
         $this->assertEquals('=.id=*1', $readRaw[1]);
 
+        $query   = new Query('/ip/address/print');
+        $readRaw = $obj->w($query)->read(false);
+        $this->assertCount(10, $readRaw);
+        $this->assertEquals('=.id=*1', $readRaw[1]);
+
         $query = new Query('/interface/getall');
-        $read = $obj->write($query)->read();
+        $read  = $obj->write($query)->r();
         $this->assertCount(1, $read);
         $this->assertEquals('*1', $read[0]['.id']);
 
-        $query = new Query('/interface');
-        $readTrap = $obj->write($query)->read(false);
+        $query    = new Query('/interface');
+        $readTrap = $obj->w($query)->r(false);
         $this->assertCount(3, $readTrap);
         $this->assertEquals('!trap', $readTrap[0]);
+
+        $query    = new Query('/interface');
+        $readTrap = $obj->wr($query, false);
+        $this->assertCount(3, $readTrap);
+        $this->assertEquals('!trap', $readTrap[0]);
+    }
+
+    public function testWriteReadString()
+    {
+        $config = new Config();
+        $config->set('user', 'admin')->set('pass', 'admin')->set('host', '127.0.0.1');
+        $obj = new Client($config);
+
+        $readTrap = $obj->wr('/interface', false);
+        $this->assertCount(3, $readTrap);
+        $this->assertEquals('!trap', $readTrap[0]);
+    }
+
+    public function testWriteReadArray()
+    {
+        $config = new Config();
+        $config->set('user', 'admin')->set('pass', 'admin')->set('host', '127.0.0.1');
+        $obj = new Client($config);
+
+        $readTrap = $obj->wr(['/interface'], false);
+        $this->assertCount(3, $readTrap);
+        $this->assertEquals('!trap', $readTrap[0]);
+    }
+
+    public function testWriteEx()
+    {
+        $this->expectException(QueryException::class);
+
+        $config = new Config();
+        $config->set('user', 'admin')->set('pass', 'admin')->set('host', '127.0.0.1');
+        $obj   = new Client($config);
+        $error = $obj->write($obj)->read(false);
+    }
+
+    public function testGetConfig()
+    {
+        $obj = new Client([
+            'user' => 'admin',
+            'pass' => 'admin',
+            'host' => '127.0.0.1'
+        ]);
+
+        $config = $obj->getConfig();
+        $this->assertEquals('admin', $config->get('user'));
     }
 }

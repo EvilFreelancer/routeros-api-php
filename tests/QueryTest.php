@@ -52,6 +52,14 @@ class QueryTest extends TestCase
         $this->assertEquals($test, 'zzz');
     }
 
+    public function testGetEndpointEx()
+    {
+        $this->expectException(QueryException::class);
+
+        $obj  = new Query(null);
+        $test = $obj->getEndpoint();
+    }
+
     public function testSetEndpoint()
     {
         $obj = new Query('test');
@@ -100,7 +108,7 @@ class QueryTest extends TestCase
     {
         $this->expectException(QueryException::class);
 
-        $obj = new Query(null);
+        $obj = new Query([null]);
         $obj->getQuery();
     }
 }

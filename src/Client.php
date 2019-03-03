@@ -62,7 +62,7 @@ class Client implements Interfaces\ClientInterface
 
         // Check for important keys
         if (true !== $key = ArrayHelper::checkIfKeysNotExist(['host', 'user', 'pass'], $config->getParameters())) {
-            throw new ConfigException("Parameter '$key' of Config is not set or empty");
+            throw new ConfigException("One or few parameters '$key' of Config is not set or empty");
         }
 
         // Save config if everything is okay
