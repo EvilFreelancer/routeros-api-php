@@ -385,8 +385,18 @@ class Client implements Interfaces\ClientInterface
         // Execute query and get response
         $response = $this->write($query)->read(false);
 
+        // if :
+        //  - we have more than one response
+        //  - response is '!done'
+        // => problem with legacy version, swap it and retry
+        // Only tested with ROS pre 6.43, will test with post 6.43 => this could make legacy parameter obsolete ?
+        if (count($response)>1 && $response[0] === '!done' && !$this->config('legacy'))
+        {
+             $this->_config->set('legacy', true);
+             return $this->login();
+        }
         // Return true if we have only one line from server and this line is !done
-        return isset($response[0]) && $response[0] === '!done';
+        return (1 === count($response)) &&  isset($response[0]) && ($response[0] === '!done');
     }
 
     /**
