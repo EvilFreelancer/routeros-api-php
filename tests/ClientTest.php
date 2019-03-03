@@ -82,6 +82,25 @@ class ClientTest extends TestCase
         }
     }
 
+    /**
+     * Test non legacy connection on legacy router (pre 6.43)
+     * 
+     * login() method recognise legacy router response and swap to legacy mode
+     */ 
+    public function test__constructLegacy2()
+    {
+        try {
+            $config = new Config();
+            $config->set('user', 'admin')->set('pass', 'admin')
+                ->set('host', '127.0.0.1')->set('port', 18728)->set('legacy', false);
+            $obj = new Client($config);
+            $this->assertInternalType('object', $obj);
+        } catch (\Exception $e) {
+            $this->assertContains('Must be initialized ', $e->getMessage());
+        }
+    }
+
+
     public function test__constructWrongPass()
     {
         $this->expectException(ClientException::class);

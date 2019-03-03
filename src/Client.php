@@ -358,12 +358,13 @@ class Client implements Interfaces\ClientInterface
     /**
      * Authorization logic
      *
+     * @param   bool $legacyRetry Retry login if we detect legacy version of RouterOS
      * @return  bool
      * @throws  \RouterOS\Exceptions\ClientException
      * @throws  \RouterOS\Exceptions\ConfigException
      * @throws  \RouterOS\Exceptions\QueryException
      */
-    private function login(): bool
+    private function login(bool $legacyRetry = false): bool
     {
         // If legacy login scheme is enabled
         if ($this->config('legacy')) {
@@ -380,13 +381,39 @@ class Client implements Interfaces\ClientInterface
             $query = (new Query('/login'))
                 ->add('=name=' . $this->config('user'))
                 ->add('=password=' . $this->config('pass'));
+
+            // If we set modern auth scheme but router with legacy firmware then need to retry query,
+            // but need to prevent endless loop
+            $legacyRetry = true;
         }
 
         // Execute query and get response
         $response = $this->write($query)->read(false);
 
+        // if:
+        //  - we have more than one response
+        //  - response is '!done'
+        // => problem with legacy version, swap it and retry
+        // Only tested with ROS pre 6.43, will test with post 6.43 => this could make legacy parameter obsolete?
+        if ($legacyRetry && $this->isLegacy($response)) {
+            $this->_config->set('legacy', true);
+            return $this->login();
+        }
+
         // Return true if we have only one line from server and this line is !done
-        return isset($response[0]) && $response[0] === '!done';
+        return (1 === count($response)) && isset($response[0]) && ($response[0] === '!done');
+    }
+
+    /**
+     * Detect by login request if firmware is legacy
+     *
+     * @param   array $response
+     * @return  bool
+     * @throws  ConfigException
+     */
+    private function isLegacy(array &$response): bool
+    {
+        return \count($response) > 1 && $response[0] === '!done' && !$this->config('legacy');
     }
 
     /**
