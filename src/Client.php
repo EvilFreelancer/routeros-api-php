@@ -397,11 +397,11 @@ class Client implements Interfaces\ClientInterface
         // Only tested with ROS pre 6.43, will test with post 6.43 => this could make legacy parameter obsolete?
         if ($legacyRetry && $this->isLegacy($response)) {
             $this->_config->set('legacy', true);
-            return $this->login(true);
+            return $this->login();
         }
 
         // Return true if we have only one line from server and this line is !done
-        return 1 === \count($response) || (isset($response[0]) && $response[0] === '!done');
+        return (1 === count($response)) && isset($response[0]) && ($response[0] === '!done');
     }
 
     /**
