@@ -157,6 +157,17 @@ class ClientTest extends TestCase
         $this->assertEquals('!trap', $readTrap[0]);
     }
 
+    public function testFatal()
+    {
+        $config = new Config();
+        $config->set('user', 'admin')->set('pass', 'admin')->set('host', '127.0.0.1');
+        $obj = new Client($config);
+
+        $readTrap = $obj->wr('/quit');
+        $this->assertCount(2, $readTrap);
+        $this->assertEquals('!fatal', $readTrap[0]);
+    }
+
     public function testWriteEx()
     {
         $this->expectException(QueryException::class);
