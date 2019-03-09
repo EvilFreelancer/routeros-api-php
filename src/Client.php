@@ -224,6 +224,12 @@ class Client implements Interfaces\ClientInterface
     /**
      * Read answer from server after query was executed
      *
+     * A Mikrotik reply is formed of blocks
+     * Each block starts with a word, one of ('!re', '!trap', '!done', '!fatal')
+     * Each block end with an zero byte (empty line)
+     * Reply ends with a complete !done or !fatal block (ended with 'empty line')
+     * A !fatal block precedes TCP connexion close
+     * 
      * @param   bool $parse
      * @return  array
      */
@@ -231,6 +237,8 @@ class Client implements Interfaces\ClientInterface
     {
         // By default response is empty
         $response = [];
+        // We have to wait a !done or !fatal 
+        $lastReply = false;
 
         // Read answer from socket in loop
         while (true) {
@@ -239,21 +247,25 @@ class Client implements Interfaces\ClientInterface
             $byte   = fread($this->_socket, 1);
             $length = $this->getLength(\ord($byte));
 
-            // Save only non empty strings
-            if ($length > 0) {
-                // Save output line to response array
-                $response[] = stream_get_contents($this->_socket, $length);
+            if ($length == 0) {
+                if ($lastReply) {
+                    // We received a !done or !fatal message in a precedent loop
+                    // response is complete
+                    break;
+                }
+                // We did not receive the !done or !fatal message
+                // This 0 length message is the end of a reply !re or !trap
+                // We have to wait the router to send a !done or !fatal reply followed by optionals values and a 0 length message
+                continue;
             }
 
-            // If we get a !done line in response, change state of $isDone variable
-            $isDone = ('!done' === end($response));
+            // Save output line to response array
+            $response[] = $line =  stream_get_contents($this->_socket, $length);
 
-            // Get status about latest operation
-            $status = stream_get_meta_data($this->_socket);
-
-            // If we do not have unread bytes from socket or <-same and if done, then exit from loop
-            if ((!$status['unread_bytes']) || (!$status['unread_bytes'] && $isDone)) {
-                break;
+            // If we get a !done or !fatal line in response, we are now ready to finish the read
+            // but we need to wait a 0 length message, switch the flag
+            if ('!done' === $line || '!fatal' === $line) {
+                $lastReply = true;                
             }
         }
 
