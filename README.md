@@ -16,8 +16,7 @@ innovations to ease development. In addition, the project is designed
 to work with PHP7 in accordance with the PSR standards.
 
 You can use this library with pre-6.43 and post-6.43 versions of
-RouterOS firmware, for switching you just need set `legacy`
-parameter of config to required state (`false` by default).
+RouterOS firmware, it will be detected automatically on connection stage.
 
 ## How to use
 
@@ -41,11 +40,18 @@ $client = new Client([
     'pass' => 'admin'
 ]);
 
-// Build query
-$query = new Query('/ip/address/print');
+// Send query to RouterOS without parameters
+$request = $client->write('/ip/address/print'); // or $client->write(['/ip/address/print']);
 
-// Send query to RouterOS
-$request = $client->write($query);
+// Read answer from RouterOS
+$response = $client->read();
+var_dump($response);
+
+// Send query to RouterOS with parameters
+$request = $client->write([
+    '/queue/simple/print',
+    '?target=192.168.1.1/32'
+]);
 
 // Read answer from RouterOS
 $response = $client->read();
@@ -136,9 +142,9 @@ $client = new Client([
 
 | Parameter | Type   | Default | Description |
 |-----------|--------|---------|-------------|
-| host      | string |         | Address of Mikrotik RouterOS |
-| user      | string |         | Username |
-| pass      | string |         | Password |
+| host      | string |         | (required) Address of Mikrotik RouterOS |
+| user      | string |         | (required) Username |
+| pass      | string |         | (required) Password |
 | port      | int    |         | RouterOS API port number for access (if not set use 8728 or 8729 if SSL enabled) |
 | ssl       | bool   | false   | Enable ssl support (if port is not set this parameter must change default port to ssl port) |
 | legacy    | bool   | false   | Support of legacy login scheme (true - pre 6.43, false - post 6.43) |
@@ -147,6 +153,8 @@ $client = new Client([
 | delay     | int    | 1       | Delay between attempts in seconds |
 
 ### How to enable support of legacy login schema (RouterOS pre-6.43)
+
+> From 0.8.1 this is not important, version of firmware will be detected automatically.
 
 ```php
 <?php
@@ -175,6 +183,9 @@ command to "Query" object.
 More about attributes and "words" from which this attributes
 should be created [here](https://wiki.mikrotik.com/wiki/Manual:API#Command_word). 
 
+More about "expressions", "where" and other filters/modificators
+of your query you can find [here](https://wiki.mikrotik.com/wiki/Manual:API#Queries).
+
 Simple usage examples of Query class:
 
 ```php
@@ -185,6 +196,14 @@ $query = new Query('/system/package/getall');
 
 // Multiline query: Enable interface and add tag
 $query = new Query('/interface/set', [
+    '=disabled=no',
+    '=.id=ether1',
+    '.tag=4'
+]);
+
+// Multiline query in simple array
+$query = new Query([
+    '/interface/set',
     '=disabled=no',
     '=.id=ether1',
     '.tag=4'
