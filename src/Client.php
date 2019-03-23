@@ -18,27 +18,6 @@ class Client implements Interfaces\ClientInterface
     use SocketTrait;
 
     /**
-     * Socket resource
-     *
-     * @var resource|null
-     */
-    private $_socket;
-
-    /**
-     * Code of error
-     *
-     * @var int
-     */
-    private $_socket_err_num;
-
-    /**
-     * Description of socket error
-     *
-     * @var string
-     */
-    private $_socket_err_str;
-
-    /**
      * Configuration of connection
      *
      * @var \RouterOS\Config
@@ -48,10 +27,10 @@ class Client implements Interfaces\ClientInterface
     /**
      * API communication object
      *
-     * @var APIConnector
+     * @var \RouterOS\APIConnector
      */
 
-    private $connector;
+    private $_connector;
 
     /**
      * Client constructor.
@@ -121,7 +100,6 @@ class Client implements Interfaces\ClientInterface
      *
      * @param   string|array|\RouterOS\Query $query
      * @return  \RouterOS\Client
-     * @throws  \RouterOS\Exceptions\ClientException
      * @throws  \RouterOS\Exceptions\QueryException
      */
     public function write($query): Client
@@ -139,11 +117,11 @@ class Client implements Interfaces\ClientInterface
 
         // Send commands via loop to router
         foreach ($query->getQuery() as $command) {
-            $this->connector->writeWord(trim($command));
+            $this->_connector->writeWord(trim($command));
         }
 
         // Write zero-terminator (empty string)
-        $this->connector->writeWord('');
+        $this->_connector->writeWord('');
 
         return $this;
     }
@@ -156,7 +134,7 @@ class Client implements Interfaces\ClientInterface
      * Each block end with an zero byte (empty line)
      * Reply ends with a complete !done or !fatal block (ended with 'empty line')
      * A !fatal block precedes TCP connexion close
-     * 
+     *
      * @param   bool $parse
      * @return  array
      */
@@ -169,9 +147,9 @@ class Client implements Interfaces\ClientInterface
 
         // Read answer from socket in loop
         while (true) {
-            $word = $this->connector->readWord();
+            $word = $this->_connector->readWord();
 
-            if (''===$word) {
+            if ('' === $word) {
                 if ($lastReply) {
                     // We received a !done or !fatal message in a precedent loop
                     // response is complete
@@ -202,7 +180,6 @@ class Client implements Interfaces\ClientInterface
      *
      * @param   string|array|\RouterOS\Query $query
      * @return  \RouterOS\Client
-     * @throws  \RouterOS\Exceptions\ClientException
      * @throws  \RouterOS\Exceptions\QueryException
      */
     public function w($query): Client
@@ -373,7 +350,7 @@ class Client implements Interfaces\ClientInterface
 
             // If socket is active
             if (null !== $this->getSocket()) {
-                $this->connector = new APIConnector(new Streams\ResourceStream($this->getSocket()));
+                $this->_connector = new APIConnector(new Streams\ResourceStream($this->getSocket()));
                 // If we logged in then exit from loop
                 if (true === $this->login()) {
                     $connected = true;
@@ -382,7 +359,6 @@ class Client implements Interfaces\ClientInterface
 
                 // Else close socket and start from begin
                 $this->closeSocket();
-                $this->stream = null;
             }
 
             // Sleep some time between tries

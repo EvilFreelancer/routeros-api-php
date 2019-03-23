@@ -1,4 +1,5 @@
 <?php
+
 namespace RouterOS\Streams;
 
 use RouterOS\Interfaces\StreamInterface;
@@ -6,14 +7,13 @@ use RouterOS\Exceptions\StreamException;
 
 /**
  * class StringStream
- * 
+ *
  * Initialized with a string, the read method retreive it as done with fread, consuming the buffer.
- * When all the string has been read, exception is thrown when try to read again. 
+ * When all the string has been read, exception is thrown when try to read again.
  *
  * @package RouterOS\Streams
  * @since   0.9
  */
-
 class StringStream implements StreamInterface
 {
     /**
@@ -22,7 +22,7 @@ class StringStream implements StreamInterface
     protected $buffer;
 
     /**
-     * Constuctor
+     * StringStream constructor.
      *
      * @param string $string
      */
@@ -37,25 +37,24 @@ class StringStream implements StreamInterface
      * @throws \InvalidArgumentException when length parameter is invalid
      * @throws StreamException when the stream have been tatly red and read methd is called again
      */
-    public function read(int $length) : string
+    public function read(int $length): string
     {
         $remaining = strlen($this->buffer);
 
-        if ($length<0) {
-            throw new \InvalidArgumentException("Cannot read a negative count of bytes from a stream");
+        if ($length < 0) {
+            throw new \InvalidArgumentException('Cannot read a negative count of bytes from a stream');
         }
 
-        if (0 == $remaining) {
-            throw new StreamException("End of stream");
+        if (0 === $remaining) {
+            throw new StreamException('End of stream');
         }
 
-        if ($length>=$remaining) {
+        if ($length >= $remaining) {
             // returns all 
             $result = $this->buffer;
             // No more in the buffer
-            $this->buffer='';
-        }
-        else {
+            $this->buffer = '';
+        } else {
             // acquire $length characters from the buffer
             $result = substr($this->buffer, 0, $length);
             // remove $length characters from the buffer
@@ -68,24 +67,29 @@ class StringStream implements StreamInterface
     /**
      * Fake write method, do nothing except return the "writen" length
      *
-     * @param string $string The string to write
-     * @param int|null $length the number of characters to write
-     * @throws \InvalidArgumentException on invalid length
-     * @return number of "writen" bytes
+     * @param   string   $string The string to write
+     * @param   int|null $length the number of characters to write
+     * @return  int number of "writen" bytes
+     * @throws  \InvalidArgumentException on invalid length
      */
-    public function write(string $string, $length=null) : int
+    public function write(string $string, int $length = null): int
     {
-        if(null === $length) {
+        if (null === $length) {
             $length = strlen($string);
         }
 
-        if ($length<0) {
-            throw new \InvalidArgumentException("Cannot write a negative count of bytes");
+        if ($length < 0) {
+            throw new \InvalidArgumentException('Cannot write a negative count of bytes');
         }
 
         return min($length, strlen($string));
     }
 
+    /**
+     * Close stream connection
+     *
+     * @return  void
+     */
     public function close()
     {
         $this->buffer = '';

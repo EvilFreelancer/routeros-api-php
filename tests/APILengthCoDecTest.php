@@ -11,7 +11,7 @@ use RouterOS\Helpers\BinaryStringHelper;
 
 /**
  * Limit code coverage to the class
- * @coversDefaultClass RouterOS\APILengthCoDec
+ * @coversDefaultClass \RouterOS\APILengthCoDec
  */
 class APILengthCoDecTest extends TestCase
 {

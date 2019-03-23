@@ -1,17 +1,17 @@
 <?php
+
 namespace RouterOS;
 
 use RouterOS\Interfaces\StreamInterface;
 
 /**
- * class APIConnector
- * 
+ * Class APIConnector
+ *
  * Implement middle level dialog with router by masking word dialog implementation to client class
  *
  * @package RouterOS
  * @since   0.9
  */
-
 class APIConnector
 {
     /**
@@ -37,20 +37,23 @@ class APIConnector
      * Length of the WORD should be given as count of bytes that are going to be sent
      *
      * @return string The word content, en empty string for end of SENTENCE
-     */ 
-    public function readWord() : string
+     */
+    public function readWord(): string
     {
         // Get length of next word
         $length = APILengthCoDec::decodeLength($this->stream);
-        if ($length>0) {
-            return $this->stream->read($length);
-        }
-        return '';
+        return ($length > 0) ? $this->stream->read($length) : '';
     }
 
-    public function writeWord(string $word)
+    /**
+     * Write word to stream
+     *
+     * @param   string $word
+     * @return  int return number of written bytes
+     */
+    public function writeWord(string $word): int
     {
         $encodedLength = APILengthCoDec::encodeLength(strlen($word));
-        return $this->stream->write($encodedLength.$word);
+        return $this->stream->write($encodedLength . $word);
     }
 }

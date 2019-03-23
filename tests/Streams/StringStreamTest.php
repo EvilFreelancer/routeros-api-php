@@ -10,66 +10,70 @@ use RouterOS\Exceptions\StreamException;
 
 /**
  * Limit code coverage to the class RouterOS\APIStream
- * @coversDefaultClass RouterOS\Streams\StringStream
+ *
+ * @coversDefaultClass \RouterOS\Streams\StringStream
  */
 class StringStreamTest extends TestCase
 {
     /**
      * @covers ::__construct
      * @dataProvider constructProvider
+     *
+     * @param   string $string
      */
     public function test__construct(string $string)
     {
         $this->assertInstanceOf(StringStream::class, new StringStream($string));
     }
 
-    public function constructProvider()
+    public function constructProvider(): array
     {
         return [
-            [ chr(0) ],
-            [ ''     ],
-            [ '1'    ],
-            [ 'lkjl'.chr(0).'kjkljllkjkljljklkjkljlkjljlkjkljkljlkjjll'],
+            [chr(0)],
+            [''],
+            ['1'],
+            ['lkjl' . chr(0) . 'kjkljllkjkljljklkjkljlkjljlkjkljkljlkjjll'],
         ];
-    } 
+    }
 
 
     /**
-     * test that write function returns the effective writen bytes 
+     * Test that write function returns the effective written bytes
+     *
      * @covers ::write
      * @dataProvider writeProvider
-     * @param string $toWrite the string to write
-     * @param int|null $length the count if bytes to write
-     * @param int $expected the number of bytes that must be writen 
+     *
+     * @param   string   $string   the string to write
+     * @param   int|null $length   the count if bytes to write
+     * @param   int      $expected the number of bytes that must be writen
      */
 
     public function test__write(string $string, $length, int $expected)
     {
         $stream = new StringStream('Does not matters');
-        if (is_null($length)) {
+        if (null === $length) {
             $this->assertEquals($expected, $stream->write($string));
-        } 
-        else {
+        } else {
             $this->assertEquals($expected, $stream->write($string, $length));
         }
 
     }
 
-    public function writeProvider()
+    public function writeProvider(): array
     {
         return [
-            [ '',  0, 0 ],
-            [ '', 10, 0 ],
-            [ '', null, 0 ],
-            [ 'Yabala', 0, 0],
-            [ 'Yabala', 1, 1],
-            [ 'Yabala', 6, 6],
-            [ 'Yabala', 100, 6],
-            [ 'Yabala', null, 6],
-            [ chr(0), 0, 0],
-            [ chr(0), 1, 1],
-            [ chr(0), 100, 1],
-            [ chr(0), null, 1],
+            ['', 0, 0],
+            ['', 10, 0],
+            ['', null, 0],
+            ['Yabala', 0, 0],
+            ['Yabala', 1, 1],
+            ['Yabala', 6, 6],
+            ['Yabala', 100, 6],
+            ['Yabala', null, 6],
+            [chr(0), 0, 0],
+            [chr(0), 1, 1],
+            [chr(0), 100, 1],
+            [chr(0), null, 1],
         ];
     }
 
@@ -80,11 +84,13 @@ class StringStreamTest extends TestCase
     public function test__writeWithNegativeLength()
     {
         $stream = new StringStream('Does not matters');
-        $stream->write("PLOP", -1);
+        $stream->write('PLOP', -1);
     }
 
     /**
      * Test read function
+     *
+     * @throws \RouterOS\Exceptions\StreamException
      */
     public function test__read()
     {
@@ -99,7 +105,9 @@ class StringStreamTest extends TestCase
     }
 
     /**
-     * @expectedException InvalidArgumentException
+     * @expectedException \InvalidArgumentException
+     *
+     * @throws \RouterOS\Exceptions\StreamException
      */
     public function test__readBadLength()
     {
@@ -111,12 +119,20 @@ class StringStreamTest extends TestCase
      * @covers ::read
      * @dataProvider readWhileEmptyProvider
      * @expectedException \RouterOS\Exceptions\StreamException
+     *
+     * @param   StringStream $stream
+     * @param   int          $length
+     * @throws  \RouterOS\Exceptions\StreamException
      */
     public function test__readWhileEmpty(StringStream $stream, int $length)
     {
-        $stream->read($length);        
+        $stream->read($length);
     }
 
+    /**
+     * @return \Generator
+     * @throws StreamException
+     */
     public function readWhileEmptyProvider()
     {
         $stream = new StringStream('123456789');
@@ -133,7 +149,7 @@ class StringStreamTest extends TestCase
     }
 
     /**
-     * @expectedException \RouterOS\Exceptions\StreamException 
+     * @expectedException \RouterOS\Exceptions\StreamException
      */
     public function testReadClosed()
     {
