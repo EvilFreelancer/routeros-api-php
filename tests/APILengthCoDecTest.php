@@ -62,7 +62,26 @@ class APILengthCoDecTest extends TestCase
             [0xE0200000, 0x200000],   // Low limit value for 4 bytes encoded length
             [0xE5AD736B, 0x5AD736B],  // Arbitrary median value for 4 bytes encoded length
             [0xEFFFFFFF, 0xFFFFFFF],  // High limit value for 4 bytes encoded length
+        ];
+    }
 
+    /**
+     * @dataProvider encodedLengthProvider64
+     * @covers ::encodeLength
+     */
+    public function test__encodeLength64($expected, $length)
+    {
+        if (PHP_INT_SIZE < 8) {
+            $this->markTestSkipped('Available only on x64 CPUs');
+        }
+
+        $this->assertEquals(BinaryStringHelper::IntegerToNBOBinaryString((int) $expected), APILengthCoDec::encodeLength($length));
+    }
+
+    public function encodedLengthProvider64(): array
+    {
+        // [encoded length value, length value]
+        return [
             [0xF010000000, 0x10000000],  // Low limit value for 5 bytes encoded length
             [0xF10D4EF9C3, 0x10D4EF9C3], // Arbitrary median value for 5 bytes encoded length
             [0xF7FFFFFFFF, 0x7FFFFFFFF], // High limit value for 5 bytes encoded length
@@ -73,9 +92,23 @@ class APILengthCoDecTest extends TestCase
      * @dataProvider encodedLengthProvider
      * @covers ::decodeLength
      */
-
     public function test__decodeLength($encodedLength, $expected)
     {
+        // We have to provide $encodedLength as a "bytes" stream
+        $stream = new StringStream(BinaryStringHelper::IntegerToNBOBinaryString($encodedLength));
+        $this->assertEquals($expected, APILengthCoDec::decodeLength($stream));
+    }
+
+    /**
+     * @dataProvider encodedLengthProvider64
+     * @covers ::decodeLength
+     */
+    public function test__decodeLength64($encodedLength, $expected)
+    {
+        if (PHP_INT_SIZE < 8) {
+            $this->markTestSkipped('Available only on x64 CPUs');
+        }
+
         // We have to provide $encodedLength as a "bytes" stream
         $stream = new StringStream(BinaryStringHelper::IntegerToNBOBinaryString($encodedLength));
         $this->assertEquals($expected, APILengthCoDec::decodeLength($stream));
