@@ -24,7 +24,7 @@ class BinaryStringHelperTest extends TestCase
 
     public function IntegerToNBOBinaryStringProvider(): array
     {
-        $default = [
+        $result = [
             [0, chr(0)], // lower boundary value
             [0xFFFFFFFF, chr(0xFF) . chr(0xFF) . chr(0xFF) . chr(0xFF)], // 32 bits maximal value
 
@@ -38,16 +38,12 @@ class BinaryStringHelperTest extends TestCase
             [0x390DDD99, chr(0x39) . chr(0x0D) . chr(0xDD) . chr(0x99)],
         ];
 
-        if (PHP_INT_SIZE < 8) {
-            return $default;
-        }
-
-        $append = [
+        if (PHP_INT_SIZE > 4) {
             // -1 is encoded with 0xFFFFFFF.....
             // 64 bits maximal value (on a 64 bits system only)
-            [-1, chr(0xFF) . chr(0xFF) . chr(0xFF) . chr(0xFF) . chr(0xFF) . chr(0xFF) . chr(0xFF) . chr(0xFF)], // 64 bits upper boundary value
-        ];
+            $result[] = [-1, chr(0xFF) . chr(0xFF) . chr(0xFF) . chr(0xFF) . chr(0xFF) . chr(0xFF) . chr(0xFF) . chr(0xFF)]; // 64 bits upper boundary value
+        }
 
-        return array_merge($default, $append);
+        return $result;
     }
 }

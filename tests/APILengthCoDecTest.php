@@ -46,7 +46,7 @@ class APILengthCoDecTest extends TestCase
     public function encodedLengthProvider(): array
     {
         // [encoded length value, length value] 
-        $default = [
+        $result = [
             [0, 0],        // Low limit value for 1 byte encoded length
             [0x39, 0x39],  // Arbitrary median value for 1 byte encoded length
             [0x7f, 0x7F],  // High limit value for 1 byte encoded length
@@ -64,17 +64,13 @@ class APILengthCoDecTest extends TestCase
             [0xEFFFFFFF, 0xFFFFFFF],  // High limit value for 4 bytes encoded length
         ];
 
-        if (PHP_INT_SIZE < 8) {
-            return $default;
+        if (PHP_INT_SIZE > 4) {
+            $result[] = [0xF010000000, 0x10000000];  // Low limit value for 5 bytes encoded length
+            $result[] = [0xF10D4EF9C3, 0x10D4EF9C3]; // Arbitrary median value for 5 bytes encoded length
+            $result[] = [0xF7FFFFFFFF, 0x7FFFFFFFF]; // High limit value for 5 bytes encoded length
         }
 
-        $append = [
-            [0xF010000000, 0x10000000],  // Low limit value for 5 bytes encoded length
-            [0xF10D4EF9C3, 0x10D4EF9C3], // Arbitrary median value for 5 bytes encoded length
-            [0xF7FFFFFFFF, 0x7FFFFFFFF], // High limit value for 5 bytes encoded length
-        ];
-
-        return array_merge($default, $append);
+        return $result;
     }
 
     /**
