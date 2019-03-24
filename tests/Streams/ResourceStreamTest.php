@@ -77,7 +77,7 @@ class ResourceStreamTest extends TestCase
     {
         return [
             [fopen(__FILE__, 'rb'),], // Myself, sure I exists
-            [fsockopen('tcp://127.0.0.1', 18728),], // Socket
+            [fsockopen('tcp://127.0.0.1', getenv('ROS_PORT_MODERN')),], // Socket
             [STDIN, false], // Try it, but do not close STDIN please !!!
             // What else ?
         ];
