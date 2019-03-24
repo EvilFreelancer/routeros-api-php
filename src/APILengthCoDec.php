@@ -48,7 +48,7 @@ class APILengthCoDec
         // - length > 0x7FFFFFFFFF : not supported
 
         if ($length < 0) {
-            throw new \DomainException("Length of word can not be negative ($length)");
+            throw new \DomainException("Length of word could not to be negative ($length)");
         }
 
         if ($length <= 0x7F) {
@@ -65,23 +65,11 @@ class APILengthCoDec
 
         if ($length <= 0x0FFFFFFF) {
             return BinaryStringHelper::IntegerToNBOBinaryString(0xE0000000 + $length);
-        } // cannot compare with 0x7FFFFFFFFF on 32 bits systems
-
-        if (PHP_INT_SIZE < 8) {
-            // Cannot be done on 32 bits systems
-            // PHP5 windows versions of php, even on 64 bits systems was impacted
-            // see : https://stackoverflow.com/questions/27865340/php-int-size-returns-4-but-my-operating-system-is-64-bit
-
-            // @codeCoverageIgnoreStart
-            throw new \OverflowException("Your system is using 32 bits integers, cannot encode length of $length bytes on this system");
-            // @codeCoverageIgnoreEnd
         }
 
-        if ($length <= 0x7FFFFFFFFF) {
-            return BinaryStringHelper::IntegerToNBOBinaryString(0xF000000000 + $length);
-        }
-
-        throw new \DomainException("Length of word too huge ($length)");
+        // https://wiki.mikrotik.com/wiki/Manual:API#API_words
+        // If len >= 0x10000000 then 0xF0 and len as four bytes
+        return BinaryStringHelper::IntegerToNBOBinaryString(0xF000000000 + $length);
     }
 
     // Decode length of data when reading :

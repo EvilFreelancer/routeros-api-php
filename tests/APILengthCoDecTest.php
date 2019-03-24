@@ -34,24 +34,6 @@ class APILengthCoDecTest extends TestCase
     }
 
     /**
-     * @dataProvider encodeLengthTooLargeProvider
-     * @expectedException \DomainException
-     * @covers ::encodeLength
-     */
-    public function test__encodeLengthTooLarge($length)
-    {
-        APILengthCoDec::encodeLength($length);
-    }
-
-    public function encodeLengthTooLargeProvider()
-    {
-        return [
-            [0x7FFFFFFFFF+1], 
-            [PHP_INT_MAX], 
-        ];
-    }
-
-    /**
      * @dataProvider encodedLengthProvider
      * @covers ::encodeLength
      */
