@@ -15,7 +15,13 @@ use RouterOS\Helpers\BinaryStringHelper;
  */
 class APILengthCoDec
 {
-    public static function encodeLength(int $length): string
+    /**
+     * Encode string to length of string
+     *
+     * @param   int|float $length
+     * @return  string
+     */
+    public static function encodeLength($length): string
     {
         // Encode the length :
         // - if length <= 0x7F (binary : 01111111 => 7 bits set to 1)
@@ -161,8 +167,9 @@ class APILengthCoDec
             if (PHP_INT_SIZE < 8) {
                 // Cannot be done on 32 bits systems
                 // PHP5 windows versions of php, even on 64 bits systems was impacted
-                // see : https://stackoverflow.com/questions/27865340/php-int-size-returns-4-but-my-operating-system-is-64-bit 
+                // see : https://stackoverflow.com/questions/27865340/php-int-size-returns-4-but-my-operating-system-is-64-bit
                 // How can we test it ?
+
                 // @codeCoverageIgnoreStart
                 throw new \OverflowException("Your system is using 32 bits integers, cannot decode this value ($firstByte) on this system");
                 // @codeCoverageIgnoreEnd

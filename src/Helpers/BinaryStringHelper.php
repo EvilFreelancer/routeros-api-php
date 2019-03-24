@@ -23,10 +23,10 @@ class BinaryStringHelper
      * Compatible with 8, 16, 32, 64 etc.. bits systems
      *
      * @see https://en.wikipedia.org/wiki/Endianness
-     * @param   int $value the integer value to be converted
+     * @param   int|float $value the integer value to be converted
      * @return  string the binary string
      */
-    public static function IntegerToNBOBinaryString(int $value): string
+    public static function IntegerToNBOBinaryString($value): string
     {
         // Initialize an empty string
         $buffer = '';
