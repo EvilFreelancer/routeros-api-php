@@ -46,7 +46,7 @@ class APILengthCoDecTest extends TestCase
     public function encodedLengthProvider(): array
     {
         // [encoded length value, length value] 
-        return [
+        $default = [
             [0, 0],        // Low limit value for 1 byte encoded length
             [0x39, 0x39],  // Arbitrary median value for 1 byte encoded length
             [0x7f, 0x7F],  // High limit value for 1 byte encoded length
@@ -63,29 +63,18 @@ class APILengthCoDecTest extends TestCase
             [0xE5AD736B, 0x5AD736B],  // Arbitrary median value for 4 bytes encoded length
             [0xEFFFFFFF, 0xFFFFFFF],  // High limit value for 4 bytes encoded length
         ];
-    }
 
-    /**
-     * @dataProvider encodedLengthProvider64
-     * @covers ::encodeLength
-     */
-    public function test__encodeLength64($expected, $length)
-    {
         if (PHP_INT_SIZE < 8) {
-            $this->markTestSkipped('Available only on x64 CPUs');
+            return $default;
         }
 
-        $this->assertEquals(BinaryStringHelper::IntegerToNBOBinaryString((int) $expected), APILengthCoDec::encodeLength($length));
-    }
-
-    public function encodedLengthProvider64(): array
-    {
-        // [encoded length value, length value]
-        return [
+        $append = [
             [0xF010000000, 0x10000000],  // Low limit value for 5 bytes encoded length
             [0xF10D4EF9C3, 0x10D4EF9C3], // Arbitrary median value for 5 bytes encoded length
             [0xF7FFFFFFFF, 0x7FFFFFFFF], // High limit value for 5 bytes encoded length
         ];
+
+        return array_merge($default, $append);
     }
 
     /**
@@ -94,21 +83,6 @@ class APILengthCoDecTest extends TestCase
      */
     public function test__decodeLength($encodedLength, $expected)
     {
-        // We have to provide $encodedLength as a "bytes" stream
-        $stream = new StringStream(BinaryStringHelper::IntegerToNBOBinaryString($encodedLength));
-        $this->assertEquals($expected, APILengthCoDec::decodeLength($stream));
-    }
-
-    /**
-     * @dataProvider encodedLengthProvider64
-     * @covers ::decodeLength
-     */
-    public function test__decodeLength64($encodedLength, $expected)
-    {
-        if (PHP_INT_SIZE < 8) {
-            $this->markTestSkipped('Available only on x64 CPUs');
-        }
-
         // We have to provide $encodedLength as a "bytes" stream
         $stream = new StringStream(BinaryStringHelper::IntegerToNBOBinaryString($encodedLength));
         $this->assertEquals($expected, APILengthCoDec::decodeLength($stream));

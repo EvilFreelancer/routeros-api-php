@@ -24,7 +24,7 @@ class BinaryStringHelperTest extends TestCase
 
     public function IntegerToNBOBinaryStringProvider(): array
     {
-        return [
+        $default = [
             [0, chr(0)], // lower boundary value
             [0xFFFFFFFF, chr(0xFF) . chr(0xFF) . chr(0xFF) . chr(0xFF)], // 32 bits maximal value
 
@@ -37,27 +37,17 @@ class BinaryStringHelperTest extends TestCase
             // Let's try random value
             [0x390DDD99, chr(0x39) . chr(0x0D) . chr(0xDD) . chr(0x99)],
         ];
-    }
 
-    /**
-     * @dataProvider IntegerToNBOBinaryStringProvider64
-     * @covers ::IntegerToNBOBinaryString
-     */
-    public function test__IntegerToNBOBinaryString64($value, $expected)
-    {
         if (PHP_INT_SIZE < 8) {
-            $this->markTestSkipped('Available only on x64 CPUs');
+            return $default;
         }
 
-        $this->assertEquals($expected, BinaryStringHelper::IntegerToNBOBinaryString($value));
-    }
-
-    public function IntegerToNBOBinaryStringProvider64(): array
-    {
-        return [
+        $append = [
             // -1 is encoded with 0xFFFFFFF.....
             // 64 bits maximal value (on a 64 bits system only)
             [-1, chr(0xFF) . chr(0xFF) . chr(0xFF) . chr(0xFF) . chr(0xFF) . chr(0xFF) . chr(0xFF) . chr(0xFF)], // 64 bits upper boundary value
         ];
+
+        return array_merge($default, $append);
     }
 }
