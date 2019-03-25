@@ -16,7 +16,7 @@ class ClientTest extends TestCase
     {
         try {
             $config = new Config();
-            $config->set('user', 'admin')->set('pass', 'admin')->set('host', '127.0.0.1');
+            $config->set('user', getenv('ROS_USER'))->set('pass', getenv('ROS_PASS'))->set('host', getenv('ROS_HOST'));
             $obj = new Client($config);
             $this->assertInternalType('object', $obj);
             $socket = $obj->getSocket();
@@ -30,9 +30,9 @@ class ClientTest extends TestCase
     {
         try {
             $config = new Config([
-                'user' => 'admin',
-                'pass' => 'admin',
-                'host' => '127.0.0.1'
+                'user' => getenv('ROS_USER'),
+                'pass' => getenv('ROS_PASS'),
+                'host' => getenv('ROS_HOST')
             ]);
             $obj    = new Client($config);
             $this->assertInternalType('object', $obj);
@@ -47,9 +47,9 @@ class ClientTest extends TestCase
     {
         try {
             $obj = new Client([
-                'user' => 'admin',
-                'pass' => 'admin',
-                'host' => '127.0.0.1'
+                'user' => getenv('ROS_USER'),
+                'pass' => getenv('ROS_PASS'),
+                'host' => getenv('ROS_HOST')
             ]);
             $this->assertInternalType('object', $obj);
             $socket = $obj->getSocket();
@@ -64,8 +64,8 @@ class ClientTest extends TestCase
         $this->expectException(ConfigException::class);
 
         $obj = new Client([
-            'user' => 'admin',
-            'pass' => 'admin',
+            'user' => getenv('ROS_USER'),
+            'pass' => getenv('ROS_PASS'),
         ]);
     }
 
@@ -73,8 +73,8 @@ class ClientTest extends TestCase
     {
         try {
             $config = new Config();
-            $config->set('user', 'admin')->set('pass', 'admin')
-                ->set('host', '127.0.0.1')->set('port', 18728)->set('legacy', true);
+            $config->set('user', getenv('ROS_USER'))->set('pass', getenv('ROS_PASS'))
+                ->set('host', getenv('ROS_HOST'))->set('port', (int) getenv('ROS_PORT_MODERN'))->set('legacy', true);
             $obj = new Client($config);
             $this->assertInternalType('object', $obj);
         } catch (\Exception $e) {
@@ -84,15 +84,15 @@ class ClientTest extends TestCase
 
     /**
      * Test non legacy connection on legacy router (pre 6.43)
-     * 
+     *
      * login() method recognise legacy router response and swap to legacy mode
-     */ 
+     */
     public function test__constructLegacy2()
     {
         try {
             $config = new Config();
-            $config->set('user', 'admin')->set('pass', 'admin')
-                ->set('host', '127.0.0.1')->set('port', 18728)->set('legacy', false);
+            $config->set('user', getenv('ROS_USER'))->set('pass', getenv('ROS_PASS'))
+                ->set('host', getenv('ROS_HOST'))->set('port', (int) getenv('ROS_PORT_MODERN'))->set('legacy', false);
             $obj = new Client($config);
             $this->assertInternalType('object', $obj);
         } catch (\Exception $e) {
@@ -106,7 +106,7 @@ class ClientTest extends TestCase
         $this->expectException(ClientException::class);
 
         $config = (new Config())->set('attempts', 2);
-        $config->set('user', 'admin')->set('pass', 'admin2')->set('host', '127.0.0.1');
+        $config->set('user', getenv('ROS_USER'))->set('pass', 'admin2')->set('host', getenv('ROS_HOST'));
         $obj = new Client($config);
     }
 
@@ -118,14 +118,14 @@ class ClientTest extends TestCase
         $this->expectException(ClientException::class);
 
         $config = new Config();
-        $config->set('user', 'admin')->set('pass', 'admin')->set('host', '127.0.0.1')->set('port', 11111);
+        $config->set('user', getenv('ROS_USER'))->set('pass', getenv('ROS_PASS'))->set('host', getenv('ROS_HOST'))->set('port', 11111);
         $obj = new Client($config);
     }
 
     public function testWriteRead()
     {
         $config = new Config();
-        $config->set('user', 'admin')->set('pass', 'admin')->set('host', '127.0.0.1');
+        $config->set('user', getenv('ROS_USER'))->set('pass', getenv('ROS_PASS'))->set('host', getenv('ROS_HOST'));
         $obj = new Client($config);
 
         $query   = new Query('/ip/address/print');
@@ -157,7 +157,7 @@ class ClientTest extends TestCase
     public function testWriteReadString()
     {
         $config = new Config();
-        $config->set('user', 'admin')->set('pass', 'admin')->set('host', '127.0.0.1');
+        $config->set('user', getenv('ROS_USER'))->set('pass', getenv('ROS_PASS'))->set('host', getenv('ROS_HOST'));
         $obj = new Client($config);
 
         $readTrap = $obj->wr('/interface', false);
@@ -168,7 +168,7 @@ class ClientTest extends TestCase
     public function testWriteReadArray()
     {
         $config = new Config();
-        $config->set('user', 'admin')->set('pass', 'admin')->set('host', '127.0.0.1');
+        $config->set('user', getenv('ROS_USER'))->set('pass', getenv('ROS_PASS'))->set('host', getenv('ROS_HOST'));
         $obj = new Client($config);
 
         $readTrap = $obj->wr(['/interface'], false);
@@ -179,7 +179,7 @@ class ClientTest extends TestCase
     public function testFatal()
     {
         $config = new Config();
-        $config->set('user', 'admin')->set('pass', 'admin')->set('host', '127.0.0.1');
+        $config->set('user', getenv('ROS_USER'))->set('pass', getenv('ROS_PASS'))->set('host', getenv('ROS_HOST'));
         $obj = new Client($config);
 
         $readTrap = $obj->wr('/quit');
@@ -192,7 +192,7 @@ class ClientTest extends TestCase
         $this->expectException(QueryException::class);
 
         $config = new Config();
-        $config->set('user', 'admin')->set('pass', 'admin')->set('host', '127.0.0.1');
+        $config->set('user', getenv('ROS_USER'))->set('pass', getenv('ROS_PASS'))->set('host', getenv('ROS_HOST'));
         $obj   = new Client($config);
         $error = $obj->write($obj)->read(false);
     }
@@ -200,9 +200,9 @@ class ClientTest extends TestCase
     public function testGetConfig()
     {
         $obj = new Client([
-            'user' => 'admin',
-            'pass' => 'admin',
-            'host' => '127.0.0.1'
+            'user' => getenv('ROS_USER'),
+            'pass' => getenv('ROS_PASS'),
+            'host' => getenv('ROS_HOST')
         ]);
 
         $config = $obj->getConfig();

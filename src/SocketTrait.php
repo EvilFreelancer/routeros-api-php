@@ -7,6 +7,27 @@ use RouterOS\Exceptions\ClientException;
 trait SocketTrait
 {
     /**
+     * Socket resource
+     *
+     * @var resource|null
+     */
+    private $_socket;
+
+    /**
+     * Code of error
+     *
+     * @var int
+     */
+    private $_socket_err_num;
+
+    /**
+     * Description of socket error
+     *
+     * @var string
+     */
+    private $_socket_err_str;
+
+    /**
      * Initiate socket session
      *
      * @return  void

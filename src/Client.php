@@ -18,32 +18,19 @@ class Client implements Interfaces\ClientInterface
     use SocketTrait;
 
     /**
-     * Socket resource
-     *
-     * @var resource|null
-     */
-    private $_socket;
-
-    /**
-     * Code of error
-     *
-     * @var int
-     */
-    private $_socket_err_num;
-
-    /**
-     * Description of socket error
-     *
-     * @var string
-     */
-    private $_socket_err_str;
-
-    /**
      * Configuration of connection
      *
      * @var \RouterOS\Config
      */
     private $_config;
+
+    /**
+     * API communication object
+     *
+     * @var \RouterOS\APIConnector
+     */
+
+    private $_connector;
 
     /**
      * Client constructor.
@@ -109,91 +96,10 @@ class Client implements Interfaces\ClientInterface
     }
 
     /**
-     * Encode given length in RouterOS format
-     *
-     * @param   string $string
-     * @return  string Encoded length
-     * @throws  \RouterOS\Exceptions\ClientException
-     */
-    private function encodeLength(string $string): string
-    {
-        $length = \strlen($string);
-
-        if ($length < 128) {
-            $orig_length = $length;
-            $offset      = -1;
-        } elseif ($length < 16384) {
-            $orig_length = $length | 0x8000;
-            $offset      = -2;
-        } elseif ($length < 2097152) {
-            $orig_length = $length | 0xC00000;
-            $offset      = -3;
-        } elseif ($length < 268435456) {
-            $orig_length = $length | 0xE0000000;
-            $offset      = -4;
-        } else {
-            throw new ClientException("Unable to encode length of '$string'");
-        }
-
-        // Pack string to binary format
-        $result = pack('I*', $orig_length);
-        // Parse binary string to array
-        $result = str_split($result);
-        // Reverse array
-        $result = array_reverse($result);
-        // Extract values from offset to end of array
-        $result = \array_slice($result, $offset);
-
-        // Sew items into one line
-        $output = null;
-        foreach ($result as $item) {
-            $output .= $item;
-        }
-
-        return $output;
-    }
-
-    /**
-     * Read length of line
-     *
-     * @param   int $byte
-     * @return  int
-     */
-    private function getLength(int $byte): int
-    {
-        // If the first bit is set then we need to remove the first four bits, shift left 8
-        // and then read another byte in.
-        // We repeat this for the second and third bits.
-        // If the fourth bit is set, we need to remove anything left in the first byte
-        // and then read in yet another byte.
-        if ($byte & 128) {
-            if (($byte & 192) === 128) {
-                $length = (($byte & 63) << 8) + \ord(fread($this->_socket, 1));
-            } elseif (($byte & 224) === 192) {
-                $length = (($byte & 31) << 8) + \ord(fread($this->_socket, 1));
-                $length = ($length << 8) + \ord(fread($this->_socket, 1));
-            } elseif (($byte & 240) === 224) {
-                $length = (($byte & 15) << 8) + \ord(fread($this->_socket, 1));
-                $length = ($length << 8) + \ord(fread($this->_socket, 1));
-                $length = ($length << 8) + \ord(fread($this->_socket, 1));
-            } else {
-                $length = \ord(fread($this->_socket, 1));
-                $length = ($length << 8) + \ord(fread($this->_socket, 1)) * 3;
-                $length = ($length << 8) + \ord(fread($this->_socket, 1));
-                $length = ($length << 8) + \ord(fread($this->_socket, 1));
-            }
-        } else {
-            $length = $byte;
-        }
-        return $length;
-    }
-
-    /**
      * Send write query to RouterOS (with or without tag)
      *
      * @param   string|array|\RouterOS\Query $query
      * @return  \RouterOS\Client
-     * @throws  \RouterOS\Exceptions\ClientException
      * @throws  \RouterOS\Exceptions\QueryException
      */
     public function write($query): Client
@@ -211,12 +117,11 @@ class Client implements Interfaces\ClientInterface
 
         // Send commands via loop to router
         foreach ($query->getQuery() as $command) {
-            $command = trim($command);
-            fwrite($this->_socket, $this->encodeLength($command) . $command);
+            $this->_connector->writeWord(trim($command));
         }
 
-        // Write zero-terminator
-        fwrite($this->_socket, \chr(0));
+        // Write zero-terminator (empty string)
+        $this->_connector->writeWord('');
 
         return $this;
     }
@@ -229,7 +134,7 @@ class Client implements Interfaces\ClientInterface
      * Each block end with an zero byte (empty line)
      * Reply ends with a complete !done or !fatal block (ended with 'empty line')
      * A !fatal block precedes TCP connexion close
-     * 
+     *
      * @param   bool $parse
      * @return  array
      */
@@ -242,12 +147,9 @@ class Client implements Interfaces\ClientInterface
 
         // Read answer from socket in loop
         while (true) {
-            // Read the first byte of input which gives us some or all of the length
-            // of the remaining reply.
-            $byte   = fread($this->_socket, 1);
-            $length = $this->getLength(\ord($byte));
+            $word = $this->_connector->readWord();
 
-            if ($length == 0) {
+            if ('' === $word) {
                 if ($lastReply) {
                     // We received a !done or !fatal message in a precedent loop
                     // response is complete
@@ -260,12 +162,12 @@ class Client implements Interfaces\ClientInterface
             }
 
             // Save output line to response array
-            $response[] = $line =  stream_get_contents($this->_socket, $length);
+            $response[] = $word;
 
             // If we get a !done or !fatal line in response, we are now ready to finish the read
             // but we need to wait a 0 length message, switch the flag
-            if ('!done' === $line || '!fatal' === $line) {
-                $lastReply = true;                
+            if ('!done' === $word || '!fatal' === $word) {
+                $lastReply = true;
             }
         }
 
@@ -278,7 +180,6 @@ class Client implements Interfaces\ClientInterface
      *
      * @param   string|array|\RouterOS\Query $query
      * @return  \RouterOS\Client
-     * @throws  \RouterOS\Exceptions\ClientException
      * @throws  \RouterOS\Exceptions\QueryException
      */
     public function w($query): Client
@@ -449,7 +350,7 @@ class Client implements Interfaces\ClientInterface
 
             // If socket is active
             if (null !== $this->getSocket()) {
-
+                $this->_connector = new APIConnector(new Streams\ResourceStream($this->getSocket()));
                 // If we logged in then exit from loop
                 if (true === $this->login()) {
                     $connected = true;
