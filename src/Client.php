@@ -240,7 +240,7 @@ class Client implements Interfaces\ClientInterface
                         // If we have lines after current one
                         if (isset($response[$j])) {
                             $this->pregResponse($response[$j], $matches);
-                            if (!empty($matches)) {
+                            if (isset($matches[1][0]) && isset($matches[2][0])) {
                                 $result['after'][$matches[1][0]] = $matches[2][0];
                             }
                         }
@@ -248,7 +248,7 @@ class Client implements Interfaces\ClientInterface
                     break 2;
                 default:
                     $this->pregResponse($value, $matches);
-                    if (!empty($matches)) {
+                    if (isset($matches[1][0]) && isset($matches[2][0])) {
                         $result[$i][$matches[1][0]] = $matches[2][0];
                     }
                     break;
