@@ -2,9 +2,6 @@
 
 namespace RouterOS\Interfaces;
 
-use RouterOS\Client;
-use RouterOS\Query;
-
 /**
  * Interface ClientInterface
  *
@@ -51,50 +48,23 @@ interface ClientInterface
     /**
      * Return socket resource if is exist
      *
-     * @return  resource
+     * @return resource
      */
     public function getSocket();
 
     /**
      * Read answer from server after query was executed
      *
-     * @param   bool $parse
-     * @return  array
+     * @param bool $parse
+     * @return mixed
      */
-    public function read(bool $parse = true): array;
+    public function read(bool $parse = true);
 
     /**
      * Send write query to RouterOS (with or without tag)
      *
-     * @param   string|array|\RouterOS\Query $query
-     * @return  \RouterOS\Client
+     * @param string|array|\RouterOS\Query $query
+     * @return \RouterOS\Interfaces\ClientInterface
      */
-    public function write($query): Client;
-
-    /**
-     * Alias for ->read() method
-     *
-     * @param   bool $parse
-     * @return  array
-     * @since   0.7
-     */
-    public function r(bool $parse = true): array;
-
-    /**
-     * Alias for ->write() method
-     *
-     * @param   string|array|\RouterOS\Query $query
-     * @return  \RouterOS\Client
-     */
-    public function w($query): Client;
-
-    /**
-     * Alias for ->write()->read() combination of methods
-     *
-     * @param   string|array|\RouterOS\Query $query
-     * @param   bool                         $parse
-     * @return  array
-     * @since   0.6
-     */
-    public function wr($query, bool $parse = true): array;
+    public function write($query): self;
 }
