@@ -6,6 +6,7 @@ use RouterOS\Exceptions\ClientException;
 use RouterOS\Exceptions\ConfigException;
 use RouterOS\Exceptions\QueryException;
 use RouterOS\Helpers\ArrayHelper;
+use RouterOS\Interfaces\ClientInterface;
 
 /**
  * Class Client for RouterOS management
@@ -15,7 +16,7 @@ use RouterOS\Helpers\ArrayHelper;
  */
 class Client implements Interfaces\ClientInterface
 {
-    use SocketTrait;
+    use SocketTrait, ShortsTrait;
 
     /**
      * Configuration of connection
@@ -99,10 +100,10 @@ class Client implements Interfaces\ClientInterface
      * Send write query to RouterOS (with or without tag)
      *
      * @param string|array|\RouterOS\Query $query
-     * @return \RouterOS\Client
+     * @return \RouterOS\Interfaces\ClientInterface
      * @throws \RouterOS\Exceptions\QueryException
      */
-    public function write($query): Client
+    public function write($query): ClientInterface
     {
         if (\is_string($query)) {
             $query = new Query($query);
@@ -136,9 +137,9 @@ class Client implements Interfaces\ClientInterface
      * A !fatal block precedes TCP connexion close
      *
      * @param bool $parse
-     * @return array
+     * @return mixed
      */
-    public function read(bool $parse = true): array
+    public function read(bool $parse = true)
     {
         // By default response is empty
         $response = [];
@@ -172,46 +173,62 @@ class Client implements Interfaces\ClientInterface
         }
 
         // Parse results and return
-        return $parse ? $this->parseResponse($response) : $response;
+        return $parse ? $this->rosario($response) : $response;
     }
 
     /**
-     * Alias for ->write() method
+     * Class Rosario, created for work with response array from RouterOS
+     * as with multiple chunks of values, this class was created by memory save reasons.
      *
-     * @param string|array|\RouterOS\Query $query
-     * @return \RouterOS\Client
-     * @throws \RouterOS\Exceptions\QueryException
+     * Based on RouterOSResponseArray solution by @arily
+     *
+     * @link    https://github.com/arily/RouterOSResponseArray
+     * @package RouterOS
+     * @since   0.10
      */
-    public function w($query): Client
-    {
-        return $this->write($query);
-    }
 
     /**
-     * Alias for ->read() method
+     * This method was created by memory save reasons, it convert response
+     * from RouterOS to readable array in safe way.
      *
-     * @param bool $parse
-     * @return array
-     * @since 0.7
+     * @param array $raw Array RAW response from server
+     * @return mixed
+     *
+     * Based on RouterOSResponseArray solution by @arily
+     *
+     * @link    https://github.com/arily/RouterOSResponseArray
+     * @since   0.10
      */
-    public function r(bool $parse = true): array
+    private function rosario(array $raw): array
     {
-        return $this->read($parse);
-    }
+        // This RAW should't be an error
+        $positions = array_keys($raw, '!re');
+        $count     = count($raw);
+        $result    = [];
 
-    /**
-     * Alias for ->write()->read() combination of methods
-     *
-     * @param string|array|\RouterOS\Query $query
-     * @param bool                         $parse
-     * @return array
-     * @throws \RouterOS\Exceptions\ClientException
-     * @throws \RouterOS\Exceptions\QueryException
-     * @since 0.6
-     */
-    public function wr($query, bool $parse = true): array
-    {
-        return $this->write($query)->read($parse);
+        if (isset($positions[1])) {
+
+            foreach ($positions as $key => $position) {
+                // Get length of future block
+                $length = isset($positions[$key + 1])
+                    ? $positions[$key + 1] - $position + 1
+                    : $count - $position;
+
+                // Convert array to simple items
+                $item = [];
+                for ($i = 1; $i < $length; $i++) {
+                    $item[] = array_shift($raw);
+                }
+
+                // Save as result
+                $result[] = $this->parseResponse($item)[0];
+            }
+
+        } else {
+            $result = $this->parseResponse($raw);
+        }
+
+        return $result;
     }
 
     /**
@@ -368,5 +385,4 @@ class Client implements Interfaces\ClientInterface
         // Return status of connection
         return $connected;
     }
-
 }
