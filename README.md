@@ -82,34 +82,6 @@ $client->write($query1)->write($query2)->write($query3);
 $client->w($query1)->w($query2)->w($query3);
 ```
 
-### Solving issue `Allowed memory size of ... bytes exhausted`
-
-Rosario is a wrapper for the Client class was developed specifically
-to solve the problem of excess memory consumption. It includes the
-functionality that extends the work with the router's response as an
-array.
-
-To use it you just need replace `Client` class to `Rosario`
-
-```php
-<?php
-require_once __DIR__ . '/vendor/autoload.php';
-
-use \RouterOS\Rosario;
-
-// Initiate client with config
-$client = new Rosario([
-    'timeout' => 1,
-    'host'    => '127.0.0.1',
-    'user'    => 'admin',
-    'pass'    => 'admin'
-]);
-
-// Send query to RouterOS and read response
-$response = $client->write('/ip/firewall/address-list/print')->read();
-print_r($response);
-```
-
 ### How to configure the client
 
 ```php
