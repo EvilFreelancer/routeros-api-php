@@ -35,10 +35,10 @@ class Client implements Interfaces\ClientInterface
     /**
      * Client constructor.
      *
-     * @param   array|\RouterOS\Config $config
-     * @throws  \RouterOS\Exceptions\ClientException
-     * @throws  \RouterOS\Exceptions\ConfigException
-     * @throws  \RouterOS\Exceptions\QueryException
+     * @param array|\RouterOS\Config $config
+     * @throws \RouterOS\Exceptions\ClientException
+     * @throws \RouterOS\Exceptions\ConfigException
+     * @throws \RouterOS\Exceptions\QueryException
      */
     public function __construct($config)
     {
@@ -64,9 +64,9 @@ class Client implements Interfaces\ClientInterface
     /**
      * Get some parameter from config
      *
-     * @param   string $parameter Name of required parameter
-     * @return  mixed
-     * @throws  \RouterOS\Exceptions\ConfigException
+     * @param string $parameter Name of required parameter
+     * @return mixed
+     * @throws \RouterOS\Exceptions\ConfigException
      */
     private function config(string $parameter)
     {
@@ -76,8 +76,8 @@ class Client implements Interfaces\ClientInterface
     /**
      * Return socket resource if is exist
      *
-     * @return  \RouterOS\Config
-     * @since   0.6
+     * @return \RouterOS\Config
+     * @since 0.6
      */
     public function getConfig(): Config
     {
@@ -87,8 +87,8 @@ class Client implements Interfaces\ClientInterface
     /**
      * Set configuration of client
      *
-     * @param   \RouterOS\Config $config
-     * @since   0.7
+     * @param \RouterOS\Config $config
+     * @since 0.7
      */
     public function setConfig(Config $config)
     {
@@ -98,9 +98,9 @@ class Client implements Interfaces\ClientInterface
     /**
      * Send write query to RouterOS (with or without tag)
      *
-     * @param   string|array|\RouterOS\Query $query
-     * @return  \RouterOS\Client
-     * @throws  \RouterOS\Exceptions\QueryException
+     * @param string|array|\RouterOS\Query $query
+     * @return \RouterOS\Client
+     * @throws \RouterOS\Exceptions\QueryException
      */
     public function write($query): Client
     {
@@ -135,8 +135,8 @@ class Client implements Interfaces\ClientInterface
      * Reply ends with a complete !done or !fatal block (ended with 'empty line')
      * A !fatal block precedes TCP connexion close
      *
-     * @param   bool $parse
-     * @return  array
+     * @param bool $parse
+     * @return array
      */
     public function read(bool $parse = true): array
     {
@@ -178,9 +178,9 @@ class Client implements Interfaces\ClientInterface
     /**
      * Alias for ->write() method
      *
-     * @param   string|array|\RouterOS\Query $query
-     * @return  \RouterOS\Client
-     * @throws  \RouterOS\Exceptions\QueryException
+     * @param string|array|\RouterOS\Query $query
+     * @return \RouterOS\Client
+     * @throws \RouterOS\Exceptions\QueryException
      */
     public function w($query): Client
     {
@@ -190,9 +190,9 @@ class Client implements Interfaces\ClientInterface
     /**
      * Alias for ->read() method
      *
-     * @param   bool $parse
-     * @return  array
-     * @since   0.7
+     * @param bool $parse
+     * @return array
+     * @since 0.7
      */
     public function r(bool $parse = true): array
     {
@@ -202,12 +202,12 @@ class Client implements Interfaces\ClientInterface
     /**
      * Alias for ->write()->read() combination of methods
      *
-     * @param   string|array|\RouterOS\Query $query
-     * @param   bool                         $parse
-     * @return  array
-     * @throws  \RouterOS\Exceptions\ClientException
-     * @throws  \RouterOS\Exceptions\QueryException
-     * @since   0.6
+     * @param string|array|\RouterOS\Query $query
+     * @param bool                         $parse
+     * @return array
+     * @throws \RouterOS\Exceptions\ClientException
+     * @throws \RouterOS\Exceptions\QueryException
+     * @since 0.6
      */
     public function wr($query, bool $parse = true): array
     {
@@ -217,10 +217,10 @@ class Client implements Interfaces\ClientInterface
     /**
      * Parse response from Router OS
      *
-     * @param   array $response Response data
-     * @return  array Array with parsed data
+     * @param array $response Response data
+     * @return array Array with parsed data
      */
-    private function parseResponse(array $response): array
+    protected function parseResponse(array $response): array
     {
         $result = [];
         $i      = -1;
@@ -260,8 +260,8 @@ class Client implements Interfaces\ClientInterface
     /**
      * Parse result from RouterOS by regular expression
      *
-     * @param   string $value
-     * @param   array  $matches
+     * @param string $value
+     * @param array  $matches
      */
     private function pregResponse(string $value, &$matches)
     {
@@ -271,11 +271,11 @@ class Client implements Interfaces\ClientInterface
     /**
      * Authorization logic
      *
-     * @param   bool $legacyRetry Retry login if we detect legacy version of RouterOS
-     * @return  bool
-     * @throws  \RouterOS\Exceptions\ClientException
-     * @throws  \RouterOS\Exceptions\ConfigException
-     * @throws  \RouterOS\Exceptions\QueryException
+     * @param bool $legacyRetry Retry login if we detect legacy version of RouterOS
+     * @return bool
+     * @throws \RouterOS\Exceptions\ClientException
+     * @throws \RouterOS\Exceptions\ConfigException
+     * @throws \RouterOS\Exceptions\QueryException
      */
     private function login(bool $legacyRetry = false): bool
     {
@@ -320,9 +320,9 @@ class Client implements Interfaces\ClientInterface
     /**
      * Detect by login request if firmware is legacy
      *
-     * @param   array $response
-     * @return  bool
-     * @throws  ConfigException
+     * @param array $response
+     * @return bool
+     * @throws ConfigException
      */
     private function isLegacy(array &$response): bool
     {
@@ -332,10 +332,10 @@ class Client implements Interfaces\ClientInterface
     /**
      * Connect to socket server
      *
-     * @return  bool
-     * @throws  \RouterOS\Exceptions\ClientException
-     * @throws  \RouterOS\Exceptions\ConfigException
-     * @throws  \RouterOS\Exceptions\QueryException
+     * @return bool
+     * @throws \RouterOS\Exceptions\ClientException
+     * @throws \RouterOS\Exceptions\ConfigException
+     * @throws \RouterOS\Exceptions\QueryException
      */
     private function connect(): bool
     {
