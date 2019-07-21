@@ -177,17 +177,6 @@ class Client implements Interfaces\ClientInterface
     }
 
     /**
-     * Class Rosario, created for work with response array from RouterOS
-     * as with multiple chunks of values, this class was created by memory save reasons.
-     *
-     * Based on RouterOSResponseArray solution by @arily
-     *
-     * @link    https://github.com/arily/RouterOSResponseArray
-     * @package RouterOS
-     * @since   0.10
-     */
-
-    /**
      * This method was created by memory save reasons, it convert response
      * from RouterOS to readable array in safe way.
      *
