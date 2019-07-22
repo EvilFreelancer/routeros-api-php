@@ -14,7 +14,8 @@ use RouterOS\Interfaces\ClientInterface;
  * @package RouterOS
  * @since   0.1
  */
-class Client implements Interfaces\ClientInterface {
+class Client implements Interfaces\ClientInterface 
+{
 	use SocketTrait, ShortsTrait;
 
 	/**
@@ -40,7 +41,8 @@ class Client implements Interfaces\ClientInterface {
 	 * @throws \RouterOS\Exceptions\ConfigException
 	 * @throws \RouterOS\Exceptions\QueryException
 	 */
-	public function __construct($config) {
+	public function __construct($config) 
+	{
 		// If array then need create object
 		if (\is_array($config)) {
 			$config = new Config($config);
@@ -67,7 +69,8 @@ class Client implements Interfaces\ClientInterface {
 	 * @return mixed
 	 * @throws \RouterOS\Exceptions\ConfigException
 	 */
-	private function config(string $parameter) {
+	private function config(string $parameter) 
+	{
 		return $this->_config->get($parameter);
 	}
 
@@ -77,7 +80,8 @@ class Client implements Interfaces\ClientInterface {
 	 * @return \RouterOS\Config
 	 * @since 0.6
 	 */
-	public function getConfig(): Config {
+	public function getConfig(): Config 
+	{
 		return $this->_config;
 	}
 
@@ -87,7 +91,8 @@ class Client implements Interfaces\ClientInterface {
 	 * @param \RouterOS\Config $config
 	 * @since 0.7
 	 */
-	public function setConfig(Config $config) {
+	public function setConfig(Config $config) 
+	{
 		$this->_config = $config;
 	}
 
@@ -98,7 +103,8 @@ class Client implements Interfaces\ClientInterface {
 	 * @return \RouterOS\Interfaces\ClientInterface
 	 * @throws \RouterOS\Exceptions\QueryException
 	 */
-	public function write($query): ClientInterface {
+	public function write($query): ClientInterface 
+	{
 		if (\is_string($query)) {
 			$query = new Query($query);
 		} elseif (\is_array($query)) {
@@ -133,7 +139,8 @@ class Client implements Interfaces\ClientInterface {
 	 * @param bool $parse
 	 * @return mixed
 	 */
-	public function read(bool $parse = true) {
+	public function read(bool $parse = true) 
+	{
 		// By default response is empty
 		$response = [];
 		// We have to wait a !done or !fatal
@@ -174,7 +181,8 @@ class Client implements Interfaces\ClientInterface {
 	 *
 	 * @return Iterators\ResponseIterator
 	 */
-	public function readAsIterator() {
+	public function readAsIterator() 
+	{
 		return new Iterators\ResponseIterator($this->read(false));
 	}
 
@@ -271,7 +279,8 @@ class Client implements Interfaces\ClientInterface {
 	 * @param string $value
 	 * @param array  $matches
 	 */
-	private function pregResponse(string $value, &$matches) {
+	private function pregResponse(string $value, &$matches) 
+	{
 		preg_match_all('/^[=|\.](.*)=(.*)/', $value, $matches);
 	}
 
@@ -284,7 +293,8 @@ class Client implements Interfaces\ClientInterface {
 	 * @throws \RouterOS\Exceptions\ConfigException
 	 * @throws \RouterOS\Exceptions\QueryException
 	 */
-	private function login(bool $legacyRetry = false): bool {
+	private function login(bool $legacyRetry = false): bool 
+	{
 		// If legacy login scheme is enabled
 		if ($this->config('legacy')) {
 			// For the first we need get hash with salt
@@ -330,7 +340,8 @@ class Client implements Interfaces\ClientInterface {
 	 * @return bool
 	 * @throws ConfigException
 	 */
-	private function isLegacy(array &$response): bool {
+	private function isLegacy(array &$response): bool 
+	{
 		return \count($response) > 1 && $response[0] === '!done' && !$this->config('legacy');
 	}
 
@@ -342,7 +353,8 @@ class Client implements Interfaces\ClientInterface {
 	 * @throws \RouterOS\Exceptions\ConfigException
 	 * @throws \RouterOS\Exceptions\QueryException
 	 */
-	private function connect(): bool{
+	private function connect(): bool
+	{
 		// By default we not connected
 		$connected = false;
 
