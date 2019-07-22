@@ -143,7 +143,7 @@ class Client implements Interfaces\ClientInterface
     {
         // By default response is empty
         $response = [];
-        // We have to wait a !done or !fatal 
+        // We have to wait a !done or !fatal
         $lastReply = false;
 
         // Read answer from socket in loop
@@ -174,6 +174,16 @@ class Client implements Interfaces\ClientInterface
 
         // Parse results and return
         return $parse ? $this->rosario($response) : $response;
+    }
+
+    /**
+     * Read using Iterators to improve performance on large dataset
+     *
+     * @return \RouterOS\ResponseIterator
+     */
+    public function readAsIterator(): ResponseIterator
+    {
+        return new ResponseIterator($this);
     }
 
     /**
@@ -226,7 +236,7 @@ class Client implements Interfaces\ClientInterface
      * @param array $response Response data
      * @return array Array with parsed data
      */
-    protected function parseResponse(array $response): array
+    public function parseResponse(array $response): array
     {
         $result = [];
         $i      = -1;
