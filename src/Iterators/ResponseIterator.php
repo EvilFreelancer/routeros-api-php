@@ -9,20 +9,29 @@
 namespace RouterOS\Iterators;
 
 
+<<<<<<< HEAD
 /**
  * Class ResponseIterator
  * @package RouterOS\Iterators
  */
+=======
+>>>>>>> ccd0d5054aa39ec1c1fa9fdfa26988f4f0d53053
 class ResponseIterator implements \Iterator, \ArrayAccess, \Countable {
 	public $parsed = [];
 	public $raw = [];
 	public $current;
+<<<<<<< HEAD
 	public $length;
+=======
+>>>>>>> ccd0d5054aa39ec1c1fa9fdfa26988f4f0d53053
 	public function __construct($raw) {
 		$this->current = 0;
 		// This RAW should't be an error
 		$positions = array_keys($raw, '!re');
+<<<<<<< HEAD
 		$this->length = count($positions);
+=======
+>>>>>>> ccd0d5054aa39ec1c1fa9fdfa26988f4f0d53053
 		$count     = count($raw);
 		$result    = [];
 
@@ -35,7 +44,14 @@ class ResponseIterator implements \Iterator, \ArrayAccess, \Countable {
 					: $count - $position;
 
 				// Convert array to simple items
+<<<<<<< HEAD
 				$item = array_slice($raw,$position,$length);
+=======
+				$item = [];
+				for ($i = 1; $i < $length; $i++) {
+					$item[] = array_shift($raw);
+				}
+>>>>>>> ccd0d5054aa39ec1c1fa9fdfa26988f4f0d53053
 
 				// Save as result
 				$result[] = $item;

@@ -177,6 +177,7 @@ class Client implements Interfaces\ClientInterface
     }
 
 
+<<<<<<< HEAD
 	/**
 	 * Read using Iterators to improve performance on large dataset
 	 *
@@ -185,6 +186,11 @@ class Client implements Interfaces\ClientInterface
 	public function readAsIterator()
     {
     	return new Iterators\ResponseIterator($this->read(false));
+=======
+    public function readAsIterators()
+    {
+    	return new Iterators\ResponseIterator($this->rosario($this->read(false)));
+>>>>>>> ccd0d5054aa39ec1c1fa9fdfa26988f4f0d53053
     }
 
     /**
