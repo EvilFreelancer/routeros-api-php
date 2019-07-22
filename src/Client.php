@@ -176,6 +176,12 @@ class Client implements Interfaces\ClientInterface
         return $parse ? $this->rosario($response) : $response;
     }
 
+
+    public function readAsIterators()
+    {
+    	return new Iterators\ResponseIterator($this->rosario($this->read(false)));
+    }
+
     /**
      * This method was created by memory save reasons, it convert response
      * from RouterOS to readable array in safe way.
@@ -219,6 +225,7 @@ class Client implements Interfaces\ClientInterface
 
         return $result;
     }
+
 
     /**
      * Parse response from Router OS
