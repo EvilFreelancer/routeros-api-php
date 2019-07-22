@@ -8,37 +8,37 @@
 
 namespace RouterOS\Iterators;
 
-
 /**
  * Class ResponseIterator
  * @package RouterOS\Iterators
  */
+
 class ResponseIterator implements \Iterator, \ArrayAccess, \Countable {
+
 	public $parsed = [];
 	public $raw = [];
 	public $current;
 	public $length;
+
 	public function __construct($raw) {
 		$this->current = 0;
 		// This RAW should't be an error
 		$positions = array_keys($raw, '!re');
 		$this->length = count($positions);
-		$count     = count($raw);
-		$result    = [];
+		$count = count($raw);
+		$result = [];
 
 		if (isset($positions[1])) {
 
 			foreach ($positions as $key => $position) {
 				// Get length of future block
 				$length = isset($positions[$key + 1])
-					? $positions[$key + 1] - $position + 1
-					: $count - $position;
+				? $positions[$key + 1] - $position + 1
+				: $count - $position;
 
 				// Convert array to simple items
-				$item = array_slice($raw,$position,$length);
-
 				// Save as result
-				$result[] = $item;
+				$result[] = array_slice($raw, $position, $length);
 			}
 
 		} else {
@@ -47,13 +47,13 @@ class ResponseIterator implements \Iterator, \ArrayAccess, \Countable {
 
 		$this->raw = $result;
 	}
-	public function next(){
+	public function next() {
 		++$this->current;
 	}
 	public function current() {
-		if (isset($this->parsed[$this->current])){
+		if (isset($this->parsed[$this->current])) {
 			return $this->parsed[$this->current];
-		} elseif (isset($this->raw[$this->current])){
+		} elseif (isset($this->raw[$this->current])) {
 			return $this->parseResponse($this->raw[$this->current])[0];
 		} else {
 			return FALSE;
@@ -87,11 +87,11 @@ class ResponseIterator implements \Iterator, \ArrayAccess, \Countable {
 		unset($this->raw[$offset]);
 	}
 	public function offsetGet($offset) {
-		if (isset($this->parsed[$offset])){
+		if (isset($this->parsed[$offset])) {
 			return $this->parsed[$offset];
-		} elseif(isset($this->raw[$offset]) && $this->raw[$offset] !== NULL) {
+		} elseif (isset($this->raw[$offset]) && $this->raw[$offset] !== NULL) {
 			$f = $this->parseResponse($this->raw[$offset]);
-			if ($f !==[]){
+			if ($f !== []) {
 				$r = $this->parsed[$offset] = $f[0];
 				return $r;
 			}
@@ -99,48 +99,47 @@ class ResponseIterator implements \Iterator, \ArrayAccess, \Countable {
 			return FALSE;
 		}
 	}
-	public function flush(){
+	public function flush() {
 		$this->raw = [];
 		$this->parsed = [];
 	}
 	private function parseResponse(array $response): array
 	{
 		$result = [];
-		$i      = -1;
-		$lines  = \count($response);
+		$i = -1;
+		$lines = \count($response);
 		foreach ($response as $key => $value) {
 			switch ($value) {
-				case '!re':
-					$i++;
-					break;
-				case '!fatal':
-					$result = $response;
-					break 2;
-				case '!trap':
-				case '!done':
-					// Check for =ret=, .tag and any other following messages
-					for ($j = $key + 1; $j <= $lines; $j++) {
-						// If we have lines after current one
-						if (isset($response[$j])) {
-							$this->pregResponse($response[$j], $matches);
-							if (isset($matches[1][0], $matches[2][0])) {
-								$result['after'][$matches[1][0]] = $matches[2][0];
-							}
+			case '!re':
+				$i++;
+				break;
+			case '!fatal':
+				$result = $response;
+				break 2;
+			case '!trap':
+			case '!done':
+				// Check for =ret=, .tag and any other following messages
+				for ($j = $key + 1; $j <= $lines; $j++) {
+					// If we have lines after current one
+					if (isset($response[$j])) {
+						$this->pregResponse($response[$j], $matches);
+						if (isset($matches[1][0], $matches[2][0])) {
+							$result['after'][$matches[1][0]] = $matches[2][0];
 						}
 					}
-					break 2;
-				default:
-					$this->pregResponse($value, $matches);
-					if (isset($matches[1][0], $matches[2][0])) {
-						$result[$i][$matches[1][0]] = $matches[2][0];
-					}
-					break;
+				}
+				break 2;
+			default:
+				$this->pregResponse($value, $matches);
+				if (isset($matches[1][0], $matches[2][0])) {
+					$result[$i][$matches[1][0]] = $matches[2][0];
+				}
+				break;
 			}
 		}
 		return $result;
 	}
-	private function pregResponse(string $value, &$matches)
-	{
+	private function pregResponse(string $value, &$matches) {
 		preg_match_all('/^[=|\.](.*)=(.*)/', $value, $matches);
 	}
 }
