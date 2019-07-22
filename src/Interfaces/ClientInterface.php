@@ -58,7 +58,7 @@ interface ClientInterface
      * @param bool $parse
      * @return mixed
      */
-    public function read(bool $parse = true);
+    public function read(bool $parse);
 
     /**
      * Send write query to RouterOS (with or without tag)
