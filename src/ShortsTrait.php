@@ -2,8 +2,6 @@
 
 namespace RouterOS;
 
-use RouterOS\Interfaces\ClientInterface;
-
 /**
  * Trait ShortsTrait
  *
@@ -18,10 +16,10 @@ trait ShortsTrait
      * Alias for ->write() method
      *
      * @param string|array|\RouterOS\Query $query
-     * @return \RouterOS\Interfaces\ClientInterface
+     * @return \RouterOS\Client
      * @throws \RouterOS\Exceptions\QueryException
      */
-    public function w($query): ClientInterface
+    public function w($query): Client
     {
         return $this->write($query);
     }
@@ -41,10 +39,10 @@ trait ShortsTrait
     /**
      * Alias for ->readAsIterator() method
      *
-     * @return mixed
+     * @return \RouterOS\ResponseIterator
      * @since 0.7
      */
-    public function ri()
+    public function ri(): ResponseIterator
     {
         return $this->readAsIterator();
     }
@@ -65,15 +63,15 @@ trait ShortsTrait
     }
 
     /**
-     * Alias for ->write()->read() combination of methods
+     * Alias for ->write()->readAsIterator() combination of methods
      *
      * @param string|array|\RouterOS\Query $query
-     * @return array
+     * @return \RouterOS\ResponseIterator
      * @throws \RouterOS\Exceptions\ClientException
      * @throws \RouterOS\Exceptions\QueryException
      * @since 0.6
      */
-    public function wri($query): array
+    public function wri($query): ResponseIterator
     {
         return $this->write($query)->readAsIterator();
     }

@@ -47,11 +47,12 @@ $request = $client->write('/ip/address/print'); // or $client->write(['/ip/addre
 $response = $client->read();
 var_dump($response);
 
-// Send query to RouterOS with parameters
-$request = $client->write([
-    '/queue/simple/print',
-    '?target=192.168.1.1/32'
-]);
+// Send advanced query with parameters to RouterOS
+$query =
+    (new Query('/queue/simple/print'))
+        ->where('target', '192.168.1.1/32');
+
+$request = $client->write($query);
 
 // Read answer from RouterOS
 $response = $client->read();
@@ -229,23 +230,15 @@ Simple usage examples of Query class:
 ```php
 use \RouterOS\Query;
 
-// One line query: Get all packages
+// Get all installed packages (it may be enabled or disabled)
 $query = new Query('/system/package/getall');
 
-// Multiline query: Enable interface and add tag
-$query = new Query('/interface/set', [
-    '=disabled=no',
-    '=.id=ether1',
-    '.tag=4'
-]);
-
-// Multiline query in simple array
-$query = new Query([
-    '/interface/set',
-    '=disabled=no',
-    '=.id=ether1',
-    '.tag=4'
-]);
+// Set where interface is disabled and ID is ether1 (with tag 4)
+$query = 
+    (new Query('/interface/set'))
+        ->where('disabled', 'no')
+        ->where('.id', 'ether1')
+        ->tag(4);
 ```
 
 Advanced usage examples of Query class:
@@ -265,6 +258,22 @@ $query
     ->add('=disabled=no')
     ->add('=.id=ether1')
     ->add('.tag=4');
+
+
+// Multiline query: Enable interface and add tag
+$query = new Query('/interface/set', [
+    '=disabled=no',
+    '=.id=ether1',
+    '.tag=4'
+]);
+
+// Multiline query: In simple array
+$query = new Query([
+    '/interface/set',
+    '=disabled=no',
+    '=.id=ether1',
+    '.tag=4'
+]);
 
 // Multiline query (via setter): Get all ethernet and VLAN interfaces
 $query = new Query('/interface/print');

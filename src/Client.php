@@ -78,10 +78,10 @@ class Client implements Interfaces\ClientInterface
      * Send write query to RouterOS (with or without tag)
      *
      * @param string|array|\RouterOS\Query $query
-     * @return \RouterOS\Interfaces\ClientInterface
+     * @return \RouterOS\Client
      * @throws \RouterOS\Exceptions\QueryException
      */
-    public function write($query): self
+    public function write($query): Client
     {
         if (\is_string($query)) {
             $query = new Query($query);

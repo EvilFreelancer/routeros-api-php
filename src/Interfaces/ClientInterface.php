@@ -2,6 +2,8 @@
 
 namespace RouterOS\Interfaces;
 
+use RouterOS\Client;
+
 /**
  * Interface ClientInterface
  *
@@ -64,6 +66,7 @@ interface ClientInterface
      * Send write query to RouterOS (with or without tag)
      *
      * @param string|array|\RouterOS\Query $query
+     * @return \RouterOS\Client
      */
-    public function write($query);
+    public function write($query): Client;
 }

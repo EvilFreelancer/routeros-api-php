@@ -15,14 +15,14 @@ interface QueryInterface
     /**
      * Where logic of query
      *
-     * @param string      $key Key which need to find
-     * @param bool        $value Value which need to check (by default true)
-     * @param string|null $operator It may be one from list [-,=,>,<]
+     * @param string          $key      Key which need to find
+     * @param bool|string|int $value    Value which need to check (by default true)
+     * @param bool|string|int $operator It may be one from list [-,=,>,<]
      * @return \RouterOS\Query
      * @throws \RouterOS\Exceptions\ClientException
      * @since 1.0.0
      */
-    public function where(string $key, $value = true, string $operator = '');
+    public function where(string $key, $operator = '=', $value = null);
 
     /**
      * Append additional operations
