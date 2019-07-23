@@ -2,6 +2,7 @@
 
 namespace RouterOS;
 
+use RouterOS\Exceptions\ClientException;
 use RouterOS\Exceptions\QueryException;
 use RouterOS\Interfaces\QueryInterface;
 
@@ -21,6 +22,20 @@ class Query implements QueryInterface
     private $_attributes = [];
 
     /**
+     * Some additional operations
+     *
+     * @var string
+     */
+    private $_operations;
+
+    /**
+     * Tag of query
+     *
+     * @var string
+     */
+    private $_tag;
+
+    /**
      * Endpoint of query
      *
      * @var string
@@ -30,9 +45,9 @@ class Query implements QueryInterface
     /**
      * Query constructor.
      *
-     * @param   array|string $endpoint   Path of endpoint
-     * @param   array        $attributes List of attributes which should be set
-     * @throws  QueryException
+     * @param array|string $endpoint   Path of endpoint
+     * @param array        $attributes List of attributes which should be set
+     * @throws QueryException
      */
     public function __construct($endpoint, array $attributes = [])
     {
@@ -48,10 +63,69 @@ class Query implements QueryInterface
         }
     }
 
+    const AVAILABLE_OPERATORS = [
+        '-',  // Does not have
+        '=',  // Equal
+        '>',  // More than
+        '<'   // Less than
+    ];
+
+    /**
+     * Where logic of query
+     *
+     * @param string      $key
+     * @param bool        $value
+     * @param string|null $operator
+     * @return \RouterOS\Query
+     * @throws \RouterOS\Exceptions\ClientException
+     * @since 1.0.0
+     */
+    public function where(string $key, $value = true, string $operator = ''): self
+    {
+        if (!empty($operator)) {
+            // If operator is available in list
+            if (\in_array($operator, self::AVAILABLE_OPERATORS, true)) {
+                // Overwrite key
+                $key = $operator . $key;
+            } else {
+                throw new ClientException('Operator "' . $operator . '" in not in allowed list [' . implode(',', self::AVAILABLE_OPERATORS) . ']');
+            }
+        }
+
+        $this->add('?' . $key . '=' . $value);
+        return $this;
+    }
+
+    /**
+     * Append additional operations
+     *
+     * @param string $operations
+     * @return \RouterOS\Query
+     * @since 1.0.0
+     */
+    public function operations(string $operations): self
+    {
+        $this->_operations = '?#' . $operations;
+        return $this;
+    }
+
+    /**
+     * Append tag to query (it should be at end)
+     *
+     * @param string $name
+     * @return \RouterOS\Query
+     * @since 1.0.0
+     */
+    public function tag(string $name): self
+    {
+        $this->_tag = '.tag=' . $name;
+        return $this;
+    }
+
     /**
      * Append to array yet another attribute of query
      *
-     * @param   string $word
+     * @param string $word
      * @return  \RouterOS\Query
      */
     public function add(string $word): Query
@@ -73,9 +147,9 @@ class Query implements QueryInterface
     /**
      * Set array of attributes
      *
-     * @param   array $attributes
-     * @since   0.7
+     * @param array $attributes
      * @return  \RouterOS\Query
+     * @since   0.7
      */
     public function setAttributes(array $attributes): Query
     {
@@ -96,9 +170,9 @@ class Query implements QueryInterface
     /**
      * Set endpoint of query
      *
-     * @param   string|null $endpoint
-     * @since   0.7
+     * @param string|null $endpoint
      * @return  \RouterOS\Query
+     * @since   0.7
      */
     public function setEndpoint(string $endpoint = null): Query
     {
@@ -114,13 +188,23 @@ class Query implements QueryInterface
      */
     public function getQuery(): array
     {
-        if ($this->getEndpoint() === null) {
+        if ($this->_endpoint === null) {
             throw new QueryException('Endpoint of query is not set');
         }
 
-        $endpoint   = $this->getEndpoint();
+        // Get all attributes and prepend endpoint to this list
         $attributes = $this->getAttributes();
-        array_unshift($attributes, $endpoint);
+        array_unshift($attributes, $this->_endpoint);
+
+        // If operations is set then add to query
+        if (is_string($this->_operations) && !empty($this->_operations)) {
+            $attributes[] = $this->_operations;
+        }
+
+        // If tag is set then added to query
+        if (is_string($this->_tag) && !empty($this->_tag)) {
+            $attributes[] = $this->_tag;
+        }
 
         return $attributes;
     }
