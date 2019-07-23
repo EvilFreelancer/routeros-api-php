@@ -39,6 +39,17 @@ trait ShortsTrait
     }
 
     /**
+     * Alias for ->readAsIterator() method
+     *
+     * @return mixed
+     * @since 0.7
+     */
+    public function ri()
+    {
+        return $this->readAsIterator();
+    }
+
+    /**
      * Alias for ->write()->read() combination of methods
      *
      * @param string|array|\RouterOS\Query $query
@@ -51,5 +62,19 @@ trait ShortsTrait
     public function wr($query, bool $parse = true): array
     {
         return $this->write($query)->read($parse);
+    }
+
+    /**
+     * Alias for ->write()->read() combination of methods
+     *
+     * @param string|array|\RouterOS\Query $query
+     * @return array
+     * @throws \RouterOS\Exceptions\ClientException
+     * @throws \RouterOS\Exceptions\QueryException
+     * @since 0.6
+     */
+    public function wri($query): array
+    {
+        return $this->write($query)->readAsIterator();
     }
 }
