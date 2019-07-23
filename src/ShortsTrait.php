@@ -10,7 +10,7 @@ use RouterOS\Interfaces\ClientInterface;
  * All shortcuts was moved to this class
  *
  * @package RouterOS
- * @since 0.10
+ * @since   1.0.0
  */
 trait ShortsTrait
 {

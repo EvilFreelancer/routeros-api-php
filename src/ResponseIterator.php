@@ -13,7 +13,7 @@ namespace RouterOS;
  *
  * @package RouterOS\Iterators
  * @link    https://github.com/arily/RouterOSResponseArray
- * @since   0.10
+ * @since   1.0.0
  */
 class ResponseIterator implements \Iterator, \ArrayAccess, \Countable
 {
