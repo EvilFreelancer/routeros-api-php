@@ -73,15 +73,24 @@ class Query implements QueryInterface
     /**
      * Where logic of query
      *
-     * @param string      $key
-     * @param bool        $value
-     * @param string|null $operator
+     * @param string          $key      Key which need to find
+     * @param bool|string|int $value    Value which need to check (by default true)
+     * @param bool|string|int $operator It may be one from list [-,=,>,<]
      * @return \RouterOS\Query
      * @throws \RouterOS\Exceptions\ClientException
      * @since 1.0.0
      */
-    public function where(string $key, $value = true, string $operator = ''): self
+    public function where(string $key, $operator = '=', $value = null): self
     {
+        if ($operator !== '=' && null === $value) {
+
+            // Client may set only two parameters, that mean what $operator is $value
+            $value = $operator;
+
+            // And operator should be "="
+            $operator = '=';
+        }
+
         if (!empty($operator)) {
             // If operator is available in list
             if (\in_array($operator, self::AVAILABLE_OPERATORS, true)) {
