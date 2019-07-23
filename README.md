@@ -85,7 +85,7 @@ $client->w($query1)->w($query2)->w($query3);
 ### Read response as Iterator
 
 By default original solution of this client is not optimized for
-work with large amount of results, but only for small count of lines
+work with large amount of results, only for small count of lines
 in response from RouterOS API.
 
 But some routers may have (for example) 30000+ records in
