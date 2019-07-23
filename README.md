@@ -82,6 +82,44 @@ $client->write($query1)->write($query2)->write($query3);
 $client->w($query1)->w($query2)->w($query3);
 ```
 
+### Read response as Iterator
+
+By default original solution of this client is not optimized for
+work with large amount of results, but only for small count of lines
+in response from RouterOS API.
+
+But some routers may have (for example) 30000+ records in
+their firewall list. Specifically for such tasks, a method
+`readAsIterator` has been added that converts the results
+obtained from the router into a resource, with which it will
+later be possible to work.
+
+> You could treat response as an array except using any array_* functions
+
+```php
+$response = $client->write($query)->readAsIterator();
+var_dump($response);
+
+// Or
+$response = $client->w($query)->ri();
+var_dump($response);
+
+// Single method analog of lines above is
+$response = $client->wri($query);
+var_dump($response);
+
+// Export every row using foreach.
+foreach ($response as $row){
+  var_export($row);
+}
+
+// Work with resource as with ordinary array
+end($response);
+key($response);
+current($response);
+stat($response);
+```
+
 ### How to configure the client
 
 ```php
