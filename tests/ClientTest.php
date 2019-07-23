@@ -197,15 +197,4 @@ class ClientTest extends TestCase
         $error = $obj->write($obj)->read(false);
     }
 
-    public function testGetConfig()
-    {
-        $obj = new Client([
-            'user' => getenv('ROS_USER'),
-            'pass' => getenv('ROS_PASS'),
-            'host' => getenv('ROS_HOST')
-        ]);
-
-        $config = $obj->getConfig();
-        $this->assertEquals('admin', $config->get('user'));
-    }
 }

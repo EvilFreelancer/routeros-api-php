@@ -54,7 +54,7 @@ class Client implements Interfaces\ClientInterface
         }
 
         // Save config if everything is okay
-        $this->setConfig($config);
+        $this->_config = $config;
 
         // Throw error if cannot to connect
         if (false === $this->connect()) {
@@ -75,35 +75,13 @@ class Client implements Interfaces\ClientInterface
     }
 
     /**
-     * Return socket resource if is exist
-     *
-     * @return \RouterOS\Config
-     * @since 0.6
-     */
-    public function getConfig(): Config
-    {
-        return $this->_config;
-    }
-
-    /**
-     * Set configuration of client
-     *
-     * @param \RouterOS\Config $config
-     * @since 0.7
-     */
-    public function setConfig(Config $config)
-    {
-        $this->_config = $config;
-    }
-
-    /**
      * Send write query to RouterOS (with or without tag)
      *
      * @param string|array|\RouterOS\Query $query
      * @return \RouterOS\Interfaces\ClientInterface
      * @throws \RouterOS\Exceptions\QueryException
      */
-    public function write($query): ClientInterface
+    public function write($query): self
     {
         if (\is_string($query)) {
             $query = new Query($query);
@@ -196,7 +174,7 @@ class Client implements Interfaces\ClientInterface
      * Based on RouterOSResponseArray solution by @arily
      *
      * @link    https://github.com/arily/RouterOSResponseArray
-     * @since   0.10
+     * @since   1.0.0
      */
     private function rosario(array $raw): array
     {
@@ -298,18 +276,19 @@ class Client implements Interfaces\ClientInterface
         // If legacy login scheme is enabled
         if ($this->config('legacy')) {
             // For the first we need get hash with salt
-            $query    = new Query('/login');
-            $response = $this->write($query)->read();
+            $response = $this->write('/login')->read();
 
             // Now need use this hash for authorization
-            $query = (new Query('/login'))
-                ->add('=name=' . $this->config('user'))
-                ->add('=response=00' . md5(\chr(0) . $this->config('pass') . pack('H*', $response['after']['ret'])));
+            $query = new Query('/login', [
+                '=name=' . $this->config('user'),
+                '=response=00' . md5(\chr(0) . $this->config('pass') . pack('H*', $response['after']['ret']))
+            ]);
         } else {
             // Just login with our credentials
-            $query = (new Query('/login'))
-                ->add('=name=' . $this->config('user'))
-                ->add('=password=' . $this->config('pass'));
+            $query = new Query('/login', [
+                '=name=' . $this->config('user'),
+                '=password=' . $this->config('pass')
+            ]);
 
             // If we set modern auth scheme but router with legacy firmware then need to retry query,
             // but need to prevent endless loop
