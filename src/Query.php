@@ -57,7 +57,7 @@ class Query implements QueryInterface
      *
      * @param array|string $endpoint   Path of endpoint
      * @param array        $attributes List of attributes which should be set
-     * @throws QueryException
+     * @throws \RouterOS\Exceptions\QueryException
      */
     public function __construct($endpoint, array $attributes = [])
     {
@@ -138,7 +138,7 @@ class Query implements QueryInterface
      * Append to array yet another attribute of query
      *
      * @param string $word
-     * @return  \RouterOS\Query
+     * @return \RouterOS\Query
      */
     public function add(string $word): Query
     {
@@ -149,7 +149,7 @@ class Query implements QueryInterface
     /**
      * Get attributes array of current query
      *
-     * @return  array
+     * @return array
      */
     public function getAttributes(): array
     {
@@ -160,8 +160,8 @@ class Query implements QueryInterface
      * Set array of attributes
      *
      * @param array $attributes
-     * @return  \RouterOS\Query
-     * @since   0.7
+     * @return \RouterOS\Query
+     * @since 0.7
      */
     public function setAttributes(array $attributes): Query
     {
@@ -172,7 +172,7 @@ class Query implements QueryInterface
     /**
      * Get endpoint of current query
      *
-     * @return  string|null
+     * @return string|null
      */
     public function getEndpoint()
     {
@@ -183,8 +183,8 @@ class Query implements QueryInterface
      * Set endpoint of query
      *
      * @param string|null $endpoint
-     * @return  \RouterOS\Query
-     * @since   0.7
+     * @return \RouterOS\Query
+     * @since 0.7
      */
     public function setEndpoint(string $endpoint = null): Query
     {
@@ -195,8 +195,8 @@ class Query implements QueryInterface
     /**
      * Build body of query
      *
-     * @return  array
-     * @throws  \RouterOS\Exceptions\QueryException
+     * @return array
+     * @throws \RouterOS\Exceptions\QueryException
      */
     public function getQuery(): array
     {

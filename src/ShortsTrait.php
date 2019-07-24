@@ -25,6 +25,22 @@ trait ShortsTrait
     }
 
     /**
+     * Alias for ->query() method
+     *
+     * @param string      $endpoint   Path of API query
+     * @param array|null  $where      List of where filters
+     * @param string|null $operations Some operations which need make on response
+     * @param string|null $tag        Mark query with tag
+     * @return \RouterOS\Client
+     * @throws \RouterOS\Exceptions\QueryException
+     * @since 1.0.0
+     */
+    public function q(string $endpoint, array $where = null, string $operations = null, string $tag = null): Client
+    {
+        return $this->query($endpoint, $where, $operations, $tag);
+    }
+
+    /**
      * Alias for ->read() method
      *
      * @param bool $parse
@@ -40,7 +56,7 @@ trait ShortsTrait
      * Alias for ->readAsIterator() method
      *
      * @return \RouterOS\ResponseIterator
-     * @since 0.7
+     * @since 1.0.0
      */
     public function ri(): ResponseIterator
     {
@@ -63,16 +79,49 @@ trait ShortsTrait
     }
 
     /**
+     * Alias for ->write()->read() combination of methods
+     *
+     * @param string      $endpoint   Path of API query
+     * @param array|null  $where      List of where filters
+     * @param string|null $operations Some operations which need make on response
+     * @param string|null $tag        Mark query with tag
+     * @param bool        $parse
+     * @return \RouterOS\Client
+     * @throws \RouterOS\Exceptions\QueryException
+     * @since 1.0.0
+     */
+    public function qr(string $endpoint, array $where = null, string $operations = null, string $tag = null, bool $parse = true): array
+    {
+        return $this->query($endpoint, $where, $operations, $tag)->read($parse);
+    }
+
+    /**
      * Alias for ->write()->readAsIterator() combination of methods
      *
      * @param string|array|\RouterOS\Query $query
      * @return \RouterOS\ResponseIterator
      * @throws \RouterOS\Exceptions\ClientException
      * @throws \RouterOS\Exceptions\QueryException
-     * @since 0.6
+     * @since 1.0.0
      */
     public function wri($query): ResponseIterator
     {
         return $this->write($query)->readAsIterator();
+    }
+
+    /**
+     * Alias for ->write()->read() combination of methods
+     *
+     * @param string      $endpoint   Path of API query
+     * @param array|null  $where      List of where filters
+     * @param string|null $operations Some operations which need make on response
+     * @param string|null $tag        Mark query with tag
+     * @return \RouterOS\Client
+     * @throws \RouterOS\Exceptions\QueryException
+     * @since 1.0.0
+     */
+    public function qri(string $endpoint, array $where = null, string $operations = null, string $tag = null): array
+    {
+        return $this->query($endpoint, $where, $operations, $tag)->readAsIterator();
     }
 }

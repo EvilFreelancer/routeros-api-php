@@ -74,7 +74,7 @@ class Client implements Interfaces\ClientInterface
     }
 
     /**
-     * Send write query to RouterOS (with or without tag)
+     * Send write query to RouterOS
      *
      * @param string|array|\RouterOS\Query $query
      * @return \RouterOS\Client
@@ -93,6 +93,64 @@ class Client implements Interfaces\ClientInterface
             throw new QueryException('Parameters cannot be processed');
         }
 
+        // Submit query to RouterOS
+        return $this->writeRAW($query);
+    }
+
+    /**
+     * Send write query to RouterOS (modern version of write)
+     *
+     * @param string      $endpoint   Path of API query
+     * @param array|null  $where      List of where filters
+     * @param string|null $operations Some operations which need make on response
+     * @param string|null $tag        Mark query with tag
+     * @return \RouterOS\Client
+     * @throws \RouterOS\Exceptions\QueryException
+     * @since 1.0.0
+     */
+    public function query(string $endpoint, array $where = null, string $operations = null, string $tag = null): Client
+    {
+        // If endpoint is string then build Query object
+        $query = new Query($endpoint);
+
+        // Parse where array
+        if (!empty($where)) {
+
+            // If array is multidimensional, then parse each line
+            if (is_array($where[0])) {
+                foreach ($where as [$key, $operator, $value]) {
+                    $query->where($key, $operator, $value);
+                }
+            } else {
+                $query->where($where[0], $where[1] ?? null, $where[2] ?? null);
+            }
+
+        }
+
+        // Append operations if set
+        if (!empty($operations)) {
+            $query->operations($operations);
+        }
+
+        // Append tag if set
+        if (!empty($tag)) {
+            $query->tag($tag);
+        }
+
+        // Submit query to RouterOS
+        return $this->writeRAW($query);
+    }
+
+    /**
+     * Send write query object to RouterOS
+     *
+     * @param \RouterOS\Query $query
+     * @return \RouterOS\Client
+     * @throws \RouterOS\Exceptions\QueryException
+     * @since 1.0.0
+     */
+    private function writeRAW(Query $query): Client
+    {
         // Send commands via loop to router
         foreach ($query->getQuery() as $command) {
             $this->_connector->writeWord(trim($command));
@@ -105,18 +163,12 @@ class Client implements Interfaces\ClientInterface
     }
 
     /**
-     * Read answer from server after query was executed
+     * Read RAW response from RouterOS
      *
-     * A Mikrotik reply is formed of blocks
-     * Each block starts with a word, one of ('!re', '!trap', '!done', '!fatal')
-     * Each block end with an zero byte (empty line)
-     * Reply ends with a complete !done or !fatal block (ended with 'empty line')
-     * A !fatal block precedes TCP connexion close
-     *
-     * @param bool $parse
-     * @return mixed
+     * @return array
+     * @since 1.0.0
      */
-    public function read(bool $parse = true)
+    private function readRAW(): array
     {
         // By default response is empty
         $response = [];
@@ -150,6 +202,27 @@ class Client implements Interfaces\ClientInterface
         }
 
         // Parse results and return
+        return $response;
+    }
+
+    /**
+     * Read answer from server after query was executed
+     *
+     * A Mikrotik reply is formed of blocks
+     * Each block starts with a word, one of ('!re', '!trap', '!done', '!fatal')
+     * Each block end with an zero byte (empty line)
+     * Reply ends with a complete !done or !fatal block (ended with 'empty line')
+     * A !fatal block precedes TCP connexion close
+     *
+     * @param bool $parse
+     * @return mixed
+     */
+    public function read(bool $parse = true)
+    {
+        // Read RAW response
+        $response = $this->readRAW();
+
+        // Parse results and return
         return $parse ? $this->rosario($response) : $response;
     }
 
@@ -157,6 +230,7 @@ class Client implements Interfaces\ClientInterface
      * Read using Iterators to improve performance on large dataset
      *
      * @return \RouterOS\ResponseIterator
+     * @since 1.0.0
      */
     public function readAsIterator(): ResponseIterator
     {
