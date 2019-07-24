@@ -265,6 +265,13 @@ $query =
         ->where('disabled', 'no')
         ->where('.id', 'ether1')
         ->tag(4);
+
+// Get all ethernet and VLAN interfaces
+$query = 
+    (new Query('/interface/print'))
+        ->where('type', 'ether')
+        ->where('type', 'vlan')
+        ->operations('|');
 ```
 
 <details>
