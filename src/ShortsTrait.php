@@ -9,6 +9,7 @@ namespace RouterOS;
  *
  * @package RouterOS
  * @since   1.0.0
+ * @codeCoverageIgnore
  */
 trait ShortsTrait
 {
@@ -18,6 +19,7 @@ trait ShortsTrait
      * @param string|array|\RouterOS\Query $query
      * @return \RouterOS\Client
      * @throws \RouterOS\Exceptions\QueryException
+     * @deprecated
      */
     public function w($query): Client
     {
@@ -72,6 +74,7 @@ trait ShortsTrait
      * @throws \RouterOS\Exceptions\ClientException
      * @throws \RouterOS\Exceptions\QueryException
      * @since 0.6
+     * @deprecated
      */
     public function wr($query, bool $parse = true): array
     {
@@ -103,6 +106,7 @@ trait ShortsTrait
      * @throws \RouterOS\Exceptions\ClientException
      * @throws \RouterOS\Exceptions\QueryException
      * @since 1.0.0
+     * @deprecated
      */
     public function wri($query): ResponseIterator
     {
