@@ -79,6 +79,7 @@ class Client implements Interfaces\ClientInterface
      * @param string|array|\RouterOS\Query $query
      * @return \RouterOS\Client
      * @throws \RouterOS\Exceptions\QueryException
+     * @deprecated
      */
     public function write($query): Client
     {
