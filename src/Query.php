@@ -43,6 +43,16 @@ class Query implements QueryInterface
     private $_endpoint;
 
     /**
+     * List of available operators for "->where()" method
+     */
+    public const AVAILABLE_OPERATORS = [
+        '-',  // Does not have
+        '=',  // Equal
+        '>',  // More than
+        '<'   // Less than
+    ];
+
+    /**
      * Query constructor.
      *
      * @param array|string $endpoint   Path of endpoint
@@ -63,13 +73,6 @@ class Query implements QueryInterface
         }
     }
 
-    const AVAILABLE_OPERATORS = [
-        '-',  // Does not have
-        '=',  // Equal
-        '>',  // More than
-        '<'   // Less than
-    ];
-
     /**
      * Where logic of query
      *
@@ -77,7 +80,7 @@ class Query implements QueryInterface
      * @param bool|string|int $value    Value which need to check (by default true)
      * @param bool|string|int $operator It may be one from list [-,=,>,<]
      * @return \RouterOS\Query
-     * @throws \RouterOS\Exceptions\ClientException
+     * @throws \RouterOS\Exceptions\QueryException
      * @since 1.0.0
      */
     public function where(string $key, $operator = '=', $value = null): self
@@ -97,7 +100,7 @@ class Query implements QueryInterface
                 // Overwrite key
                 $key = $operator . $key;
             } else {
-                throw new ClientException('Operator "' . $operator . '" in not in allowed list [' . implode(',', self::AVAILABLE_OPERATORS) . ']');
+                throw new QueryException('Operator "' . $operator . '" in not in allowed list [' . implode(',', self::AVAILABLE_OPERATORS) . ']');
             }
         }
 

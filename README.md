@@ -51,7 +51,14 @@ var_dump($response);
 $query =
     (new Query('/queue/simple/print'))
         ->where('target', '192.168.1.1/32');
+$request = $client->write($query);
 
+// Send advanced query with operations string
+$query =
+    (new Query('/interface/print'))
+        ->where('type', 'ether')
+        ->where('type', 'vlan')
+        ->operations('|');
 $request = $client->write($query);
 
 // Read answer from RouterOS
