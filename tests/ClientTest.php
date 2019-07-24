@@ -135,41 +135,62 @@ class ClientTest extends TestCase
         ]);
     }
 
-    public function testWriteRead(): void
+    public function testQueryRead(): void
     {
         $config = new Config();
         $config->set('user', getenv('ROS_USER'))->set('pass', getenv('ROS_PASS'))->set('host', getenv('ROS_HOST'));
         $obj = new Client($config);
 
-        $query   = new Query('/ip/address/print');
-        $readRaw = $obj->write($query)->read(false);
-        $this->assertCount(10, $readRaw);
-        $this->assertEquals('=.id=*1', $readRaw[1]);
+        /*
+         * Build query with where
+         */
 
-        $query = new Query('/system/package/print');
-        $read  = $obj->write($query)->read();
+        $read = $obj->query('/system/package/print')->read();
         $this->assertCount(13, $read);
         $this->assertEquals('advanced-tools', $read[12]['name']);
 
-        $query   = new Query('/ip/address/print');
-        $readRaw = $obj->w($query)->read(false);
-        $this->assertCount(10, $readRaw);
-        $this->assertEquals('=.id=*1', $readRaw[1]);
+        $read = $obj->query('/system/package/print', ['name'])->read();
+        $this->assertCount(13, $read);
+        $this->assertEquals('dude', $read[0]['name']);
 
-        $query = new Query('/interface/getall');
-        $read  = $obj->write($query)->r();
+        $read = $obj->query('/system/package/print', ['.id', '*1'])->read();
+        $this->assertCount(1, $read);
+        $this->assertEquals('dude', $read[0]['name']);
+
+        $read = $obj->query('/system/package/print', ['.id', '=', '*1'])->read();
+        $this->assertCount(1, $read);
+        $this->assertEquals('dude', $read[0]['name']);
+
+        $read = $obj->query('/system/package/print', [['name']])->read();
+        $this->assertCount(13, $read);
+        $this->assertEquals('dude', $read[0]['name']);
+
+        $read = $obj->query('/system/package/print', [['.id', '*1']])->read();
+        $this->assertCount(1, $read);
+        $this->assertEquals('dude', $read[0]['name']);
+
+        $read = $obj->query('/system/package/print', [['.id', '=', '*1']])->read();
+        $this->assertCount(1, $read);
+        $this->assertEquals('dude', $read[0]['name']);
+
+        /*
+         * Build query with operations
+         */
+
+        $read = $obj->query('/interface/print', [
+            ['type', 'ether'],
+            ['type', 'vlan']
+        ], '|')->read();
         $this->assertCount(1, $read);
         $this->assertEquals('*1', $read[0]['.id']);
 
-        $query    = new Query('/interface');
-        $readTrap = $obj->w($query)->r(false);
-        $this->assertCount(3, $readTrap);
-        $this->assertEquals('!trap', $readTrap[0]);
+        /*
+         * Build query with tag
+         */
 
-        $query    = new Query('/interface');
-        $readTrap = $obj->wr($query, false);
-        $this->assertCount(3, $readTrap);
-        $this->assertEquals('!trap', $readTrap[0]);
+        $read = $obj->query('/system/package/print', null, null, 'zzzz')->read();
+        $this->assertCount(13, $read);
+        $this->assertEquals('zzzz', $read[0]['tag']);
     }
 
     public function testReadAsIterator(): void
@@ -197,19 +218,6 @@ class ClientTest extends TestCase
         $this->assertEquals('!trap', $readTrap[0]);
     }
 
-    public function testWriteReadArray(): void
-    {
-        $obj = new Client([
-            'user' => getenv('ROS_USER'),
-            'pass' => getenv('ROS_PASS'),
-            'host' => getenv('ROS_HOST'),
-        ]);
-
-        $readTrap = $obj->wr(['/interface'], false);
-        $this->assertCount(3, $readTrap);
-        $this->assertEquals('!trap', $readTrap[0]);
-    }
-
     public function testFatal(): void
     {
         $obj = new Client([
@@ -218,14 +226,14 @@ class ClientTest extends TestCase
             'host' => getenv('ROS_HOST'),
         ]);
 
-        $readTrap = $obj->wr('/quit');
+        $readTrap = $obj->query('/quit')->read();
         $this->assertCount(2, $readTrap);
         $this->assertEquals('!fatal', $readTrap[0]);
     }
 
-    public function testWriteEx(): void
+    public function testQueryEx1(): void
     {
-        $this->expectException(QueryException::class);
+        $this->expectException(ClientException::class);
 
         $obj = new Client([
             'user' => getenv('ROS_USER'),
@@ -233,7 +241,19 @@ class ClientTest extends TestCase
             'host' => getenv('ROS_HOST'),
         ]);
 
-        $obj->write($obj)->read(false);
+        $obj->query('/quiet', ['a', 'b', 'c', 'd']);
     }
 
+    public function testQueryEx2(): void
+    {
+        $this->expectException(ClientException::class);
+
+        $obj = new Client([
+            'user' => getenv('ROS_USER'),
+            'pass' => getenv('ROS_PASS'),
+            'host' => getenv('ROS_HOST'),
+        ]);
+
+        $obj->query('/quiet', [[]]);
+    }
 }

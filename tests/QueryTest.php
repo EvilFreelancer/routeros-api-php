@@ -101,7 +101,7 @@ class QueryTest extends TestCase
 
         $attrs = $obj->getAttributes();
         $this->assertCount(2, $attrs);
-        $this->assertEquals($attrs[1], '?=key2=value2');
+        $this->assertEquals($attrs[1], '?key2=value2');
     }
 
     public function testTag(): void
