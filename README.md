@@ -20,18 +20,10 @@ RouterOS firmware, it will be detected automatically on connection stage.
 
 ## How to use
 
-### Basic example
-
-> All available examples you can find [here](https://github.com/EvilFreelancer/routeros-api-php/tree/master/examples).
-
-Get all IP addresses (analogue via command line is `/ip address print`):
+Basic example, analogue via command line is `/ip address print`:
 
 ```php
-<?php
-require_once __DIR__ . '/vendor/autoload.php';
-
 use \RouterOS\Client;
-use \RouterOS\Query;
 
 // Initiate client with config object
 $client = new Client([
@@ -40,115 +32,58 @@ $client = new Client([
     'pass' => 'admin'
 ]);
 
-// Send query to RouterOS without parameters
-$request = $client->write('/ip/address/print'); // or $client->write(['/ip/address/print']);
-
-// Read answer from RouterOS
-$response = $client->read();
-var_dump($response);
-
-// Send advanced query with parameters to RouterOS
-$query =
-    (new Query('/queue/simple/print'))
-        ->where('target', '192.168.1.1/32');
-$request = $client->write($query);
-
-// Send advanced query with operations string
-$query =
-    (new Query('/interface/print'))
-        ->where('type', 'ether')
-        ->where('type', 'vlan')
-        ->operations('|');
-$request = $client->write($query);
-
-// Read answer from RouterOS
-$response = $client->read();
+// Send query to RouterOS and read response from it
+$response = $client->query('/ip/address/print')->read();
 var_dump($response);
 ```
 
-You can simplify your code and send then read from socket in one line:
+Examples with "where" conditions, "operations" and "tag":
 
 ```php
-$response = $client->write($query)->read();
-var_dump($response);
+use \RouterOS\Query;
 
-// Or
-$response = $client->w($query)->r();
-var_dump($response);
+/**
+ * Send advanced query with parameters to RouterOS 
+ */
 
-// Single method analog of lines above is
-$response = $client->wr($query);
-var_dump($response);
+// If only one "where" condition
+$client->query('/queue/simple/print', ['target', '192.168.1.1/32']);
+
+// If multiple "where" conditions and need merge (operation "|") results
+$client->query('/interface/print', [
+    ['type', 'ether'],  // same as ['type', '=', 'ether']
+    ['type', 'vlan'],   // same as ['type', '=', 'vlan']
+], '|');
+
+/**
+ * Or in OOP style
+ */
+
+// If multiple "where" conditions and need merge (operation "|") results
+$query = new Query('/interface/print');
+$query->where('type', 'ether');
+$query->where('type', 'vlan');
+$query->operations('|');
+
+// If multiple "where" conditions and need append tag
+$query = new Query('/interface/set');
+$query->where('disabled', 'no');
+$query->where('.id', 'ether1');
+$query->tag('.tag=4');
+
+/**
+ * Write Query object to RouterOS and read response from it
+ */
+
+$response = $client->query($query)->read();
 ```
 
-By the way, you can send few queries to your router without result:
+> All available examples you can find [here](https://github.com/EvilFreelancer/routeros-api-php/tree/master/examples).
 
-```php
-$client->write($query1)->write($query2)->write($query3);
+## How to configure the client
 
-// Or
-$client->w($query1)->w($query2)->w($query3);
-```
-
-### Read response as Iterator
-
-By default original solution of this client is not optimized for
-work with large amount of results, only for small count of lines
-in response from RouterOS API.
-
-But some routers may have (for example) 30000+ records in
-their firewall list. Specifically for such tasks, a method
-`readAsIterator` has been added that converts the results
-obtained from the router into a resource, with which it will
-later be possible to work.
-
-> You could treat response as an array except using any array_* functions
-
-```php
-$response = $client->write($query)->readAsIterator();
-var_dump($response);
-
-// Or
-$response = $client->w($query)->ri();
-var_dump($response);
-
-// Single method analog of lines above is
-$response = $client->wri($query);
-var_dump($response);
-
-// The following for loop allows you to skip elements for which
-// $iterator->current() throws an exception, rather than breaking
-// the loop.
-for ($response->rewind(); $response->valid(); $response->next()) {
-    try {
-        $value = $response->current();
-    } catch (Exception $exception) {
-        continue;
-    }
-
-    # ...
-}
-```
-
-### How to configure the client
-
-Sample of basic code:
-
-```php
-use \RouterOS\Config;
-use \RouterOS\Client;
-
-$config = new Config([
-    'host' => '192.168.1.3',
-    'user' => 'admin',
-    'pass' => 'admin'
-]);
-
-$client = new Client($config);
-```
-
-Or you can just create preconfigured client object with all
-required settings like below:
+You just need create object of Client class with required
+parameters in array format:
 
 ```php
 use \RouterOS\Client;
@@ -162,48 +97,50 @@ $client = new Client([
 
 <details>
 <summary>
-<i>Advanced usage examples of Client class</i>
+<strong>Advanced examples of Config and Client classes usage</strong>
 </summary>
 
 ```php
-// Enable required classes
 use \RouterOS\Config;
 use \RouterOS\Client;
 
-// Set the config
-$config = new Config([
-    'host' => '192.168.1.3',
-    'user' => 'admin',
-    'pass' => 'admin'
-]);
+/**
+ * You can create object of Config class
+ */
 
-$client = new Client($config);
-
-// Create object of config class in one call
-$config = new Config([
-    'host' => '192.168.1.3',
-    'user' => 'admin',
-    'pass' => 'admin'
-]);
-
-// Create object of class
 $config = new Config();
 
-// Set parameters of config
-$config->set('host', '192.168.1.3')
-$config->set('user', 'admin')
+// Then set parameters of config
+$config->set('host', '192.168.1.3');
+$config->set('user', 'admin');
 $config->set('pass', 'admin');
 
-// `set()` method supported inline style of syntax
+// By the way, `->set()` method is support inline style of syntax
 $config
     ->set('host', '192.168.1.3')
     ->set('user', 'admin')
     ->set('pass', 'admin');
+
+/**
+ * Or just create preconfigured Config object
+ */
+
+$config = new Config([
+    'host' => '192.168.1.3',
+    'user' => 'admin',
+    'pass' => 'admin'
+]);
+
+/**
+ * Then send Config object to Client constructor
+ */
+
+$client = new Client($config);
 ```
 
 </details>
 
-#### List of available configuration parameters
+### List of available configuration parameters
 
 | Parameter | Type   | Default | Description |
 |-----------|--------|---------|-------------|
@@ -238,7 +175,7 @@ $client = new Client([
 // Your code below...
 ```
 
-### How to write queries
+## How to write queries
 
 You can write absolutely any queries to your router, for this you
 need to create a "Query" object whose first argument is the
@@ -281,34 +218,91 @@ $query =
 
 <details>
 <summary>
-<i>Advanced usage examples of Query class</i>
+<strong>Advanced examples of Query class usage</strong>
 </summary>
 
 ```php
 use \RouterOS\Query;
+use \RouterOS\Client;
 
-// One line query: Get all packages
-$query = new Query('/system/package/getall');
+// Initiate connection to RouterOS
+$client = new Client([
+    'host'   => '192.168.1.3',
+    'user'   => 'admin',
+    'pass'   => 'admin'
+]);
 
-$query = new Query();
-$query->setEndpoint('/system/package/getall');
+/**
+ * Execute query directly through "->query()" method of Client class 
+ */
 
-// Multiline query: Enable interface and add tag
+// If your query has no "where" conditions
+$client->query('/ip/arp/print');
+
+// If you have only one where condition, you may use one dimensional array as second parameter of query method
+$client->query('/queue/simple/print', ['target', '192.168.1.250/32']);
+
+// If you need set few where conditions then need use multi dimensional array
+$client->query('/interface/bridge/add', [
+    ['name', 'vlan100-bridge'],
+    ['vlan-filtering', 'no']
+]);
+
+/**
+ * By some reason you may need restrict scope of RouterOS response,
+ * for this need to use third attribute of "->query()" method
+ */
+
+// Get all ethernet and VLAN interfaces
+$client->query('/interface/print', [
+    ['type', 'ether'],
+    ['type', 'vlan']
+], '|');
+
+/** 
+ * If you want set tag of your query then you need to use fourth 
+ * attribute of "->query()" method, but third attribute may be null
+ */
+
+// Enable interface (tag is 4)
+$client->query('/interface/set', [
+    ['disabled', 'no'],
+    ['.id', 'ether1']
+], null, 4);
+
+/**
+ * Or in OOP style  
+ */
+
+// Get all ethernet and VLAN interfaces
+$query = new Query('/interface/print');
+$query->where('type', 'ether');
+$query->where('type', 'vlan');
+$query->operations('|');
+
+// Enable interface (tag is 4)
 $query = new Query('/interface/set');
-$query
-    ->add('=disabled=no')
-    ->add('=.id=ether1')
-    ->add('.tag=4');
+$query->where('disabled', 'no');
+$query->where('.id', 'ether1');
+$query->tag(4);
 
+// Or
 
-// Multiline query: Enable interface and add tag
+$query = new Query('/interface/set');
+$query->add('=disabled=no');
+$query->add('=.id=ether1');
+$query->add('.tag=4');
+
+// Or
+    
 $query = new Query('/interface/set', [
     '=disabled=no',
     '=.id=ether1',
     '.tag=4'
 ]);
 
-// Multiline query: In simple array
+// Or
+
 $query = new Query([
     '/interface/set',
     '=disabled=no',
@@ -316,21 +310,88 @@ $query = new Query([
     '.tag=4'
 ]);
 
-// Multiline query (via setter): Get all ethernet and VLAN interfaces
-$query = new Query('/interface/print');
-$query->setAttributes([
-    '?type=ether',
-    '?type=vlan',
-    '?#|'
-]);
+/**
+ * Write Query object to RouterOS and read response from it
+ */
 
-// Multiline query: Get all routes that have non-empty comment
-$query = new Query('/ip/route/print');
-$query
-    ->add('?>comment=');
+$response = $client->query($query)->read();
 ```
 
 </details>
+
+## Read response as Iterator
+
+By default original solution of this client is not optimized for
+work with large amount of results, only for small count of lines
+in response from RouterOS API.
+
+But some routers may have (for example) 30000+ records in
+their firewall list. Specifically for such tasks, a method
+`readAsIterator` has been added that converts the results
+obtained from the router into a resource, with which it will
+later be possible to work.
+
+> You could treat response as an array except using any array_* functions
+
+```php
+$response = $client->query($query)->readAsIterator();
+var_dump($response);
+
+// The following for loop allows you to skip elements for which
+// $iterator->current() throws an exception, rather than breaking
+// the loop.
+for ($response->rewind(); $response->valid(); $response->next()) {
+    try {
+        $value = $response->current();
+    } catch (Exception $exception) {
+        continue;
+    }
+
+    # ...
+}
+```
+
+## Short methods
+
+You can simplify your code and send then read from socket in one line:
+
+```php
+/** 
+ * Execute query and read response in ordinary mode 
+ */
+$response = $client->query($query)->read();
+var_dump($response);
+
+// Or
+$response = $client->q($query)->r();
+var_dump($response);
+
+// Single method analog of lines above is
+$response = $client->qr($query);
+var_dump($response);
+
+/**
+ * Execute query and read response as Iterator 
+ */
+$response = $client->query($query)->readAsIterator();
+var_dump($response);
+
+// Or
+$response = $client->q($query)->ri();
+var_dump($response);
+
+// Single method analog of lines above is
+$response = $client->qri($query);
+var_dump($response);
+
+/**
+ * By the way, you can send few queries to your router without result: 
+ */
+$client->query($query1)->query($query2)->query($query3);
+
+// Or
+$client->q($query1)->q($query2)->q($query3);
+```
 
 ## Testing
 
