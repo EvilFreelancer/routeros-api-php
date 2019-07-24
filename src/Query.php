@@ -83,28 +83,31 @@ class Query implements QueryInterface
      * @throws \RouterOS\Exceptions\QueryException
      * @since 1.0.0
      */
-    public function where(string $key, $operator = '=', $value = null): self
+    public function where(string $key, $operator = null, $value = null): self
     {
-        if ($operator !== '=' && null === $value) {
+        if (null !== $operator && null === $value) {
 
             // Client may set only two parameters, that mean what $operator is $value
             $value = $operator;
 
             // And operator should be "="
-            $operator = '=';
+            $operator = null;
         }
 
-        if (!empty($operator)) {
+        if (null !== $operator && null !== $value) {
             // If operator is available in list
             if (\in_array($operator, self::AVAILABLE_OPERATORS, true)) {
-                // Overwrite key
                 $key = $operator . $key;
             } else {
                 throw new QueryException('Operator "' . $operator . '" in not in allowed list [' . implode(',', self::AVAILABLE_OPERATORS) . ']');
             }
         }
 
-        $this->add('?' . $key . '=' . $value);
+        if (null !== $value) {
+            $value = '=' . $value;
+        }
+
+        $this->add('?' . $key . $value);
         return $this;
     }
 
