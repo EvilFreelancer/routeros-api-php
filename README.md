@@ -162,7 +162,7 @@ $client = new Client([
 
 <details>
 <summary>
-<i>Advanced usage of Client class</i>
+<i>Advanced usage examples of Client class</i>
 </summary>
 
 ```php
@@ -267,7 +267,10 @@ $query =
         ->tag(4);
 ```
 
-Advanced usage examples of Query class:
+<details>
+<summary>
+<i>Advanced usage examples of Query class</i>
+</summary>
 
 ```php
 use \RouterOS\Query;
@@ -314,6 +317,8 @@ $query = new Query('/ip/route/print');
 $query
     ->add('?>comment=');
 ```
+
+</details>
 
 ## Testing
 
