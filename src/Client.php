@@ -80,6 +80,7 @@ class Client implements Interfaces\ClientInterface
      * @return \RouterOS\Client
      * @throws \RouterOS\Exceptions\QueryException
      * @deprecated
+     * @codeCoverageIgnore
      */
     public function write($query): Client
     {
@@ -107,6 +108,7 @@ class Client implements Interfaces\ClientInterface
      * @param string|null $tag        Mark query with tag
      * @return \RouterOS\Client
      * @throws \RouterOS\Exceptions\QueryException
+     * @throws \RouterOS\Exceptions\ClientException
      * @since 1.0.0
      */
     public function query(string $endpoint, array $where = null, string $operations = null, string $tag = null): Client
@@ -119,11 +121,49 @@ class Client implements Interfaces\ClientInterface
 
             // If array is multidimensional, then parse each line
             if (is_array($where[0])) {
-                foreach ($where as [$key, $operator, $value]) {
+                foreach ($where as $item) {
+
+                    // Null by default
+                    $key      = null;
+                    $operator = null;
+                    $value    = null;
+
+                    switch (\count($item)) {
+                        case 1:
+                            list($key) = $item;
+                            break;
+                        case 2:
+                            list($key, $operator) = $item;
+                            break;
+                        case 3:
+                            list($key, $operator, $value) = $item;
+                            break;
+                        default:
+                            throw new ClientException('From 1 to 3 parameters of "where" condition is allowed');
+                    }
                     $query->where($key, $operator, $value);
                 }
             } else {
-                $query->where($where[0], $where[1] ?? null, $where[2] ?? null);
+                // Null by default
+                $key      = null;
+                $operator = null;
+                $value    = null;
+
+                switch (\count($where)) {
+                    case 1:
+                        list($key) = $where;
+                        break;
+                    case 2:
+                        list($key, $operator) = $where;
+                        break;
+                    case 3:
+                        list($key, $operator, $value) = $where;
+                        break;
+                    default:
+                        throw new ClientException('From 1 to 3 parameters of "where" condition is allowed');
+                }
+
+                $query->where($key, $operator, $value);
             }
 
         }
