@@ -132,32 +132,6 @@ for ($response->rewind(); $response->valid(); $response->next()) {
 
 ### How to configure the client
 
-```php
-// Enable config class
-use \RouterOS\Config;
-
-// Create object of config class in one call
-$config = new Config([
-    'host' => '192.168.1.3',
-    'user' => 'admin',
-    'pass' => 'admin'
-]);
-
-// Create object of class
-$config = new Config();
-
-// Set parameters of config
-$config->set('host', '192.168.1.3')
-$config->set('user', 'admin')
-$config->set('pass', 'admin');
-
-// `set()` method supported inline style of syntax
-$config
-    ->set('host', '192.168.1.3')
-    ->set('user', 'admin')
-    ->set('pass', 'admin');
-```
-
 Sample of basic code:
 
 ```php
@@ -185,6 +159,49 @@ $client = new Client([
     'pass' => 'admin'
 ]);
 ```
+
+<details>
+<summary>
+<i>Advanced usage of Client class</i>
+</summary>
+
+```php
+// Enable required classes
+use \RouterOS\Config;
+use \RouterOS\Client;
+
+// Set the config
+$config = new Config([
+    'host' => '192.168.1.3',
+    'user' => 'admin',
+    'pass' => 'admin'
+]);
+
+$client = new Client($config);
+
+// Create object of config class in one call
+$config = new Config([
+    'host' => '192.168.1.3',
+    'user' => 'admin',
+    'pass' => 'admin'
+]);
+
+// Create object of class
+$config = new Config();
+
+// Set parameters of config
+$config->set('host', '192.168.1.3')
+$config->set('user', 'admin')
+$config->set('pass', 'admin');
+
+// `set()` method supported inline style of syntax
+$config
+    ->set('host', '192.168.1.3')
+    ->set('user', 'admin')
+    ->set('pass', 'admin');
+```
+
+</details>
 
 #### List of available configuration parameters
 
