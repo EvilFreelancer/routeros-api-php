@@ -272,6 +272,11 @@ $query =
         ->where('type', 'ether')
         ->where('type', 'vlan')
         ->operations('|');
+
+/// Get all routes that have non-empty comment
+$query =
+    (new Query('/ip/route/print'))
+        ->where('comment', '>', null);
 ```
 
 <details>
