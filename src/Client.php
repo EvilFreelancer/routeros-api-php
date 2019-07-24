@@ -6,7 +6,6 @@ use RouterOS\Exceptions\ClientException;
 use RouterOS\Exceptions\ConfigException;
 use RouterOS\Exceptions\QueryException;
 use RouterOS\Helpers\ArrayHelper;
-use RouterOS\Interfaces\ClientInterface;
 
 /**
  * Class Client for RouterOS management

@@ -2,6 +2,11 @@
 
 namespace RouterOS;
 
+use \Iterator,
+    \ArrayAccess,
+    \Countable,
+    \Serializable;
+
 /**
  * This class was created by memory save reasons, it convert response
  * from RouterOS to readable array in safe way.
@@ -15,7 +20,7 @@ namespace RouterOS;
  * @link    https://github.com/arily/RouterOSResponseArray
  * @since   1.0.0
  */
-class ResponseIterator implements \Iterator, \ArrayAccess, \Countable
+class ResponseIterator implements Iterator, ArrayAccess, Countable, Serializable
 {
     /**
      * List of parser results from array
@@ -36,7 +41,7 @@ class ResponseIterator implements \Iterator, \ArrayAccess, \Countable
      *
      * @var int
      */
-    private $current;
+    private $current = 0;
 
     /**
      * Object of main client
@@ -95,6 +100,14 @@ class ResponseIterator implements \Iterator, \ArrayAccess, \Countable
     }
 
     /**
+     * Previous value
+     */
+    public function prev()
+    {
+        --$this->current;
+    }
+
+    /**
      * Return the current element
      *
      * @return mixed
@@ -105,8 +118,14 @@ class ResponseIterator implements \Iterator, \ArrayAccess, \Countable
             return $this->parsed[$this->current];
         }
 
-        if (isset($this->raw[$this->current])) {
-            return $this->client->parseResponse($this->raw[$this->current])[0];
+        if ($this->valid()) {
+
+            if (!isset($this->parsed[$this->current])) {
+                $value = $this->client->parseResponse($this->raw[$this->current])[0];
+                $this->offsetSet($this->current, $value);
+            }
+
+            return $this->parsed[$this->current];
         }
 
         return null;
@@ -206,5 +225,25 @@ class ResponseIterator implements \Iterator, \ArrayAccess, \Countable
         }
 
         return false;
+    }
+
+    /**
+     * String representation of object
+     *
+     * @return string
+     */
+    public function serialize(): string
+    {
+        return serialize($this->raw);
+    }
+
+    /**
+     * Constructs the object
+     *
+     * @param string $serialized
+     */
+    public function unserialize($serialized)
+    {
+        $this->raw = unserialize($serialized, null);
     }
 }

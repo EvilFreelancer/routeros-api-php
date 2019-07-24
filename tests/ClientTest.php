@@ -12,21 +12,21 @@ use RouterOS\Exceptions\ClientException;
 
 class ClientTest extends TestCase
 {
-    public function test__construct()
+    public function test__construct(): void
     {
         try {
             $config = new Config();
             $config->set('user', getenv('ROS_USER'))->set('pass', getenv('ROS_PASS'))->set('host', getenv('ROS_HOST'));
             $obj = new Client($config);
-            $this->assertInternalType('object', $obj);
+            $this->assertIsObject($obj);
             $socket = $obj->getSocket();
-            $this->assertInternalType('resource', $socket);
+            $this->assertIsResource($socket);
         } catch (\Exception $e) {
             $this->assertContains('Must be initialized ', $e->getMessage());
         }
     }
 
-    public function test__construct2()
+    public function test__construct2(): void
     {
         try {
             $config = new Config([
@@ -35,15 +35,15 @@ class ClientTest extends TestCase
                 'host' => getenv('ROS_HOST')
             ]);
             $obj    = new Client($config);
-            $this->assertInternalType('object', $obj);
+            $this->assertIsObject($obj);
             $socket = $obj->getSocket();
-            $this->assertInternalType('resource', $socket);
+            $this->assertIsResource($socket);
         } catch (\Exception $e) {
             $this->assertContains('Must be initialized ', $e->getMessage());
         }
     }
 
-    public function test__construct3()
+    public function test__construct3(): void
     {
         try {
             $obj = new Client([
@@ -51,15 +51,15 @@ class ClientTest extends TestCase
                 'pass' => getenv('ROS_PASS'),
                 'host' => getenv('ROS_HOST')
             ]);
-            $this->assertInternalType('object', $obj);
+            $this->assertIsObject($obj);
             $socket = $obj->getSocket();
-            $this->assertInternalType('resource', $socket);
+            $this->assertIsResource($socket);
         } catch (\Exception $e) {
             $this->assertContains('Must be initialized ', $e->getMessage());
         }
     }
 
-    public function test__constructEx()
+    public function test__constructEx(): void
     {
         $this->expectException(ConfigException::class);
 
@@ -69,14 +69,17 @@ class ClientTest extends TestCase
         ]);
     }
 
-    public function test__constructLegacy()
+    public function test__constructLegacy(): void
     {
         try {
-            $config = new Config();
-            $config->set('user', getenv('ROS_USER'))->set('pass', getenv('ROS_PASS'))
-                ->set('host', getenv('ROS_HOST'))->set('port', (int) getenv('ROS_PORT_MODERN'))->set('legacy', true);
-            $obj = new Client($config);
-            $this->assertInternalType('object', $obj);
+            $obj = new Client([
+                'user'   => getenv('ROS_USER'),
+                'pass'   => getenv('ROS_PASS'),
+                'host'   => getenv('ROS_HOST'),
+                'port'   => (int) getenv('ROS_PORT_MODERN'),
+                'legacy' => true
+            ]);
+            $this->assertIsObject($obj);
         } catch (\Exception $e) {
             $this->assertContains('Must be initialized ', $e->getMessage());
         }
@@ -87,42 +90,52 @@ class ClientTest extends TestCase
      *
      * login() method recognise legacy router response and swap to legacy mode
      */
-    public function test__constructLegacy2()
+    public function test__constructLegacy2(): void
     {
         try {
-            $config = new Config();
-            $config->set('user', getenv('ROS_USER'))->set('pass', getenv('ROS_PASS'))
-                ->set('host', getenv('ROS_HOST'))->set('port', (int) getenv('ROS_PORT_MODERN'))->set('legacy', false);
-            $obj = new Client($config);
-            $this->assertInternalType('object', $obj);
+            $obj = new Client([
+                'user'   => getenv('ROS_USER'),
+                'pass'   => getenv('ROS_PASS'),
+                'host'   => getenv('ROS_HOST'),
+                'port'   => (int) getenv('ROS_PORT_MODERN'),
+                'legacy' => false
+            ]);
+            $this->assertIsObject($obj);
         } catch (\Exception $e) {
             $this->assertContains('Must be initialized ', $e->getMessage());
         }
     }
 
 
-    public function test__constructWrongPass()
+    public function test__constructWrongPass(): void
     {
         $this->expectException(ClientException::class);
 
-        $config = (new Config())->set('attempts', 2);
-        $config->set('user', getenv('ROS_USER'))->set('pass', 'admin2')->set('host', getenv('ROS_HOST'));
-        $obj = new Client($config);
+        $obj = new Client([
+            'user'     => getenv('ROS_USER'),
+            'pass'     => 'admin2',
+            'host'     => getenv('ROS_HOST'),
+            'attempts' => 2
+        ]);
     }
 
     /**
      * @expectedException ClientException
      */
-    public function test__constructWrongNet()
+    public function test__constructWrongNet(): void
     {
         $this->expectException(ClientException::class);
 
-        $config = new Config();
-        $config->set('user', getenv('ROS_USER'))->set('pass', getenv('ROS_PASS'))->set('host', getenv('ROS_HOST'))->set('port', 11111);
-        $obj = new Client($config);
+        $obj = new Client([
+            'user'     => getenv('ROS_USER'),
+            'pass'     => getenv('ROS_PASS'),
+            'host'     => getenv('ROS_HOST'),
+            'port'     => 11111,
+            'attempts' => 2
+        ]);
     }
 
-    public function testWriteRead()
+    public function testWriteRead(): void
     {
         $config = new Config();
         $config->set('user', getenv('ROS_USER'))->set('pass', getenv('ROS_PASS'))->set('host', getenv('ROS_HOST'));
@@ -132,6 +145,11 @@ class ClientTest extends TestCase
         $readRaw = $obj->write($query)->read(false);
         $this->assertCount(10, $readRaw);
         $this->assertEquals('=.id=*1', $readRaw[1]);
+
+        $query = new Query('/system/package/print');
+        $read  = $obj->write($query)->read();
+        $this->assertCount(13, $read);
+        $this->assertEquals('advanced-tools', $read[12]['name']);
 
         $query   = new Query('/ip/address/print');
         $readRaw = $obj->w($query)->read(false);
@@ -154,47 +172,68 @@ class ClientTest extends TestCase
         $this->assertEquals('!trap', $readTrap[0]);
     }
 
-    public function testWriteReadString()
+    public function testReadAsIterator(): void
     {
-        $config = new Config();
-        $config->set('user', getenv('ROS_USER'))->set('pass', getenv('ROS_PASS'))->set('host', getenv('ROS_HOST'));
-        $obj = new Client($config);
+        $obj = new Client([
+            'user' => getenv('ROS_USER'),
+            'pass' => getenv('ROS_PASS'),
+            'host' => getenv('ROS_HOST'),
+        ]);
+
+        $obj = $obj->write('/system/package/print')->readAsIterator();
+        $this->assertIsObject($obj);
+    }
+
+    public function testWriteReadString(): void
+    {
+        $obj = new Client([
+            'user' => getenv('ROS_USER'),
+            'pass' => getenv('ROS_PASS'),
+            'host' => getenv('ROS_HOST'),
+        ]);
 
         $readTrap = $obj->wr('/interface', false);
         $this->assertCount(3, $readTrap);
         $this->assertEquals('!trap', $readTrap[0]);
     }
 
-    public function testWriteReadArray()
+    public function testWriteReadArray(): void
     {
-        $config = new Config();
-        $config->set('user', getenv('ROS_USER'))->set('pass', getenv('ROS_PASS'))->set('host', getenv('ROS_HOST'));
-        $obj = new Client($config);
+        $obj = new Client([
+            'user' => getenv('ROS_USER'),
+            'pass' => getenv('ROS_PASS'),
+            'host' => getenv('ROS_HOST'),
+        ]);
 
         $readTrap = $obj->wr(['/interface'], false);
         $this->assertCount(3, $readTrap);
         $this->assertEquals('!trap', $readTrap[0]);
     }
 
-    public function testFatal()
+    public function testFatal(): void
     {
-        $config = new Config();
-        $config->set('user', getenv('ROS_USER'))->set('pass', getenv('ROS_PASS'))->set('host', getenv('ROS_HOST'));
-        $obj = new Client($config);
+        $obj = new Client([
+            'user' => getenv('ROS_USER'),
+            'pass' => getenv('ROS_PASS'),
+            'host' => getenv('ROS_HOST'),
+        ]);
 
         $readTrap = $obj->wr('/quit');
         $this->assertCount(2, $readTrap);
         $this->assertEquals('!fatal', $readTrap[0]);
     }
 
-    public function testWriteEx()
+    public function testWriteEx(): void
     {
         $this->expectException(QueryException::class);
 
-        $config = new Config();
-        $config->set('user', getenv('ROS_USER'))->set('pass', getenv('ROS_PASS'))->set('host', getenv('ROS_HOST'));
-        $obj   = new Client($config);
-        $error = $obj->write($obj)->read(false);
+        $obj = new Client([
+            'user' => getenv('ROS_USER'),
+            'pass' => getenv('ROS_PASS'),
+            'host' => getenv('ROS_HOST'),
+        ]);
+
+        $obj->write($obj)->read(false);
     }
 
 }

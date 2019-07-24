@@ -116,16 +116,18 @@ var_dump($response);
 $response = $client->wri($query);
 var_dump($response);
 
-// Export every row using foreach.
-foreach ($response as $row){
-  var_export($row);
-}
+// The following for loop allows you to skip elements for which
+// $iterator->current() throws an exception, rather than breaking
+// the loop.
+for ($response->rewind(); $response->valid(); $response->next()) {
+    try {
+        $value = $response->current();
+    } catch (Exception $exception) {
+        continue;
+    }
 
-// Work with resource as with ordinary array
-end($response);
-key($response);
-current($response);
-stat($response);
+    # ...
+}
 ```
 
 ### How to configure the client
