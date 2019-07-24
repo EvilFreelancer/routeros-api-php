@@ -116,11 +116,11 @@ trait ShortsTrait
      * @param array|null  $where      List of where filters
      * @param string|null $operations Some operations which need make on response
      * @param string|null $tag        Mark query with tag
-     * @return \RouterOS\Client
+     * @return \RouterOS\ResponseIterator
      * @throws \RouterOS\Exceptions\QueryException
      * @since 1.0.0
      */
-    public function qri(string $endpoint, array $where = null, string $operations = null, string $tag = null): array
+    public function qri(string $endpoint, array $where = null, string $operations = null, string $tag = null): ResponseIterator
     {
         return $this->query($endpoint, $where, $operations, $tag)->readAsIterator();
     }

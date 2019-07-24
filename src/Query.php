@@ -69,7 +69,7 @@ class Query implements QueryInterface
             $this->setEndpoint($query);
             $this->setAttributes($endpoint);
         } else {
-            throw new QueryException('Specified endpoint is not correct');
+            throw new QueryException('Specified endpoint is incorrect');
         }
     }
 
