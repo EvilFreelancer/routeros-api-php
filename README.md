@@ -97,7 +97,7 @@ $client = new Client([
 
 <details>
 <summary>
-<strong>Advanced examples of Config and Client classes usage</strong>
+<i>ℹ️ Advanced examples of Config and Client classes usage</i>
 </summary>
 
 ```php
@@ -218,7 +218,7 @@ $query =
 
 <details>
 <summary>
-<strong>Advanced examples of Query class usage</strong>
+<strong>ℹ️ Advanced examples of Query class usage</strong>
 </summary>
 
 ```php
