@@ -218,7 +218,7 @@ $query =
 
 <details>
 <summary>
-<strong>ℹ️ Advanced examples of Query class usage</strong>
+<i>ℹ️ Advanced examples of Query class usage</i>
 </summary>
 
 ```php
