@@ -69,7 +69,7 @@ $query->operations('|');
 $query = new Query('/interface/set');
 $query->where('disabled', 'no');
 $query->where('.id', 'ether1');
-$query->tag('.tag=4');
+$query->tag(4);
 
 /**
  * Write Query object to RouterOS and read response from it
