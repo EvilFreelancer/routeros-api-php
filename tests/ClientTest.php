@@ -145,10 +145,6 @@ class ClientTest extends TestCase
          * Build query with where
          */
 
-        $read = $obj->query('/system/package/print')->read();
-        $this->assertCount(13, $read);
-        $this->assertEquals('advanced-tools', $read[12]['name']);
-
         $read = $obj->query('/system/package/print', ['name'])->read();
         $this->assertCount(13, $read);
         $this->assertEquals('dude', $read[0]['name']);
