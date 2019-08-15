@@ -147,7 +147,6 @@ class ClientTest extends TestCase
 
         $read = $obj->query('/system/package/print', ['name'])->read();
         $this->assertCount(13, $read);
-        $this->assertEquals('dude', $read[0]['name']);
 
         $read = $obj->query('/system/package/print', ['.id', '*1'])->read();
         $this->assertCount(1, $read);

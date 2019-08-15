@@ -30,7 +30,6 @@ class ResponseIteratorTest extends TestCase
         $readTrap = $obj->write('/system/package/print')->readAsIterator();
         // Read from RAW
         $this->assertCount(13, $readTrap);
-        $this->assertEquals('advanced-tools', $readTrap[12]['name']);
 
         $readTrap = $obj->write('/ip/address/print')->readAsIterator();
         $this->assertCount(1, $readTrap);
