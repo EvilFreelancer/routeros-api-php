@@ -3,6 +3,7 @@
 namespace RouterOS\Interfaces;
 
 use RouterOS\Client;
+use RouterOS\Query;
 
 /**
  * Interface ClientInterface
@@ -73,13 +74,13 @@ interface ClientInterface
     /**
      * Send write query to RouterOS (modern version of write)
      *
-     * @param string      $endpoint   Path of API query
-     * @param array|null  $where      List of where filters
-     * @param string|null $operations Some operations which need make on response
-     * @param string|null $tag        Mark query with tag
+     * @param string|Query $endpoint   Path of API query or Query object
+     * @param array|null   $where      List of where filters
+     * @param string|null  $operations Some operations which need make on response
+     * @param string|null  $tag        Mark query with tag
      * @return \RouterOS\Client
      * @throws \RouterOS\Exceptions\QueryException
      * @since 1.0.0
      */
-    public function query(string $endpoint, array $where, string $operations, string $tag): Client;
+    public function query($endpoint, array $where, string $operations, string $tag): Client;
 }
