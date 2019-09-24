@@ -57,6 +57,7 @@ class Query implements QueryInterface
      *
      * @param array|string $endpoint   Path of endpoint
      * @param array        $attributes List of attributes which should be set
+     *
      * @throws \RouterOS\Exceptions\QueryException
      */
     public function __construct($endpoint, array $attributes = [])
@@ -79,11 +80,42 @@ class Query implements QueryInterface
      * @param string          $key      Key which need to find
      * @param bool|string|int $value    Value which need to check (by default true)
      * @param bool|string|int $operator It may be one from list [-,=,>,<]
+     *
      * @return \RouterOS\Query
      * @throws \RouterOS\Exceptions\QueryException
      * @since 1.0.0
      */
     public function where(string $key, $operator = null, $value = null): self
+    {
+        return $this->world('?' . $key, $operator, $value);
+    }
+
+    /**
+     * Setter for write/update queries
+     *
+     * @param string          $key   Key which need to find
+     * @param bool|string|int $value Value which need to check (by default true)
+     *
+     * @return \RouterOS\Query
+     * @throws \RouterOS\Exceptions\QueryException
+     * @since 1.1
+     */
+    public function equal(string $key, $value = null): self
+    {
+        return $this->world('=' . $key, null, $value);
+    }
+
+    /**
+     * Write world to RouterOS (the work is mine)
+     *
+     * @param string          $key      Key which need to find
+     * @param bool|string|int $value    Value which need to check (by default true)
+     * @param bool|string|int $operator It may be one from list [-,=,>,<]
+     *
+     * @return \RouterOS\Query
+     * @throws \RouterOS\Exceptions\QueryException
+     */
+    private function world(string $key, $operator = null, $value = null): self
     {
         if (null !== $operator && null === $value) {
 
@@ -107,7 +139,7 @@ class Query implements QueryInterface
             $value = '=' . $value;
         }
 
-        $this->add('?' . $key . $value);
+        $this->add($key . $value);
         return $this;
     }
 
@@ -115,6 +147,7 @@ class Query implements QueryInterface
      * Append additional operations
      *
      * @param string $operations
+     *
      * @return \RouterOS\Query
      * @since 1.0.0
      */
@@ -128,6 +161,7 @@ class Query implements QueryInterface
      * Append tag to query (it should be at end)
      *
      * @param string $name
+     *
      * @return \RouterOS\Query
      * @since 1.0.0
      */
@@ -141,6 +175,7 @@ class Query implements QueryInterface
      * Append to array yet another attribute of query
      *
      * @param string $word
+     *
      * @return \RouterOS\Query
      */
     public function add(string $word): Query
@@ -163,6 +198,7 @@ class Query implements QueryInterface
      * Set array of attributes
      *
      * @param array $attributes
+     *
      * @return \RouterOS\Query
      * @since 0.7
      */
@@ -186,6 +222,7 @@ class Query implements QueryInterface
      * Set endpoint of query
      *
      * @param string|null $endpoint
+     *
      * @return \RouterOS\Query
      * @since 0.7
      */
