@@ -36,6 +36,7 @@ class Client implements Interfaces\ClientInterface
      * Client constructor.
      *
      * @param array|\RouterOS\Config $config
+     *
      * @throws \RouterOS\Exceptions\ClientException
      * @throws \RouterOS\Exceptions\ConfigException
      * @throws \RouterOS\Exceptions\QueryException
@@ -65,6 +66,7 @@ class Client implements Interfaces\ClientInterface
      * Get some parameter from config
      *
      * @param string $parameter Name of required parameter
+     *
      * @return mixed
      * @throws \RouterOS\Exceptions\ConfigException
      */
@@ -77,6 +79,7 @@ class Client implements Interfaces\ClientInterface
      * Send write query to RouterOS
      *
      * @param string|array|\RouterOS\Query $query
+     *
      * @return \RouterOS\Client
      * @throws \RouterOS\Exceptions\QueryException
      * @deprecated
@@ -106,6 +109,7 @@ class Client implements Interfaces\ClientInterface
      * @param array|null   $where      List of where filters
      * @param string|null  $operations Some operations which need make on response
      * @param string|null  $tag        Mark query with tag
+     *
      * @return \RouterOS\Client
      * @throws \RouterOS\Exceptions\QueryException
      * @throws \RouterOS\Exceptions\ClientException
@@ -188,6 +192,7 @@ class Client implements Interfaces\ClientInterface
      * Send write query object to RouterOS
      *
      * @param \RouterOS\Query $query
+     *
      * @return \RouterOS\Client
      * @throws \RouterOS\Exceptions\QueryException
      * @since 1.0.0
@@ -258,6 +263,7 @@ class Client implements Interfaces\ClientInterface
      * A !fatal block precedes TCP connexion close
      *
      * @param bool $parse
+     *
      * @return mixed
      */
     public function read(bool $parse = true)
@@ -285,6 +291,7 @@ class Client implements Interfaces\ClientInterface
      * from RouterOS to readable array in safe way.
      *
      * @param array $raw Array RAW response from server
+     *
      * @return mixed
      *
      * Based on RouterOSResponseArray solution by @arily
@@ -328,6 +335,7 @@ class Client implements Interfaces\ClientInterface
      * Parse response from Router OS
      *
      * @param array $response Response data
+     *
      * @return array Array with parsed data
      */
     public function parseResponse(array $response): array
@@ -382,6 +390,7 @@ class Client implements Interfaces\ClientInterface
      * Authorization logic
      *
      * @param bool $legacyRetry Retry login if we detect legacy version of RouterOS
+     *
      * @return bool
      * @throws \RouterOS\Exceptions\ClientException
      * @throws \RouterOS\Exceptions\ConfigException
@@ -392,7 +401,7 @@ class Client implements Interfaces\ClientInterface
         // If legacy login scheme is enabled
         if ($this->config('legacy')) {
             // For the first we need get hash with salt
-            $response = $this->write('/login')->read();
+            $response = $this->query('/login')->read();
 
             // Now need use this hash for authorization
             $query = new Query('/login', [
@@ -412,7 +421,7 @@ class Client implements Interfaces\ClientInterface
         }
 
         // Execute query and get response
-        $response = $this->write($query)->read(false);
+        $response = $this->query($query)->read(false);
 
         // if:
         //  - we have more than one response
@@ -424,6 +433,11 @@ class Client implements Interfaces\ClientInterface
             return $this->login();
         }
 
+        // If RouterOS answered with invalid credentials then throw error
+        if (!empty($response[0]) && $response[0] === '!trap') {
+            throw new ClientException('Invalid user name or password');
+        }
+
         // Return true if we have only one line from server and this line is !done
         return (1 === count($response)) && isset($response[0]) && ($response[0] === '!done');
     }
@@ -432,6 +446,7 @@ class Client implements Interfaces\ClientInterface
      * Detect by login request if firmware is legacy
      *
      * @param array $response
+     *
      * @return bool
      * @throws ConfigException
      */
