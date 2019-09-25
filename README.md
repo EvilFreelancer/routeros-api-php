@@ -19,7 +19,7 @@ RouterOS firmware, it will be detected automatically on connection stage.
 
 ## How to use
 
-Basic example, analogue via command line is `/ip address print`:
+Basic example, analogue via command line is `/ip hotspot ip-binding print`:
 
 ```php
 use \RouterOS\Client;
