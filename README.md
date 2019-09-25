@@ -38,7 +38,7 @@ $query =
         ->where('mac-address', '00:00:00:00:40:29');
 
 // Send query and read response from RouterOS
-$user = $client->query($query)->read();
+$response = $client->query($query)->read();
 
 var_dump($response);
 
@@ -50,7 +50,7 @@ $query =
         ->equal('comment', 'testcomment');
 
 // Send query and read response from RouterOS (ordinary answer to update/create/delete queries has empty body)
-$user = $client->query($query)->read();
+$response = $client->query($query)->read();
 ```
 
 Examples with "where" conditions, "operations" and "tag":
