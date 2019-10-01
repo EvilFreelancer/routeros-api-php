@@ -62,7 +62,10 @@ trait SocketTrait
         if (false === $socket) {
             throw new ClientException('Unable to establish socket session, ' . $this->_socket_err_str);
         }
-
+        
+        //Timeout read
+        stream_set_timeout($socket, $this->config('timeout'));
+        
         // Save socket to static variable
         $this->setSocket($socket);
     }
