@@ -26,7 +26,6 @@ $client = new Client([
 $query =
     (new Query('/system/script/add'))
         ->equal('name', 'test_by_system1')
-        ->equal('source', 'monitoring')
         ->equal('source', ':local monitor [/interface monitor-traffic ether2 as-value once] \r\n
 :local speedRX ($monitor->"rx-bits-per-second")\r\n
 :local speedTX($monitor->"tx-bits-per-second")\r\n
@@ -39,7 +38,6 @@ print_r($response);
 $query =
     (new Query('/system/script/add'))
         ->equal('name', 'test_by_system2')
-        ->equal('source', 'monitoring')
         ->equal('source',
             ':local monitor [/interface monitor-traffic ether2 as-value once] \r\n:local speedRX ($monitor->"rx-bits-per-second")\r\n:local speedTX($monitor->"tx-bits-per-second")\r\n/tool fetch mode=http url=("http://192.168.254.72/micro-nms/storebw/1/$speedTX/$speedRX") keep-result=no');
 
@@ -50,7 +48,6 @@ print_r($response);
 $query =
     (new Query('/system/script/add'))
         ->equal('name', 'test_by_system3')
-        ->equal('source', 'monitoring')
         ->equal('source', ':local monitor [/interface monitor-traffic ether2 as-value once] \r\n'
             . ':local speedRX ($monitor->"rx-bits-per-second")\r\n'
             . ':local speedTX ($monitor->"tx-bits-per-second")\r\n'
