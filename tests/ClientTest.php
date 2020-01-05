@@ -12,11 +12,44 @@ use RouterOS\Exceptions\ClientException;
 
 class ClientTest extends TestCase
 {
+    /**
+     * @var array
+     */
+    public $router;
+
+    /**
+     * @var int
+     */
+    public $port_modern;
+
+    /**
+     * @var int
+     */
+    public $port_legacy;
+
+    public function setUp()
+    {
+        parent::setUp();
+
+        $this->router = [
+            'user' => getenv('ROS_USER'),
+            'pass' => getenv('ROS_PASS'),
+            'host' => getenv('ROS_HOST'),
+        ];
+
+        $this->port_modern = (int) getenv('ROS_PORT_MODERN');
+        $this->port_legacy = (int) getenv('ROS_PORT_LEGACY');
+    }
+
     public function test__construct(): void
     {
         try {
             $config = new Config();
-            $config->set('user', getenv('ROS_USER'))->set('pass', getenv('ROS_PASS'))->set('host', getenv('ROS_HOST'));
+            $config
+                ->set('user', $this->router['user'])
+                ->set('pass', $this->router['pass'])
+                ->set('host', $this->router['host']);
+
             $obj = new Client($config);
             $this->assertIsObject($obj);
             $socket = $obj->getSocket();
@@ -29,11 +62,7 @@ class ClientTest extends TestCase
     public function test__construct2(): void
     {
         try {
-            $config = new Config([
-                'user' => getenv('ROS_USER'),
-                'pass' => getenv('ROS_PASS'),
-                'host' => getenv('ROS_HOST')
-            ]);
+            $config = new Config($this->router);
             $obj    = new Client($config);
             $this->assertIsObject($obj);
             $socket = $obj->getSocket();
@@ -46,11 +75,7 @@ class ClientTest extends TestCase
     public function test__construct3(): void
     {
         try {
-            $obj = new Client([
-                'user' => getenv('ROS_USER'),
-                'pass' => getenv('ROS_PASS'),
-                'host' => getenv('ROS_HOST')
-            ]);
+            $obj = new Client($this->router);
             $this->assertIsObject($obj);
             $socket = $obj->getSocket();
             $this->assertIsResource($socket);
@@ -64,8 +89,8 @@ class ClientTest extends TestCase
         $this->expectException(ConfigException::class);
 
         $obj = new Client([
-            'user' => getenv('ROS_USER'),
-            'pass' => getenv('ROS_PASS'),
+            'user' => $this->router['user'],
+            'pass' => $this->router['pass'],
         ]);
     }
 
@@ -73,10 +98,10 @@ class ClientTest extends TestCase
     {
         try {
             $obj = new Client([
-                'user'   => getenv('ROS_USER'),
-                'pass'   => getenv('ROS_PASS'),
-                'host'   => getenv('ROS_HOST'),
-                'port'   => (int) getenv('ROS_PORT_MODERN'),
+                'user'   => $this->router['user'],
+                'pass'   => $this->router['pass'],
+                'host'   => $this->router['host'],
+                'port'   => $this->port_modern,
                 'legacy' => true
             ]);
             $this->assertIsObject($obj);
@@ -94,10 +119,10 @@ class ClientTest extends TestCase
     {
         try {
             $obj = new Client([
-                'user'   => getenv('ROS_USER'),
-                'pass'   => getenv('ROS_PASS'),
-                'host'   => getenv('ROS_HOST'),
-                'port'   => (int) getenv('ROS_PORT_MODERN'),
+                'user'   => $this->router['user'],
+                'pass'   => $this->router['pass'],
+                'host'   => $this->router['host'],
+                'port'   => $this->port_legacy,
                 'legacy' => false
             ]);
             $this->assertIsObject($obj);
@@ -112,9 +137,9 @@ class ClientTest extends TestCase
         $this->expectException(ClientException::class);
 
         $obj = new Client([
-            'user'     => getenv('ROS_USER'),
+            'user'     => $this->router['user'],
             'pass'     => 'admin2',
-            'host'     => getenv('ROS_HOST'),
+            'host'     => $this->router['host'],
             'attempts' => 2
         ]);
     }
@@ -127,9 +152,9 @@ class ClientTest extends TestCase
         $this->expectException(ClientException::class);
 
         $obj = new Client([
-            'user'     => getenv('ROS_USER'),
-            'pass'     => getenv('ROS_PASS'),
-            'host'     => getenv('ROS_HOST'),
+            'user'     => $this->router['user'],
+            'pass'     => $this->router['pass'],
+            'host'     => $this->router['host'],
             'port'     => 11111,
             'attempts' => 2
         ]);
@@ -138,7 +163,11 @@ class ClientTest extends TestCase
     public function testQueryRead(): void
     {
         $config = new Config();
-        $config->set('user', getenv('ROS_USER'))->set('pass', getenv('ROS_PASS'))->set('host', getenv('ROS_HOST'));
+        $config
+            ->set('user', $this->router['user'])
+            ->set('pass', $this->router['pass'])
+            ->set('host', $this->router['host']);
+
         $obj = new Client($config);
 
         /*
@@ -185,11 +214,7 @@ class ClientTest extends TestCase
 
     public function testReadAsIterator(): void
     {
-        $obj = new Client([
-            'user' => getenv('ROS_USER'),
-            'pass' => getenv('ROS_PASS'),
-            'host' => getenv('ROS_HOST'),
-        ]);
+        $obj = new Client($this->router);
 
         $obj = $obj->write('/system/package/print')->readAsIterator();
         $this->assertIsObject($obj);
@@ -198,9 +223,9 @@ class ClientTest extends TestCase
     public function testWriteReadString(): void
     {
         $obj = new Client([
-            'user' => getenv('ROS_USER'),
-            'pass' => getenv('ROS_PASS'),
-            'host' => getenv('ROS_HOST'),
+            'user' => $this->router['user'],
+            'pass' => $this->router['pass'],
+            'host' => $this->router['host'],
         ]);
 
         $readTrap = $obj->wr('/interface', false);
@@ -211,9 +236,9 @@ class ClientTest extends TestCase
     public function testFatal(): void
     {
         $obj = new Client([
-            'user' => getenv('ROS_USER'),
-            'pass' => getenv('ROS_PASS'),
-            'host' => getenv('ROS_HOST'),
+            'user' => $this->router['user'],
+            'pass' => $this->router['pass'],
+            'host' => $this->router['host'],
         ]);
 
         $readTrap = $obj->query('/quit')->read();
@@ -226,9 +251,9 @@ class ClientTest extends TestCase
         $this->expectException(ClientException::class);
 
         $obj = new Client([
-            'user' => getenv('ROS_USER'),
-            'pass' => getenv('ROS_PASS'),
-            'host' => getenv('ROS_HOST'),
+            'user' => $this->router['user'],
+            'pass' => $this->router['pass'],
+            'host' => $this->router['host'],
         ]);
 
         $obj->query('/quiet', ['a', 'b', 'c', 'd']);
@@ -239,9 +264,9 @@ class ClientTest extends TestCase
         $this->expectException(ClientException::class);
 
         $obj = new Client([
-            'user' => getenv('ROS_USER'),
-            'pass' => getenv('ROS_PASS'),
-            'host' => getenv('ROS_HOST'),
+            'user' => $this->router['user'],
+            'pass' => $this->router['pass'],
+            'host' => $this->router['host'],
         ]);
 
         $obj->query('/quiet', [[]]);

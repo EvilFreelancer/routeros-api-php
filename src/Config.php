@@ -80,7 +80,7 @@ class Config implements ConfigInterface
     private function getPort(string $parameter)
     {
         // If client need port number and port is not set
-        if ($parameter === 'port' && !isset($this->_parameters['port']) && null !== $this->_parameters['port']) {
+        if ($parameter === 'port' && (!isset($this->_parameters['port']) || null === $this->_parameters['port'])) {
             // then use default with or without ssl encryption
             return (isset($this->_parameters['ssl']) && $this->_parameters['ssl'])
                 ? Client::PORT_SSL

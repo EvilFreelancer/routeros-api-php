@@ -44,5 +44,5 @@ interface StreamInterface
      *
      * @return void
      */
-    public function close(): void;
+    public function close();
 }
