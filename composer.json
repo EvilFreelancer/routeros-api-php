@@ -1,12 +1,15 @@
 {
   "name": "evilfreelancer/routeros-api-php",
   "type": "library",
-  "description": "Modern Mikrotik RouterOS API PHP7 client for your applications",
+  "description": "Modern Mikrotik RouterOS API PHP client for your applications (with Laravel support)",
   "keywords": [
     "socket-client",
     "psr-4",
     "routeros",
-    "mikrotik"
+    "mikrotik",
+    "laravel",
+    "plugin",
+    "facade"
   ],
   "license": "MIT",
   "autoload": {
@@ -25,11 +28,22 @@
       "role": "Developer"
     }
   ],
+  "extra": {
+    "laravel": {
+      "providers": [
+        "RouterOS\\Laravel\\ClientServiceProvide"
+      ],
+      "aliases": {
+        "RouterOS": "RouterOS\\Laravel\\ClientFacade"
+      }
+    }
+  },
   "require": {
-    "php": "^7.1",
+    "php": "^7.2",
     "ext-sockets": "*"
   },
   "require-dev": {
-    "phpunit/phpunit": "^7.0"
+    "phpunit/phpunit": "^7.0",
+    "orchestra/testbench": "^3.0"
   }
 }
