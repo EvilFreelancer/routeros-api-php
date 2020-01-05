@@ -101,7 +101,7 @@ class ClientTest extends TestCase
                 'user'   => $this->router['user'],
                 'pass'   => $this->router['pass'],
                 'host'   => $this->router['host'],
-                'port'   => $this->port_modern,
+                'port'   => $this->port_legacy,
                 'legacy' => true
             ]);
             $this->assertIsObject($obj);

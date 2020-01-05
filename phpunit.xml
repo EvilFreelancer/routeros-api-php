@@ -20,7 +20,7 @@
         <env name="ROS_HOST" value="127.0.0.1"/>
         <env name="ROS_USER" value="admin"/>
         <env name="ROS_PASS" value="admin"/>
-        <env name="ROS_PORT_MODERN" value="18728"/>
-        <env name="ROS_PORT_LEGACY" value="28728"/>
+        <env name="ROS_PORT_MODERN" value="8728"/>
+        <env name="ROS_PORT_LEGACY" value="18728"/>
     </php>
 </phpunit>
