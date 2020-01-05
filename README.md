@@ -17,6 +17,47 @@ to work with PHP7 in accordance with the PSR standards.
 You can use this library with pre-6.43 and post-6.43 versions of
 RouterOS firmware, it will be detected automatically on connection stage.
 
+## Laravel framework support
+
+RouterOS API client is optimized for usage as normal Laravel package, all functional is available via `\RouterOS` facade,
+for access to client object you need instead:
+
+```php
+$config = new \RouterOS\Config(['api_key' => getenv('API_KEY')]);
+$client = new \RouterOS\Client($config);
+```
+
+Call facade and pass array of parameters to `getClient` method:
+
+```php
+$client = \RouterOS::getClient([
+    'user' => 'admin',
+    'pass' => 'admin',
+    'port' => 8728,
+]);
+```
+
+### Laravel installation
+
+Install the package via Composer:
+
+    composer require evilfreelancer/routeros-api-php
+
+By default the package will automatically register its service provider, but
+if you are a happy owner of Laravel version less than 5.3, then in a project, which is using your package
+(after composer require is done, of course), add into`providers` block of your `config/app.php`:
+
+```php
+'providers' => [
+    // ...
+    RouterOS\Laravel\ClientServiceProvider::class,
+],
+```
+
+Optionally, publish the configuration file if you want to change any defaults:
+
+    php artisan vendor:publish --provider="RouterOS\\Laravel\\ClientServiceProvider"
+
 ## How to use
 
 Basic example, analogue via command line is `/ip hotspot ip-binding print`:

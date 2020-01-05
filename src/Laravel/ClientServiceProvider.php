@@ -4,7 +4,7 @@ namespace RouterOS\Laravel;
 
 use Illuminate\Support\ServiceProvider as BaseServiceProvider;
 
-class ClientServiceProvide extends BaseServiceProvider
+class ClientServiceProvider extends BaseServiceProvider
 {
     /**
      * Bootstrap any application services.
