@@ -14,7 +14,7 @@ class ClientServiceProvide extends BaseServiceProvider
     public function boot()
     {
         $this->publishes([
-            __DIR__ . '/../configs/routeros-api.php' => config_path('routeros-api.php'),
+            __DIR__ . '/../../configs/routeros-api.php' => config_path('routeros-api.php'),
         ]);
     }
 
@@ -26,7 +26,7 @@ class ClientServiceProvide extends BaseServiceProvider
     public function register()
     {
         $this->mergeConfigFrom(
-            __DIR__ . '/../configs/routeros-api.php', 'routeros-api'
+            __DIR__ . '/../../configs/routeros-api.php', 'routeros-api'
         );
 
         $this->app->bind(ClientWrapper::class);
