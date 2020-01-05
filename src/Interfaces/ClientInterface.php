@@ -16,37 +16,37 @@ interface ClientInterface
     /**
      * By default legacy login on RouterOS pre-6.43 is not supported
      */
-    const LEGACY = false;
+    public const LEGACY = false;
 
     /**
      * Default port number
      */
-    const PORT = 8728;
+    public const PORT = 8728;
 
     /**
      * Default ssl port number
      */
-    const PORT_SSL = 8729;
+    public const PORT_SSL = 8729;
 
     /**
      * Do not use SSL by default
      */
-    const SSL = false;
+    public const SSL = false;
 
     /**
      * Max timeout for answer from router
      */
-    const TIMEOUT = 10;
+    public const TIMEOUT = 10;
 
     /**
      * Count of reconnect attempts
      */
-    const ATTEMPTS = 10;
+    public const ATTEMPTS = 10;
 
     /**
      * Delay between attempts in seconds
      */
-    const ATTEMPTS_DELAY = 1;
+    public const ATTEMPTS_DELAY = 1;
 
     /**
      * Return socket resource if is exist

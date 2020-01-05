@@ -18,6 +18,7 @@ interface QueryInterface
      * @param string          $key      Key which need to find
      * @param bool|string|int $value    Value which need to check (by default true)
      * @param bool|string|int $operator It may be one from list [-,=,>,<]
+     *
      * @return \RouterOS\Query
      * @throws \RouterOS\Exceptions\ClientException
      * @since 1.0.0
@@ -28,6 +29,7 @@ interface QueryInterface
      * Append additional operations
      *
      * @param string $operations
+     *
      * @since 1.0.0
      */
     public function operations(string $operations);
@@ -36,6 +38,7 @@ interface QueryInterface
      * Append tag to query (it should be at end)
      *
      * @param string $name
+     *
      * @since 1.0.0
      */
     public function tag(string $name);
@@ -44,6 +47,7 @@ interface QueryInterface
      * Append to array yet another attribute of query
      *
      * @param string $word
+     *
      * @return \RouterOS\Query
      */
     public function add(string $word): Query;
@@ -59,6 +63,7 @@ interface QueryInterface
      * Set array of attributes
      *
      * @param array $attributes
+     *
      * @return \RouterOS\Query
      * @since 0.7
      */
@@ -75,6 +80,7 @@ interface QueryInterface
      * Set endpoint of query
      *
      * @param string $endpoint
+     *
      * @return \RouterOS\Query
      * @since 0.7
      */

@@ -31,9 +31,10 @@ class Config implements ConfigInterface
     /**
      * Config constructor.
      *
-     * @param   array $parameters List of parameters which can be set on object creation stage
-     * @throws  ConfigException
-     * @since   0.6
+     * @param array $parameters List of parameters which can be set on object creation stage
+     *
+     * @throws \RouterOS\Exceptions\ConfigException
+     * @since  0.6
      */
     public function __construct(array $parameters = [])
     {
@@ -45,10 +46,11 @@ class Config implements ConfigInterface
     /**
      * Set parameter into array
      *
-     * @param   string $name
-     * @param   mixed  $value
-     * @return  \RouterOS\Config
-     * @throws  ConfigException
+     * @param string $name
+     * @param mixed  $value
+     *
+     * @return \RouterOS\Config
+     * @throws \RouterOS\Exceptions\ConfigException
      */
     public function set(string $name, $value): Config
     {
@@ -71,8 +73,9 @@ class Config implements ConfigInterface
     /**
      * Return port number (get from defaults if port is not set by user)
      *
-     * @param   string $parameter
-     * @return  bool|int
+     * @param string $parameter
+     *
+     * @return bool|int
      */
     private function getPort(string $parameter)
     {
@@ -89,9 +92,10 @@ class Config implements ConfigInterface
     /**
      * Remove parameter from array by name
      *
-     * @param   string $name
-     * @return  \RouterOS\Config
-     * @throws  \RouterOS\Exceptions\ConfigException
+     * @param string $name
+     *
+     * @return \RouterOS\Config
+     * @throws \RouterOS\Exceptions\ConfigException
      */
     public function delete(string $name): Config
     {
@@ -109,9 +113,10 @@ class Config implements ConfigInterface
     /**
      * Return parameter of current config by name
      *
-     * @param   string $name
-     * @return  mixed
-     * @throws  \RouterOS\Exceptions\ConfigException
+     * @param string $name
+     *
+     * @return mixed
+     * @throws \RouterOS\Exceptions\ConfigException
      */
     public function get(string $name)
     {
@@ -126,7 +131,7 @@ class Config implements ConfigInterface
     /**
      * Return array with all parameters of configuration
      *
-     * @return  array
+     * @return array
      */
     public function getParameters(): array
     {

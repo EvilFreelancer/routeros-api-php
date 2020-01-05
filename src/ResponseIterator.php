@@ -12,6 +12,7 @@ use \Iterator,
  * from RouterOS to readable array in safe way.
  *
  * @param array $raw Array RAW response from server
+ *
  * @return mixed
  *
  * Based on RouterOSResponseArray solution by @arily
@@ -188,6 +189,7 @@ class ResponseIterator implements Iterator, ArrayAccess, Countable, Serializable
      * Whether a offset exists
      *
      * @param mixed $offset
+     *
      * @return bool
      */
     public function offsetExists($offset): bool
@@ -209,6 +211,7 @@ class ResponseIterator implements Iterator, ArrayAccess, Countable, Serializable
      * Offset to retrieve
      *
      * @param mixed $offset
+     *
      * @return bool|mixed
      */
     public function offsetGet($offset)
