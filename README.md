@@ -23,7 +23,12 @@ RouterOS API client is optimized for usage as normal Laravel package, all functi
 for access to client object you need instead:
 
 ```php
-$config = new \RouterOS\Config(['api_key' => getenv('API_KEY')]);
+$config = new \RouterOS\Config([
+    'host' => '192.168.1.3',
+    'user' => 'admin',
+    'pass' => 'admin',
+    'port' => 8728,
+]);
 $client = new \RouterOS\Client($config);
 ```
 
@@ -31,6 +36,7 @@ Call facade and pass array of parameters to `getClient` method:
 
 ```php
 $client = \RouterOS::getClient([
+    'host' => '192.168.1.3',
     'user' => 'admin',
     'pass' => 'admin',
     'port' => 8728,
