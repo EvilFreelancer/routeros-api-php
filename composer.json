@@ -18,7 +18,9 @@
     }
   },
   "autoload-dev": {
-    "psr-4": { "RouterOS\\Tests\\": "./tests/" }
+    "psr-4": {
+      "RouterOS\\Tests\\": "./tests/"
+    }
   },
   "authors": [
     {
@@ -31,7 +33,7 @@
   "extra": {
     "laravel": {
       "providers": [
-        "RouterOS\\Laravel\\ClientServiceProvide"
+        "RouterOS\\Laravel\\ClientServiceProvider"
       ],
       "aliases": {
         "RouterOS": "RouterOS\\Laravel\\ClientFacade"
