@@ -163,7 +163,7 @@ class Client implements Interfaces\ClientInterface
 
     /**
      * Query helper
-     * 
+     *
      * @param array $item
      * @param Query $query
      * @return Query
