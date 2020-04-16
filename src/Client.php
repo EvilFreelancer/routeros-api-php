@@ -7,6 +7,7 @@ use RouterOS\Exceptions\ConfigException;
 use RouterOS\Exceptions\QueryException;
 use RouterOS\Helpers\ArrayHelper;
 
+use function array_keys;
 use function array_shift;
 use function chr;
 use function count;
@@ -308,7 +309,7 @@ class Client implements Interfaces\ClientInterface
     private function rosario(array $raw): array
     {
         // This RAW should't be an error
-        $positions = \array_keys($raw, '!re');
+        $positions = array_keys($raw, '!re');
         $count = count($raw);
         $result = [];
 
@@ -363,22 +364,32 @@ class Client implements Interfaces\ClientInterface
                     for ($j = $key + 1; $j <= $lines; $j++) {
                         // If we have lines after current one
                         if (isset($response[$j])) {
-                            $this->pregResponse($response[$j], $matches);
-                            if (isset($matches[1][0], $matches[2][0])) {
-                                $result['after'][$matches[1][0]] = $matches[2][0];
-                            }
+                            $this->preParseResponse($response[$j], $result, $matches, $j);
                         }
                     }
                     break 2;
                 default:
-                    $this->pregResponse($value, $matches);
-                    if (isset($matches[1][0], $matches[2][0])) {
-                        $result[$i][$matches[1][0]] = $matches[2][0];
-                    }
+                    $this->preParseResponse($value, $result, $matches);
                     break;
             }
         }
         return $result;
+    }
+
+    /**
+     * Response helper
+     *
+     * @param        $value
+     * @param        $result
+     * @param        $matches
+     * @param string $iterator
+     */
+    private function preParseResponse($value, &$result, &$matches, $iterator = 'after'): void
+    {
+        $this->pregResponse($value, $matches);
+        if (isset($matches[1][0], $matches[2][0])) {
+            $result[$iterator][$matches[1][0]] = $matches[2][0];
+        }
     }
 
     /**

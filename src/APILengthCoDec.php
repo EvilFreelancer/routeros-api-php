@@ -2,6 +2,7 @@
 
 namespace RouterOS;
 
+use DomainException;
 use RouterOS\Interfaces\StreamInterface;
 use RouterOS\Helpers\BinaryStringHelper;
 
@@ -18,43 +19,43 @@ class APILengthCoDec
     /**
      * Encode string to length of string
      *
+     *  Encode the length :
+    - if length <= 0x7F (binary : 01111111 => 7 bits set to 1)
+    - encode length with one byte
+    - set the byte to length value, as length maximal value is 7 bits set to 1, the most significant bit is always 0
+    - end
+    - length <= 0x3FFF (binary : 00111111 11111111 => 14 bits set to 1)
+    - encode length with two bytes
+    - set length value to 0x8000 (=> 10000000 00000000)
+    - add length : as length maximumal value is 14 bits to 1, this does not modify the 2 most significance bits (10)
+    - end
+    => minimal encoded value is 10000000 10000000
+    - length <= 0x1FFFFF (binary : 00011111 11111111 11111111 => 21 bits set to 1)
+    - encode length with three bytes
+    - set length value to 0xC00000 (binary : 11000000 00000000 00000000)
+    - add length : as length maximal value is 21 bits to 1, this does not modify the 3 most significance bits (110)
+    - end
+    => minimal encoded value is 11000000 01000000 00000000
+    - length <= 0x0FFFFFFF (binary : 00001111 11111111 11111111 11111111 => 28 bits set to 1)
+    - encode length with four bytes
+    - set length value to 0xE0000000 (binary : 11100000 00000000 00000000 00000000)
+    - add length : as length maximal value is 28 bits to 1, this does not modify the 4 most significance bits (1110)
+    - end
+    => minimal encoded value is 11100000 00100000 00000000 00000000
+    - length <= 0x7FFFFFFFFF (binary : 00000111 11111111 11111111 11111111 11111111 => 35 bits set to 1)
+    - encode length with five bytes
+    - set length value to 0xF000000000 (binary : 11110000 00000000 00000000 00000000 00000000)
+    - add length : as length maximal value is 35 bits to 1, this does not modify the 5 most significance bits (11110)
+    - end
+    - length > 0x7FFFFFFFFF : not supported
+     *
      * @param   int|float $length
      * @return  string
      */
     public static function encodeLength($length): string
     {
-        // Encode the length :
-        // - if length <= 0x7F (binary : 01111111 => 7 bits set to 1)
-        //      - encode length with one byte
-        //      - set the byte to length value, as length maximal value is 7 bits set to 1, the most significant bit is always 0
-        //      - end
-        // - length <= 0x3FFF (binary : 00111111 11111111 => 14 bits set to 1)
-        //      - encode length with two bytes
-        //      - set length value to 0x8000 (=> 10000000 00000000)
-        //      - add length : as length maximumal value is 14 bits to 1, this does not modify the 2 most significance bits (10)
-        //      - end
-        //      => minimal encoded value is 10000000 10000000
-        // - length <= 0x1FFFFF (binary : 00011111 11111111 11111111 => 21 bits set to 1)
-        //      - encode length with three bytes
-        //      - set length value to 0xC00000 (binary : 11000000 00000000 00000000)
-        //      - add length : as length maximal vlaue is 21 bits to 1, this does not modify the 3 most significance bits (110)
-        //      - end
-        //      => minimal encoded value is 11000000 01000000 00000000
-        // - length <= 0x0FFFFFFF (binary : 00001111 11111111 11111111 11111111 => 28 bits set to 1)
-        //      - encode length with four bytes
-        //      - set length value to 0xE0000000 (binary : 11100000 00000000 00000000 00000000)
-        //      - add length : as length maximal vlaue is 28 bits to 1, this does not modify the 4 most significance bits (1110)
-        //      - end
-        //      => minimal encoded value is 11100000 00100000 00000000 00000000
-        // - length <= 0x7FFFFFFFFF (binary : 00000111 11111111 11111111 11111111 11111111 => 35 bits set to 1)
-        //      - encode length with five bytes
-        //      - set length value to 0xF000000000 (binary : 11110000 00000000 00000000 00000000 00000000)
-        //      - add length : as length maximal vlaue is 35 bits to 1, this does not modify the 5 most significance bits (11110)
-        //      - end
-        // - length > 0x7FFFFFFFFF : not supported
-
         if ($length < 0) {
-            throw new \DomainException("Length of word could not to be negative ($length)");
+            throw new DomainException("Length of word could not to be negative ($length)");
         }
 
         if ($length <= 0x7F) {
