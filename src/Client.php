@@ -7,6 +7,17 @@ use RouterOS\Exceptions\ConfigException;
 use RouterOS\Exceptions\QueryException;
 use RouterOS\Helpers\ArrayHelper;
 
+use function array_shift;
+use function chr;
+use function count;
+use function is_array;
+use function is_string;
+use function md5;
+use function pack;
+use function preg_match_all;
+use function sleep;
+use function trim;
+
 /**
  * Class Client for RouterOS management
  *
@@ -20,14 +31,14 @@ class Client implements Interfaces\ClientInterface
     /**
      * Configuration of connection
      *
-     * @var \RouterOS\Config
+     * @var Config
      */
     private $_config;
 
     /**
      * API communication object
      *
-     * @var \RouterOS\APIConnector
+     * @var APIConnector
      */
 
     private $_connector;
@@ -35,16 +46,16 @@ class Client implements Interfaces\ClientInterface
     /**
      * Client constructor.
      *
-     * @param array|\RouterOS\Config $config
+     * @param array|Config $config
      *
-     * @throws \RouterOS\Exceptions\ClientException
-     * @throws \RouterOS\Exceptions\ConfigException
-     * @throws \RouterOS\Exceptions\QueryException
+     * @throws ClientException
+     * @throws ConfigException
+     * @throws QueryException
      */
     public function __construct($config)
     {
         // If array then need create object
-        if (\is_array($config)) {
+        if (is_array($config)) {
             $config = new Config($config);
         }
 
@@ -68,7 +79,7 @@ class Client implements Interfaces\ClientInterface
      * @param string $parameter Name of required parameter
      *
      * @return mixed
-     * @throws \RouterOS\Exceptions\ConfigException
+     * @throws ConfigException
      */
     private function config(string $parameter)
     {
@@ -78,20 +89,20 @@ class Client implements Interfaces\ClientInterface
     /**
      * Send write query to RouterOS
      *
-     * @param string|array|\RouterOS\Query $query
+     * @param string|array|Query $query
      *
-     * @return \RouterOS\Client
-     * @throws \RouterOS\Exceptions\QueryException
+     * @return Client
+     * @throws QueryException
      * @deprecated
      * @codeCoverageIgnore
      */
     public function write($query): Client
     {
-        if (\is_string($query)) {
+        if (is_string($query)) {
             $query = new Query($query);
-        } elseif (\is_array($query)) {
+        } elseif (is_array($query)) {
             $endpoint = array_shift($query);
-            $query    = new Query($endpoint, $query);
+            $query = new Query($endpoint, $query);
         }
 
         if (!$query instanceof Query) {
@@ -105,14 +116,14 @@ class Client implements Interfaces\ClientInterface
     /**
      * Send write query to RouterOS (modern version of write)
      *
-     * @param string|Query $endpoint   Path of API query or Query object
-     * @param array|null   $where      List of where filters
-     * @param string|null  $operations Some operations which need make on response
-     * @param string|null  $tag        Mark query with tag
+     * @param string|Query $endpoint Path of API query or Query object
+     * @param array|null $where List of where filters
+     * @param string|null $operations Some operations which need make on response
+     * @param string|null $tag Mark query with tag
      *
-     * @return \RouterOS\Client
-     * @throws \RouterOS\Exceptions\QueryException
-     * @throws \RouterOS\Exceptions\ClientException
+     * @return Client
+     * @throws QueryException
+     * @throws ClientException
      * @since 1.0.0
      */
     public function query($endpoint, array $where = null, string $operations = null, string $tag = null): Client
@@ -128,48 +139,10 @@ class Client implements Interfaces\ClientInterface
             // If array is multidimensional, then parse each line
             if (is_array($where[0])) {
                 foreach ($where as $item) {
-
-                    // Null by default
-                    $key      = null;
-                    $operator = null;
-                    $value    = null;
-
-                    switch (\count($item)) {
-                        case 1:
-                            list($key) = $item;
-                            break;
-                        case 2:
-                            list($key, $operator) = $item;
-                            break;
-                        case 3:
-                            list($key, $operator, $value) = $item;
-                            break;
-                        default:
-                            throw new ClientException('From 1 to 3 parameters of "where" condition is allowed');
-                    }
-                    $query->where($key, $operator, $value);
+                    $query = $this->preQuery($item, $query);
                 }
             } else {
-                // Null by default
-                $key      = null;
-                $operator = null;
-                $value    = null;
-
-                switch (\count($where)) {
-                    case 1:
-                        list($key) = $where;
-                        break;
-                    case 2:
-                        list($key, $operator) = $where;
-                        break;
-                    case 3:
-                        list($key, $operator, $value) = $where;
-                        break;
-                    default:
-                        throw new ClientException('From 1 to 3 parameters of "where" condition is allowed');
-                }
-
-                $query->where($key, $operator, $value);
+                $query = $this->preQuery($where, $query);
             }
 
         }
@@ -189,12 +162,45 @@ class Client implements Interfaces\ClientInterface
     }
 
     /**
+     * Query helper
+     * 
+     * @param array $item
+     * @param Query $query
+     * @return Query
+     * @throws ClientException
+     * @throws QueryException
+     */
+    private function preQuery(array $item, Query $query): Query
+    {
+        // Null by default
+        $key = null;
+        $operator = null;
+        $value = null;
+
+        switch (count($item)) {
+            case 1:
+                [$key] = $item;
+                break;
+            case 2:
+                [$key, $operator] = $item;
+                break;
+            case 3:
+                [$key, $operator, $value] = $item;
+                break;
+            default:
+                throw new ClientException('From 1 to 3 parameters of "where" condition is allowed');
+        }
+
+        return $query->where($key, $operator, $value);
+    }
+
+    /**
      * Send write query object to RouterOS
      *
-     * @param \RouterOS\Query $query
+     * @param Query $query
      *
-     * @return \RouterOS\Client
-     * @throws \RouterOS\Exceptions\QueryException
+     * @return Client
+     * @throws QueryException
      * @since 1.0.0
      */
     private function writeRAW(Query $query): Client
@@ -278,7 +284,7 @@ class Client implements Interfaces\ClientInterface
     /**
      * Read using Iterators to improve performance on large dataset
      *
-     * @return \RouterOS\ResponseIterator
+     * @return ResponseIterator
      * @since 1.0.0
      */
     public function readAsIterator(): ResponseIterator
@@ -302,9 +308,9 @@ class Client implements Interfaces\ClientInterface
     private function rosario(array $raw): array
     {
         // This RAW should't be an error
-        $positions = array_keys($raw, '!re');
-        $count     = count($raw);
-        $result    = [];
+        $positions = \array_keys($raw, '!re');
+        $count = count($raw);
+        $result = [];
 
         if (isset($positions[1])) {
 
@@ -341,8 +347,8 @@ class Client implements Interfaces\ClientInterface
     public function parseResponse(array $response): array
     {
         $result = [];
-        $i      = -1;
-        $lines  = \count($response);
+        $i = -1;
+        $lines = count($response);
         foreach ($response as $key => $value) {
             switch ($value) {
                 case '!re':
@@ -379,9 +385,9 @@ class Client implements Interfaces\ClientInterface
      * Parse result from RouterOS by regular expression
      *
      * @param string $value
-     * @param array  $matches
+     * @param array $matches
      */
-    private function pregResponse(string $value, &$matches)
+    private function pregResponse(string $value, &$matches): void
     {
         preg_match_all('/^[=|\.](.*)=(.*)/', $value, $matches);
     }
@@ -392,9 +398,9 @@ class Client implements Interfaces\ClientInterface
      * @param bool $legacyRetry Retry login if we detect legacy version of RouterOS
      *
      * @return bool
-     * @throws \RouterOS\Exceptions\ClientException
-     * @throws \RouterOS\Exceptions\ConfigException
-     * @throws \RouterOS\Exceptions\QueryException
+     * @throws ClientException
+     * @throws ConfigException
+     * @throws QueryException
      */
     private function login(bool $legacyRetry = false): bool
     {
@@ -406,7 +412,7 @@ class Client implements Interfaces\ClientInterface
             // Now need use this hash for authorization
             $query = new Query('/login', [
                 '=name=' . $this->config('user'),
-                '=response=00' . md5(\chr(0) . $this->config('pass') . pack('H*', $response['after']['ret']))
+                '=response=00' . md5(chr(0) . $this->config('pass') . pack('H*', $response['after']['ret']))
             ]);
         } else {
             // Just login with our credentials
@@ -452,16 +458,16 @@ class Client implements Interfaces\ClientInterface
      */
     private function isLegacy(array &$response): bool
     {
-        return \count($response) > 1 && $response[0] === '!done' && !$this->config('legacy');
+        return count($response) > 1 && $response[0] === '!done' && !$this->config('legacy');
     }
 
     /**
      * Connect to socket server
      *
      * @return bool
-     * @throws \RouterOS\Exceptions\ClientException
-     * @throws \RouterOS\Exceptions\ConfigException
-     * @throws \RouterOS\Exceptions\QueryException
+     * @throws ClientException
+     * @throws ConfigException
+     * @throws QueryException
      */
     private function connect(): bool
     {
