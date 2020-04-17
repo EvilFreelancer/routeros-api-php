@@ -32,14 +32,14 @@ class Client implements Interfaces\ClientInterface
     /**
      * Configuration of connection
      *
-     * @var Config
+     * @var \RouterOS\Config
      */
     private $_config;
 
     /**
      * API communication object
      *
-     * @var APIConnector
+     * @var \RouterOS\APIConnector
      */
 
     private $_connector;
@@ -47,11 +47,11 @@ class Client implements Interfaces\ClientInterface
     /**
      * Client constructor.
      *
-     * @param array|Config $config
+     * @param array|\RouterOS\Interfaces\ConfigInterface $config
      *
-     * @throws ClientException
-     * @throws ConfigException
-     * @throws QueryException
+     * @throws \RouterOS\Exceptions\ClientException
+     * @throws \RouterOS\Exceptions\ConfigException
+     * @throws \RouterOS\Exceptions\QueryException
      */
     public function __construct($config)
     {
@@ -80,7 +80,7 @@ class Client implements Interfaces\ClientInterface
      * @param string $parameter Name of required parameter
      *
      * @return mixed
-     * @throws ConfigException
+     * @throws \RouterOS\Exceptions\ConfigException
      */
     private function config(string $parameter)
     {
@@ -92,10 +92,9 @@ class Client implements Interfaces\ClientInterface
      *
      * @param string|array|Query $query
      *
-     * @return Client
-     * @throws QueryException
+     * @return \RouterOS\Client
+     * @throws \RouterOS\Exceptions\QueryException
      * @deprecated
-     * @codeCoverageIgnore
      */
     public function write($query): Client
     {
@@ -103,7 +102,7 @@ class Client implements Interfaces\ClientInterface
             $query = new Query($query);
         } elseif (is_array($query)) {
             $endpoint = array_shift($query);
-            $query = new Query($endpoint, $query);
+            $query    = new Query($endpoint, $query);
         }
 
         if (!$query instanceof Query) {
@@ -117,14 +116,14 @@ class Client implements Interfaces\ClientInterface
     /**
      * Send write query to RouterOS (modern version of write)
      *
-     * @param string|Query $endpoint Path of API query or Query object
-     * @param array|null $where List of where filters
-     * @param string|null $operations Some operations which need make on response
-     * @param string|null $tag Mark query with tag
+     * @param string|\RouterOS\Query $endpoint   Path of API query or Query object
+     * @param array|null             $where      List of where filters
+     * @param string|null            $operations Some operations which need make on response
+     * @param string|null            $tag        Mark query with tag
      *
-     * @return Client
-     * @throws QueryException
-     * @throws ClientException
+     * @return \RouterOS\Client
+     * @throws \RouterOS\Exceptions\QueryException
+     * @throws \RouterOS\Exceptions\ClientException
      * @since 1.0.0
      */
     public function query($endpoint, array $where = null, string $operations = null, string $tag = null): Client
@@ -167,16 +166,17 @@ class Client implements Interfaces\ClientInterface
      *
      * @param array $item
      * @param Query $query
-     * @return Query
-     * @throws ClientException
-     * @throws QueryException
+     *
+     * @return \RouterOS\Query
+     * @throws \RouterOS\Exceptions\ClientException
+     * @throws \RouterOS\Exceptions\QueryException
      */
     private function preQuery(array $item, Query $query): Query
     {
         // Null by default
-        $key = null;
+        $key      = null;
         $operator = null;
-        $value = null;
+        $value    = null;
 
         switch (count($item)) {
             case 1:
@@ -198,10 +198,10 @@ class Client implements Interfaces\ClientInterface
     /**
      * Send write query object to RouterOS
      *
-     * @param Query $query
+     * @param \RouterOS\Query $query
      *
-     * @return Client
-     * @throws QueryException
+     * @return \RouterOS\Client
+     * @throws \RouterOS\Exceptions\QueryException
      * @since 1.0.0
      */
     private function writeRAW(Query $query): Client
@@ -285,7 +285,7 @@ class Client implements Interfaces\ClientInterface
     /**
      * Read using Iterators to improve performance on large dataset
      *
-     * @return ResponseIterator
+     * @return \RouterOS\ResponseIterator
      * @since 1.0.0
      */
     public function readAsIterator(): ResponseIterator
@@ -310,8 +310,8 @@ class Client implements Interfaces\ClientInterface
     {
         // This RAW should't be an error
         $positions = array_keys($raw, '!re');
-        $count = count($raw);
-        $result = [];
+        $count     = count($raw);
+        $result    = [];
 
         if (isset($positions[1])) {
 
@@ -348,8 +348,8 @@ class Client implements Interfaces\ClientInterface
     public function parseResponse(array $response): array
     {
         $result = [];
-        $i = -1;
-        $lines = count($response);
+        $i      = -1;
+        $lines  = count($response);
         foreach ($response as $key => $value) {
             switch ($value) {
                 case '!re':
@@ -379,12 +379,12 @@ class Client implements Interfaces\ClientInterface
     /**
      * Response helper
      *
-     * @param        $value
-     * @param        $result
-     * @param        $matches
-     * @param string $iterator
+     * @param string     $value    Value which should be parsed
+     * @param array      $result   Array with parsed response
+     * @param array      $matches  Matched words
+     * @param string|int $iterator Type of iterations or number of item
      */
-    private function preParseResponse($value, &$result, &$matches, $iterator = 'after'): void
+    private function preParseResponse(string $value, array &$result, array &$matches, $iterator = 'after'): void
     {
         $this->pregResponse($value, $matches);
         if (isset($matches[1][0], $matches[2][0])) {
@@ -396,11 +396,11 @@ class Client implements Interfaces\ClientInterface
      * Parse result from RouterOS by regular expression
      *
      * @param string $value
-     * @param array $matches
+     * @param array  $matches
      */
-    private function pregResponse(string $value, &$matches): void
+    private function pregResponse(string $value, array &$matches): void
     {
-        preg_match_all('/^[=|\.](.*)=(.*)/', $value, $matches);
+        preg_match_all('/^[=|.](.*)=(.*)/', $value, $matches);
     }
 
     /**
@@ -409,9 +409,9 @@ class Client implements Interfaces\ClientInterface
      * @param bool $legacyRetry Retry login if we detect legacy version of RouterOS
      *
      * @return bool
-     * @throws ClientException
-     * @throws ConfigException
-     * @throws QueryException
+     * @throws \RouterOS\Exceptions\ClientException
+     * @throws \RouterOS\Exceptions\ConfigException
+     * @throws \RouterOS\Exceptions\QueryException
      */
     private function login(bool $legacyRetry = false): bool
     {
@@ -465,7 +465,7 @@ class Client implements Interfaces\ClientInterface
      * @param array $response
      *
      * @return bool
-     * @throws ConfigException
+     * @throws \RouterOS\Exceptions\ConfigException
      */
     private function isLegacy(array &$response): bool
     {
@@ -476,9 +476,9 @@ class Client implements Interfaces\ClientInterface
      * Connect to socket server
      *
      * @return bool
-     * @throws ClientException
-     * @throws ConfigException
-     * @throws QueryException
+     * @throws \RouterOS\Exceptions\ClientException
+     * @throws \RouterOS\Exceptions\ConfigException
+     * @throws \RouterOS\Exceptions\QueryException
      */
     private function connect(): bool
     {
