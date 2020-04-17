@@ -7,6 +7,7 @@ use RouterOS\Exceptions\ConfigException;
 use RouterOS\Exceptions\QueryException;
 use RouterOS\Helpers\ArrayHelper;
 
+use RouterOS\Interfaces\QueryInterface;
 use function array_keys;
 use function array_shift;
 use function chr;
@@ -90,7 +91,7 @@ class Client implements Interfaces\ClientInterface
     /**
      * Send write query to RouterOS
      *
-     * @param string|array|Query $query
+     * @param string|array|\RouterOS\Query $query
      *
      * @return \RouterOS\Client
      * @throws \RouterOS\Exceptions\QueryException
@@ -164,8 +165,8 @@ class Client implements Interfaces\ClientInterface
     /**
      * Query helper
      *
-     * @param array $item
-     * @param Query $query
+     * @param array                               $item
+     * @param \RouterOS\Interfaces\QueryInterface $query
      *
      * @return \RouterOS\Query
      * @throws \RouterOS\Exceptions\ClientException
@@ -364,12 +365,12 @@ class Client implements Interfaces\ClientInterface
                     for ($j = $key + 1; $j <= $lines; $j++) {
                         // If we have lines after current one
                         if (isset($response[$j])) {
-                            $this->preParseResponse($response[$j], $result, $matches, $j);
+                            $this->preParseResponse($response[$j], $result, $matches);
                         }
                     }
                     break 2;
                 default:
-                    $this->preParseResponse($value, $result, $matches);
+                    $this->preParseResponse($value, $result, $matches, $i);
                     break;
             }
         }
@@ -381,10 +382,10 @@ class Client implements Interfaces\ClientInterface
      *
      * @param string     $value    Value which should be parsed
      * @param array      $result   Array with parsed response
-     * @param array      $matches  Matched words
+     * @param null|array $matches  Matched words
      * @param string|int $iterator Type of iterations or number of item
      */
-    private function preParseResponse(string $value, array &$result, array &$matches, $iterator = 'after'): void
+    private function preParseResponse(string $value, array &$result, ?array &$matches, $iterator = 'after'): void
     {
         $this->pregResponse($value, $matches);
         if (isset($matches[1][0], $matches[2][0])) {
@@ -395,10 +396,10 @@ class Client implements Interfaces\ClientInterface
     /**
      * Parse result from RouterOS by regular expression
      *
-     * @param string $value
-     * @param array  $matches
+     * @param string     $value
+     * @param null|array $matches
      */
-    private function pregResponse(string $value, array &$matches): void
+    private function pregResponse(string $value, ?array &$matches): void
     {
         preg_match_all('/^[=|.](.*)=(.*)/', $value, $matches);
     }
