@@ -48,8 +48,9 @@ class APIConnector
     /**
      * Write word to stream
      *
-     * @param   string $word
-     * @return  int return number of written bytes
+     * @param string $word
+     *
+     * @return int return number of written bytes
      */
     public function writeWord(string $word): int
     {
