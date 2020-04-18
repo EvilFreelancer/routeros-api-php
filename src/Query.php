@@ -81,11 +81,11 @@ class Query implements QueryInterface
      * @param bool|string|int $value    Value which need to check (by default true)
      * @param bool|string|int $operator It may be one from list [-,=,>,<]
      *
-     * @return \RouterOS\Query
+     * @return \RouterOS\Interfaces\QueryInterface
      * @throws \RouterOS\Exceptions\QueryException
      * @since 1.0.0
      */
-    public function where(string $key, $operator = null, $value = null): self
+    public function where(string $key, $operator = null, $value = null): QueryInterface
     {
         return $this->world('?' . $key, $operator, $value);
     }
@@ -96,11 +96,11 @@ class Query implements QueryInterface
      * @param string          $key   Key which need to find
      * @param bool|string|int $value Value which need to check (by default true)
      *
-     * @return \RouterOS\Query
+     * @return \RouterOS\Interfaces\QueryInterface
      * @throws \RouterOS\Exceptions\QueryException
      * @since 1.1
      */
-    public function equal(string $key, $value = null): self
+    public function equal(string $key, $value = null): QueryInterface
     {
         return $this->world('=' . $key, null, $value);
     }
@@ -112,10 +112,10 @@ class Query implements QueryInterface
      * @param bool|string|int $value    Value which need to check (by default true)
      * @param bool|string|int $operator It may be one from list [-,=,>,<]
      *
-     * @return \RouterOS\Query
+     * @return \RouterOS\Interfaces\QueryInterface
      * @throws \RouterOS\Exceptions\QueryException
      */
-    private function world(string $key, $operator = null, $value = null): self
+    private function world(string $key, $operator = null, $value = null): QueryInterface
     {
         if (null !== $operator && null === $value) {
 
@@ -148,10 +148,10 @@ class Query implements QueryInterface
      *
      * @param string $operations
      *
-     * @return \RouterOS\Query
+     * @return \RouterOS\Interfaces\QueryInterface
      * @since 1.0.0
      */
-    public function operations(string $operations): self
+    public function operations(string $operations): QueryInterface
     {
         $this->_operations = '?#' . $operations;
         return $this;
@@ -162,10 +162,10 @@ class Query implements QueryInterface
      *
      * @param string $name
      *
-     * @return \RouterOS\Query
+     * @return \RouterOS\Interfaces\QueryInterface
      * @since 1.0.0
      */
-    public function tag(string $name): self
+    public function tag(string $name): QueryInterface
     {
         $this->_tag = '.tag=' . $name;
         return $this;
@@ -176,9 +176,9 @@ class Query implements QueryInterface
      *
      * @param string $word
      *
-     * @return \RouterOS\Query
+     * @return \RouterOS\Interfaces\QueryInterface
      */
-    public function add(string $word): Query
+    public function add(string $word): QueryInterface
     {
         $this->_attributes[] = $word;
         return $this;
@@ -199,10 +199,10 @@ class Query implements QueryInterface
      *
      * @param array $attributes
      *
-     * @return \RouterOS\Query
+     * @return \RouterOS\Interfaces\QueryInterface
      * @since 0.7
      */
-    public function setAttributes(array $attributes): Query
+    public function setAttributes(array $attributes): QueryInterface
     {
         $this->_attributes = $attributes;
         return $this;
@@ -213,7 +213,7 @@ class Query implements QueryInterface
      *
      * @return string|null
      */
-    public function getEndpoint()
+    public function getEndpoint(): ?string
     {
         return $this->_endpoint;
     }
@@ -223,10 +223,10 @@ class Query implements QueryInterface
      *
      * @param string|null $endpoint
      *
-     * @return \RouterOS\Query
+     * @return \RouterOS\Interfaces\QueryInterface
      * @since 0.7
      */
-    public function setEndpoint(string $endpoint = null): Query
+    public function setEndpoint(string $endpoint = null): QueryInterface
     {
         $this->_endpoint = $endpoint;
         return $this;
