@@ -32,10 +32,10 @@ $config = new \RouterOS\Config([
 $client = new \RouterOS\Client($config);
 ```
 
-Call facade and pass array of parameters to `getClient` method:
+Call facade and pass array of parameters to `client` method:
 
 ```php
-$client = \RouterOS::getClient([
+$client = \RouterOS::client([
     'host' => '192.168.1.3',
     'user' => 'admin',
     'pass' => 'admin',
@@ -43,26 +43,37 @@ $client = \RouterOS::getClient([
 ]);
 ```
 
+You also may get array with all configs which was obtained from `routeros-api.php` file:
+
+```php
+$config = \RouterOS::config([
+    'host' => '192.168.1.3',
+    'user' => 'admin',
+    'pass' => 'admin',
+    'port' => 8728,
+]);
+
+dump($config);
+
+$client = \RouterOS::client($config);
+```
+
 ### Laravel installation
 
-Install the package via Composer:
-
-    composer require evilfreelancer/routeros-api-php
-
-By default the package will automatically register its service provider, but
-if you are a happy owner of Laravel version less than 5.3, then in a project, which is using your package
+By default, the package will automatically register its service provider, but
+if you are a happy owner of Laravel version less than 5.5, then in a project, which is using your package
 (after composer require is done, of course), add into`providers` block of your `config/app.php`:
 
 ```php
 'providers' => [
     // ...
-    RouterOS\Laravel\ClientServiceProvider::class,
+    RouterOS\Laravel\ServiceProvider::class,
 ],
 ```
 
 Optionally, publish the configuration file if you want to change any defaults:
 
-    php artisan vendor:publish --provider="RouterOS\\Laravel\\ClientServiceProvider"
+    php artisan vendor:publish --provider="RouterOS\\Laravel\\ServiceProvider"
 
 ## How to use
 
@@ -88,16 +99,32 @@ $query =
 $response = $client->query($query)->read();
 
 var_dump($response);
+```
 
-// Send "equal" query
+Basic example for update/create/delete types of queries:
+
+```php
+use \RouterOS\Client;
+use \RouterOS\Query;
+
+// Initiate client with config object
+$client = new Client([
+    'host' => '192.168.1.3',
+    'user' => 'admin',
+    'pass' => 'admin'
+]);
+
+// Send "equal" query with details about IP address which should be created
 $query =
     (new Query('/ip/hotspot/ip-binding/add'))
         ->equal('mac-address', '00:00:00:00:40:29')
         ->equal('type', 'bypassed')
         ->equal('comment', 'testcomment');
 
-// Send query and read response from RouterOS (ordinary answer to update/create/delete queries has empty body)
+// Send query and read response from RouterOS (ordinary answer from update/create/delete queries has empty body)
 $response = $client->query($query)->read();
+
+var_dump($response);
 ```
 
 Examples with "where" conditions, "operations" and "tag":
@@ -257,10 +284,10 @@ need to create a "Query" object whose first argument is the
 required command, after this you can add the attributes of the
 command to "Query" object.
 
-More about attributes and "words" from which this attributes
+More about attributes and "words" from which these attributes
 should be created [here](https://wiki.mikrotik.com/wiki/Manual:API#Command_word). 
 
-More about "expressions", "where" and other filters/modificators
+More about "expressions", "where", "equal" and other filters/modifications
 of your query you can find [here](https://wiki.mikrotik.com/wiki/Manual:API#Queries).
 
 Simple usage examples of Query class:
@@ -270,6 +297,13 @@ use \RouterOS\Query;
 
 // Get all installed packages (it may be enabled or disabled)
 $query = new Query('/system/package/getall');
+
+// Send "equal" query with details about IP address which should be created
+$query =
+    (new Query('/ip/hotspot/ip-binding/add'))
+        ->equal('mac-address', '00:00:00:00:40:29')
+        ->equal('type', 'bypassed')
+        ->equal('comment', 'testcomment');
 
 // Set where interface is disabled and ID is ether1 (with tag 4)
 $query = 
@@ -285,7 +319,7 @@ $query =
         ->where('type', 'vlan')
         ->operations('|');
 
-/// Get all routes that have non-empty comment
+// Get all routes that have non-empty comment
 $query =
     (new Query('/ip/route/print'))
         ->where('comment', '>', null);
@@ -357,8 +391,8 @@ $query->operations('|');
 
 // Enable interface (tag is 4)
 $query = new Query('/interface/set');
-$query->where('disabled', 'no');
-$query->where('.id', 'ether1');
+$query->equal('disabled', 'no');
+$query->equal('.id', 'ether1');
 $query->tag(4);
 
 // Or
@@ -396,8 +430,8 @@ $response = $client->query($query)->read();
 
 ## Read response as Iterator
 
-By default original solution of this client is not optimized for
-work with large amount of results, only for small count of lines
+By default, original solution of this client is not optimized for
+work with a large amount of results, only for small count of lines
 in response from RouterOS API.
 
 But some routers may have (for example) 30000+ records in
