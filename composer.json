@@ -42,7 +42,8 @@
   },
   "require": {
     "php": "^7.2",
-    "ext-sockets": "*"
+    "ext-sockets": "*",
+    "divineomega/php-ssh-connection": "^2.2"
   },
   "require-dev": {
     "limedeck/phpunit-detailed-printer": "^5.0",
