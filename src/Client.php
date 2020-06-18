@@ -2,6 +2,7 @@
 
 namespace RouterOS;
 
+use DivineOmega\SSHConnection\SSHConnection;
 use RouterOS\Exceptions\ClientException;
 use RouterOS\Exceptions\ConfigException;
 use RouterOS\Exceptions\QueryException;
@@ -516,5 +517,32 @@ class Client implements Interfaces\ClientInterface
 
         // Return status of connection
         return $connected;
+    }
+
+    /**
+     * Execute export command on remote host
+     *
+     * @return string
+     * @throws \RouterOS\Exceptions\ConfigException
+     * @throws \RuntimeException
+     *
+     * @since 1.3.0
+     */
+    public function export(): string
+    {
+        // Connect to remote host
+        $connection =
+            (new SSHConnection())
+                ->to($this->config('host'))
+                ->onPort($this->config('ssh_port'))
+                ->as($this->config('user') . '+etc')
+                ->withPassword($this->config('pass'))
+                ->connect();
+
+        // Run export command
+        $command = $connection->run('/export');
+
+        // Return the output
+        return $command->getOutput();
     }
 }

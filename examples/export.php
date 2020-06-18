@@ -12,14 +12,13 @@ $config =
     (new Config())
         ->set('host', '127.0.0.1')
         ->set('pass', 'admin')
-        ->set('user', 'admin');
+        ->set('user', 'admin')
+        ->set('ssh_port', 22222);
 
 // Initiate client with config object
 $client = new Client($config);
 
-// Build query
-$query = new Query('/export');
+// Execute export command via ssh
+$response = $client->export();
 
-// Send query and read answer from RouterOS
-$response = $client->write($query)->read(false);
 print_r($response);
