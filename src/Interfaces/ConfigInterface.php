@@ -13,30 +13,6 @@ use RouterOS\Config;
 interface ConfigInterface
 {
     /**
-     * List of allowed parameters of config
-     */
-    public const ALLOWED = [
-        // Address of Mikrotik RouterOS
-        'host'     => 'string',
-        // Username
-        'user'     => 'string',
-        // Password
-        'pass'     => 'string',
-        // RouterOS API port number for access (if not set use default or default with SSL if SSL enabled)
-        'port'     => 'integer',
-        // Enable ssl support (if port is not set this parameter must change default port to ssl port)
-        'ssl'      => 'boolean',
-        // Support of legacy login scheme (true - pre 6.43, false - post 6.43)
-        'legacy'   => 'boolean',
-        // Max timeout for answer from RouterOS
-        'timeout'  => 'integer',
-        // Count of attempts to establish TCP session
-        'attempts' => 'integer',
-        // Delay between attempts in seconds
-        'delay'    => 'integer',
-    ];
-
-    /**
      * Set parameter into array
      *
      * @param string $name
