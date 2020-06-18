@@ -7,7 +7,7 @@ set port [lindex $argv 0]
 spawn telnet localhost $port
 
 expect "Login: "
-send "admin+c\n"
+send "admin+etc\n"
 expect "Password: "
 send "\n"
 expect "]:"
