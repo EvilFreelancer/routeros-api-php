@@ -95,7 +95,7 @@ class ResponseIterator implements Iterator, ArrayAccess, Countable, Serializable
     /**
      * Move forward to next element
      */
-    public function next()
+    public function next(): void
     {
         ++$this->current;
     }
@@ -103,7 +103,7 @@ class ResponseIterator implements Iterator, ArrayAccess, Countable, Serializable
     /**
      * Previous value
      */
-    public function prev()
+    public function prev(): void
     {
         --$this->current;
     }
@@ -165,7 +165,7 @@ class ResponseIterator implements Iterator, ArrayAccess, Countable, Serializable
     /**
      * Rewind the Iterator to the first element
      */
-    public function rewind()
+    public function rewind(): void
     {
         $this->current = 0;
     }
@@ -176,7 +176,7 @@ class ResponseIterator implements Iterator, ArrayAccess, Countable, Serializable
      * @param mixed $offset
      * @param mixed $value
      */
-    public function offsetSet($offset, $value)
+    public function offsetSet($offset, $value): void
     {
         if (null === $offset) {
             $this->parsed[] = $value;
@@ -202,7 +202,7 @@ class ResponseIterator implements Iterator, ArrayAccess, Countable, Serializable
      *
      * @param mixed $offset
      */
-    public function offsetUnset($offset)
+    public function offsetUnset($offset): void
     {
         unset($this->parsed[$offset], $this->raw[$offset]);
     }
@@ -245,7 +245,7 @@ class ResponseIterator implements Iterator, ArrayAccess, Countable, Serializable
      *
      * @param string $serialized
      */
-    public function unserialize($serialized)
+    public function unserialize($serialized): void
     {
         $this->raw = unserialize($serialized, null);
     }

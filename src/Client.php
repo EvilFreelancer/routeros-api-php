@@ -6,6 +6,10 @@ use RouterOS\Exceptions\ClientException;
 use RouterOS\Exceptions\ConfigException;
 use RouterOS\Exceptions\QueryException;
 use RouterOS\Helpers\ArrayHelper;
+use function chr;
+use function count;
+use function is_array;
+use function is_string;
 
 /**
  * Class Client for RouterOS management
@@ -44,7 +48,7 @@ class Client implements Interfaces\ClientInterface
     public function __construct($config)
     {
         // If array then need create object
-        if (\is_array($config)) {
+        if (is_array($config)) {
             $config = new Config($config);
         }
 
@@ -87,9 +91,9 @@ class Client implements Interfaces\ClientInterface
      */
     public function write($query): Client
     {
-        if (\is_string($query)) {
+        if (is_string($query)) {
             $query = new Query($query);
-        } elseif (\is_array($query)) {
+        } elseif (is_array($query)) {
             $endpoint = array_shift($query);
             $query    = new Query($endpoint, $query);
         }
@@ -134,15 +138,15 @@ class Client implements Interfaces\ClientInterface
                     $operator = null;
                     $value    = null;
 
-                    switch (\count($item)) {
+                    switch (count($item)) {
                         case 1:
-                            list($key) = $item;
+                            [$key] = $item;
                             break;
                         case 2:
-                            list($key, $operator) = $item;
+                            [$key, $operator] = $item;
                             break;
                         case 3:
-                            list($key, $operator, $value) = $item;
+                            [$key, $operator, $value] = $item;
                             break;
                         default:
                             throw new ClientException('From 1 to 3 parameters of "where" condition is allowed');
@@ -155,15 +159,15 @@ class Client implements Interfaces\ClientInterface
                 $operator = null;
                 $value    = null;
 
-                switch (\count($where)) {
+                switch (count($where)) {
                     case 1:
-                        list($key) = $where;
+                        [$key] = $where;
                         break;
                     case 2:
-                        list($key, $operator) = $where;
+                        [$key, $operator] = $where;
                         break;
                     case 3:
-                        list($key, $operator, $value) = $where;
+                        [$key, $operator, $value] = $where;
                         break;
                     default:
                         throw new ClientException('From 1 to 3 parameters of "where" condition is allowed');
@@ -342,7 +346,7 @@ class Client implements Interfaces\ClientInterface
     {
         $result = [];
         $i      = -1;
-        $lines  = \count($response);
+        $lines  = count($response);
         foreach ($response as $key => $value) {
             switch ($value) {
                 case '!re':
@@ -383,7 +387,7 @@ class Client implements Interfaces\ClientInterface
      */
     private function pregResponse(string $value, &$matches)
     {
-        preg_match_all('/^[=|\.](.*)=(.*)/', $value, $matches);
+        preg_match_all('/^[=|.](.*)=(.*)/', $value, $matches);
     }
 
     /**
@@ -406,7 +410,7 @@ class Client implements Interfaces\ClientInterface
             // Now need use this hash for authorization
             $query = new Query('/login', [
                 '=name=' . $this->config('user'),
-                '=response=00' . md5(\chr(0) . $this->config('pass') . pack('H*', $response['after']['ret']))
+                '=response=00' . md5(chr(0) . $this->config('pass') . pack('H*', $response['after']['ret']))
             ]);
         } else {
             // Just login with our credentials
@@ -452,7 +456,7 @@ class Client implements Interfaces\ClientInterface
      */
     private function isLegacy(array &$response): bool
     {
-        return \count($response) > 1 && $response[0] === '!done' && !$this->config('legacy');
+        return count($response) > 1 && $response[0] === '!done' && !$this->config('legacy');
     }
 
     /**

@@ -30,11 +30,11 @@ trait SocketTrait
     /**
      * Initiate socket session
      *
-     * @return  void
-     * @throws  \RouterOS\Exceptions\ClientException
-     * @throws  \RouterOS\Exceptions\ConfigException
+     * @return void
+     * @throws \RouterOS\Exceptions\ClientException
+     * @throws \RouterOS\Exceptions\ConfigException
      */
-    private function openSocket()
+    private function openSocket(): void
     {
         // Default: Context for ssl
         $context = stream_context_create([
@@ -62,10 +62,10 @@ trait SocketTrait
         if (false === $socket) {
             throw new ClientException('Unable to establish socket session, ' . $this->_socket_err_str);
         }
-        
+
         //Timeout read
         stream_set_timeout($socket, $this->config('timeout'));
-        
+
         // Save socket to static variable
         $this->setSocket($socket);
     }
@@ -83,10 +83,11 @@ trait SocketTrait
     /**
      * Save socket resource to static variable
      *
-     * @param   resource $socket
+     * @param resource $socket
+     *
      * @return  void
      */
-    private function setSocket($socket)
+    private function setSocket($socket): void
     {
         $this->_socket = $socket;
     }
@@ -94,7 +95,7 @@ trait SocketTrait
     /**
      * Return socket resource if is exist
      *
-     * @return  resource
+     * @return resource
      */
     public function getSocket()
     {

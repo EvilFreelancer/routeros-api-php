@@ -2,6 +2,7 @@
 
 namespace RouterOS;
 
+use DomainException;
 use RouterOS\Interfaces\StreamInterface;
 use RouterOS\Helpers\BinaryStringHelper;
 
@@ -18,7 +19,8 @@ class APILengthCoDec
     /**
      * Encode string to length of string
      *
-     * @param   int|float $length
+     * @param int|float $length
+     *
      * @return  string
      */
     public static function encodeLength($length): string
@@ -54,7 +56,7 @@ class APILengthCoDec
         // - length > 0x7FFFFFFFFF : not supported
 
         if ($length < 0) {
-            throw new \DomainException("Length of word could not to be negative ($length)");
+            throw new DomainException("Length of word could not to be negative ($length)");
         }
 
         if ($length <= 0x7F) {
@@ -81,18 +83,18 @@ class APILengthCoDec
     // Decode length of data when reading :
     // The 5 firsts bits of the first byte specify how the length is encoded.
     // The position of the first 0 value bit, starting from the most significant postion. 
-    // - 0xxxxxxx => The 7 remainings bits of the first byte is the length : 
+    // - 0xxxxxxx => The 7 remaining bits of the first byte is the length :
     //            => min value of length is 0x00 
     //            => max value of length is 0x7F (127 bytes)
-    // - 10xxxxxx => The 6 remainings bits of the first byte plus the next byte represent the lenght
+    // - 10xxxxxx => The 6 remaining bits of the first byte plus the next byte represent the lenght
     //            NOTE : the next byte MUST be at least 0x80 !!
     //            => min value of length is 0x80 
     //            => max value of length is 0x3FFF (16,383 bytes, near 16 KB)
-    // - 110xxxxx => The 5 remainings bits of th first byte and the two next bytes represent the length
+    // - 110xxxxx => The 5 remaining bits of th first byte and the two next bytes represent the length
     //             => max value of length is 0x1FFFFF (2,097,151 bytes, near 2 MB)
-    // - 1110xxxx => The 4 remainings bits of the first byte and the three next bytes represent the length
+    // - 1110xxxx => The 4 remaining bits of the first byte and the three next bytes represent the length
     //            => max value of length is 0xFFFFFFF (268,435,455 bytes, near 270 MB)
-    // - 11110xxx => The 3 remainings bits of the first byte and the four next bytes represent the length
+    // - 11110xxx => The 3 remaining bits of the first byte and the four next bytes represent the length
     //            => max value of length is 0x7FFFFFFF (2,147,483,647 byes, 2GB)
     // - 11111xxx => This byte is not a length-encoded word but a control byte.
     //          =>  Extracted from Mikrotik API doc : 

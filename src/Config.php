@@ -6,6 +6,7 @@ use RouterOS\Exceptions\ConfigException;
 use RouterOS\Helpers\ArrayHelper;
 use RouterOS\Helpers\TypeHelper;
 use RouterOS\Interfaces\ConfigInterface;
+use function gettype;
 
 /**
  * Class Config with array of parameters
@@ -60,8 +61,8 @@ class Config implements ConfigInterface
         }
 
         // Check what type has this value
-        if (TypeHelper::checkIfTypeMismatch(\gettype($value), self::ALLOWED[$name])) {
-            throw new ConfigException("Parameter '$name' has wrong type '" . \gettype($value) . "' but should be '" . self::ALLOWED[$name] . "'");
+        if (TypeHelper::checkIfTypeMismatch(gettype($value), self::ALLOWED[$name])) {
+            throw new ConfigException("Parameter '$name' has wrong type '" . gettype($value) . "' but should be '" . self::ALLOWED[$name] . "'");
         }
 
         // Save value to array

@@ -5,6 +5,9 @@ namespace RouterOS;
 use RouterOS\Exceptions\ClientException;
 use RouterOS\Exceptions\QueryException;
 use RouterOS\Interfaces\QueryInterface;
+use function in_array;
+use function is_array;
+use function is_string;
 
 /**
  * Class Query for building queries
@@ -62,10 +65,10 @@ class Query implements QueryInterface
      */
     public function __construct($endpoint, array $attributes = [])
     {
-        if (\is_string($endpoint)) {
+        if (is_string($endpoint)) {
             $this->setEndpoint($endpoint);
             $this->setAttributes($attributes);
-        } elseif (\is_array($endpoint)) {
+        } elseif (is_array($endpoint)) {
             $query = array_shift($endpoint);
             $this->setEndpoint($query);
             $this->setAttributes($endpoint);
@@ -85,7 +88,7 @@ class Query implements QueryInterface
      * @throws \RouterOS\Exceptions\QueryException
      * @since 1.0.0
      */
-    public function where(string $key, $operator = null, $value = null): self
+    public function where(string $key, $operator = null, $value = null): Query
     {
         return $this->world('?' . $key, $operator, $value);
     }
@@ -100,7 +103,7 @@ class Query implements QueryInterface
      * @throws \RouterOS\Exceptions\QueryException
      * @since 1.1
      */
-    public function equal(string $key, $value = null): self
+    public function equal(string $key, $value = null): Query
     {
         return $this->world('=' . $key, null, $value);
     }
@@ -115,7 +118,7 @@ class Query implements QueryInterface
      * @return \RouterOS\Query
      * @throws \RouterOS\Exceptions\QueryException
      */
-    private function world(string $key, $operator = null, $value = null): self
+    private function world(string $key, $operator = null, $value = null): Query
     {
         if (null !== $operator && null === $value) {
 
@@ -128,7 +131,7 @@ class Query implements QueryInterface
 
         if (null !== $operator && null !== $value) {
             // If operator is available in list
-            if (\in_array($operator, self::AVAILABLE_OPERATORS, true)) {
+            if (in_array($operator, self::AVAILABLE_OPERATORS, true)) {
                 $key = $operator . $key;
             } else {
                 throw new QueryException('Operator "' . $operator . '" in not in allowed list [' . implode(',', self::AVAILABLE_OPERATORS) . ']');
@@ -151,7 +154,7 @@ class Query implements QueryInterface
      * @return \RouterOS\Query
      * @since 1.0.0
      */
-    public function operations(string $operations): self
+    public function operations(string $operations): Query
     {
         $this->_operations = '?#' . $operations;
         return $this;
@@ -165,7 +168,7 @@ class Query implements QueryInterface
      * @return \RouterOS\Query
      * @since 1.0.0
      */
-    public function tag(string $name): self
+    public function tag(string $name): Query
     {
         $this->_tag = '.tag=' . $name;
         return $this;
@@ -213,7 +216,7 @@ class Query implements QueryInterface
      *
      * @return string|null
      */
-    public function getEndpoint()
+    public function getEndpoint(): ?string
     {
         return $this->_endpoint;
     }
