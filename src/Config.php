@@ -17,6 +17,32 @@ use function gettype;
 class Config implements ConfigInterface
 {
     /**
+     * List of allowed parameters of config
+     */
+    public const ALLOWED = [
+        // Address of Mikrotik RouterOS
+        'host'     => 'string',
+        // Username
+        'user'     => 'string',
+        // Password
+        'pass'     => 'string',
+        // RouterOS API port number for access (if not set use default or default with SSL if SSL enabled)
+        'port'     => 'integer',
+        // Enable ssl support (if port is not set this parameter must change default port to ssl port)
+        'ssl'      => 'boolean',
+        // Support of legacy login scheme (true - pre 6.43, false - post 6.43)
+        'legacy'   => 'boolean',
+        // Max timeout for answer from RouterOS
+        'timeout'  => 'integer',
+        // Count of attempts to establish TCP session
+        'attempts' => 'integer',
+        // Delay between attempts in seconds
+        'delay'    => 'integer',
+        // Number of SSH port
+        'ssh_port' => 'integer',
+    ];
+
+    /**
      * Array of parameters (with some default values)
      *
      * @var array
@@ -26,7 +52,8 @@ class Config implements ConfigInterface
         'ssl'      => Client::SSL,
         'timeout'  => Client::TIMEOUT,
         'attempts' => Client::ATTEMPTS,
-        'delay'    => Client::ATTEMPTS_DELAY
+        'delay'    => Client::ATTEMPTS_DELAY,
+        'ssh_port' => Client::SSH_PORT,
     ];
 
     /**
