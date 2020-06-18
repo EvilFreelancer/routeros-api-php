@@ -127,6 +127,25 @@ $response = $client->query($query)->read();
 var_dump($response);
 ```
 
+If you need export all settings from router:
+
+```php
+use \RouterOS\Client;
+
+// Initiate client with config object
+$client = new Client([
+    'host'     => '192.168.1.3',
+    'user'     => 'admin',
+    'pass'     => 'admin',
+    'ssh_port' => 22222,
+]);
+
+// Execute export command via ssh, because API /export method has a bug
+$response = $client->export();
+
+print_r($response);
+``` 
+
 Examples with "where" conditions, "operations" and "tag":
 
 ```php
