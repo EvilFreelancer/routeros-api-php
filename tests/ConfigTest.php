@@ -8,58 +8,58 @@ use RouterOS\Exceptions\ConfigException;
 
 class ConfigTest extends TestCase
 {
-    public function test__construct()
+    public function testConstruct(): void
     {
         try {
             $obj = new Config();
-            $this->assertInternalType('object', $obj);
+            $this->assertIsObject($obj);
         } catch (\Exception $e) {
-            $this->assertContains('Must be initialized ', $e->getMessage());
+            $this->assertStringContainsString('Must be initialized ', $e->getMessage());
         }
     }
 
-    public function testGetParameters()
+    public function testGetParameters(): void
     {
         $obj    = new Config();
         $params = $obj->getParameters();
 
         $this->assertCount(5, $params);
-        $this->assertEquals($params['legacy'], false);
-        $this->assertEquals($params['ssl'], false);
-        $this->assertEquals($params['timeout'], 10);
-        $this->assertEquals($params['attempts'], 10);
-        $this->assertEquals($params['delay'], 1);
+        $this->assertEquals(false, $params['legacy']);
+        $this->assertEquals(false, $params['ssl']);
+        $this->assertEquals(10, $params['timeout']);
+        $this->assertEquals(10, $params['attempts']);
+        $this->assertEquals(1, $params['delay']);
     }
 
-    public function testGetParameters2()
+    public function testGetParameters2(): void
     {
         $obj    = new Config(['timeout' => 100]);
         $params = $obj->getParameters();
 
         $this->assertCount(5, $params);
-        $this->assertEquals($params['timeout'], 100);
+        $this->assertEquals(100, $params['timeout']);
     }
 
-    public function testSet()
+    public function testSet(): void
     {
         $obj = new Config();
         $obj->set('timeout', 111);
         $params = $obj->getParameters();
 
-        $this->assertEquals($params['timeout'], 111);
+        $this->assertEquals(111, $params['timeout']);
     }
 
-    public function testSetArr()
+    public function testSetArr(): void
     {
         $obj    = new Config([
             'timeout' => 111
         ]);
         $params = $obj->getParameters();
 
-        $this->assertEquals($params['timeout'], 111);
+        $this->assertEquals(111, $params['timeout']);
     }
 
-    public function testDelete()
+    public function testDelete(): void
     {
         $obj = new Config();
         $obj->delete('timeout');
@@ -68,7 +68,7 @@ class ConfigTest extends TestCase
         $this->assertArrayNotHasKey('timeout', $params);
     }
 
-    public function testDeleteEx()
+    public function testDeleteEx(): void
     {
         $this->expectException(ConfigException::class);
 
@@ -76,7 +76,7 @@ class ConfigTest extends TestCase
         $obj->delete('wrong');
     }
 
-    public function testSetEx1()
+    public function testSetEx1(): void
     {
         $this->expectException(ConfigException::class);
 
@@ -84,7 +84,7 @@ class ConfigTest extends TestCase
         $obj->set('delay', 'some string');
     }
 
-    public function testSetEx2()
+    public function testSetEx2(): void
     {
         $this->expectException(ConfigException::class);
 
@@ -92,27 +92,26 @@ class ConfigTest extends TestCase
         $obj->set('wrong', 'some string');
     }
 
-    public function testGet()
+    public function testGet(): void
     {
         $obj   = new Config();
         $test1 = $obj->get('legacy');
-        $this->assertEquals($test1, false);
+        $this->assertEquals(false, $test1);
 
         $test2 = $obj->get('port');
-        $this->assertEquals($test2, 8728);
+        $this->assertEquals(8728, $test2);
 
         $obj->set('port', 10000);
         $test3 = $obj->get('port');
-        $this->assertEquals($test3, 10000);
-
+        $this->assertEquals(10000, $test3);
 
         $obj->delete('port');
         $obj->set('ssl', true);
         $test3 = $obj->get('port');
-        $this->assertEquals($test3, 8729);
+        $this->assertEquals(8729, $test3);
     }
 
-    public function testGetEx()
+    public function testGetEx(): void
     {
         $this->expectException(ConfigException::class);
 

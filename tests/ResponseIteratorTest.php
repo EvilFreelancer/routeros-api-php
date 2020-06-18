@@ -7,7 +7,7 @@ use RouterOS\Client;
 
 class ResponseIteratorTest extends TestCase
 {
-    public function test__construct()
+    public function testConstruct(): void
     {
         $obj = new Client([
             'user' => getenv('ROS_USER'),
@@ -15,11 +15,11 @@ class ResponseIteratorTest extends TestCase
             'host' => getenv('ROS_HOST'),
         ]);
 
-        $obj = $obj->write('/system/package/print')->readAsIterator();
+        $obj = $obj->query('/system/package/print')->readAsIterator();
         $this->assertIsObject($obj);
     }
 
-    public function testReadWrite()
+    public function testReadWrite(): void
     {
         $obj = new Client([
             'user' => getenv('ROS_USER'),
@@ -27,15 +27,15 @@ class ResponseIteratorTest extends TestCase
             'host' => getenv('ROS_HOST'),
         ]);
 
-        $readTrap = $obj->write('/system/package/print')->readAsIterator();
+        $readTrap = $obj->query('/system/package/print')->readAsIterator();
         // Read from RAW
         $this->assertCount(13, $readTrap);
 
-        $readTrap = $obj->write('/ip/address/print')->readAsIterator();
+        $readTrap = $obj->query('/ip/address/print')->readAsIterator();
         $this->assertCount(1, $readTrap);
         $this->assertEquals('ether1', $readTrap[0]['interface']);
 
-        $readTrap = $obj->write('/system/package/print')->readAsIterator();
+        $readTrap = $obj->query('/system/package/print')->readAsIterator();
         $key      = $readTrap->key();
         $this->assertEquals(0, $key);
         $current = $readTrap->current();
@@ -68,7 +68,7 @@ class ResponseIteratorTest extends TestCase
             'host' => getenv('ROS_HOST'),
         ]);
 
-        $read = $obj->write('/queue/simple/print')->readAsIterator();
+        $read = $obj->query('/queue/simple/print')->readAsIterator();
         $serialize = $read->serialize();
         $this->assertEquals('a:1:{i:0;a:1:{i:0;s:5:"!done";}}', $serialize);
     }

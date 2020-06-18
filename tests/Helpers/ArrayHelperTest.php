@@ -7,7 +7,7 @@ use RouterOS\Helpers\ArrayHelper;
 
 class ArrayHelperTest extends TestCase
 {
-    public function testCheckIfKeyNotExist()
+    public function testCheckIfKeyNotExist(): void
     {
         $test1 = ArrayHelper::checkIfKeyNotExist(1, [0 => 'a', 1 => 'b', 2 => 'c']);
         $this->assertFalse($test1);
@@ -16,7 +16,7 @@ class ArrayHelperTest extends TestCase
         $this->assertTrue($test2);
     }
 
-    public function testCheckIfKeysNotExist()
+    public function testCheckIfKeysNotExist(): void
     {
         $test1 = ArrayHelper::checkIfKeysNotExist([1, 2], [0 => 'a', 1 => 'b', 2 => 'c']);
         $this->assertTrue($test1);

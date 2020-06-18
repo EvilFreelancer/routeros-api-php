@@ -33,10 +33,10 @@
   "extra": {
     "laravel": {
       "providers": [
-        "RouterOS\\Laravel\\ClientServiceProvider"
+        "RouterOS\\Laravel\\ServiceProvider"
       ],
       "aliases": {
-        "RouterOS": "RouterOS\\Laravel\\ClientFacade"
+        "RouterOS": "RouterOS\\Laravel\\Facade"
       }
     }
   },
@@ -45,7 +45,8 @@
     "ext-sockets": "*"
   },
   "require-dev": {
-    "phpunit/phpunit": "^7.0",
-    "orchestra/testbench": "^3.0"
+    "limedeck/phpunit-detailed-printer": "^5.0",
+    "orchestra/testbench": "^4.0|^5.0",
+    "phpunit/phpunit": "^8.0"
   }
 }

@@ -16,8 +16,11 @@ class BinaryStringHelperTest extends TestCase
     /**
      * @dataProvider IntegerToNBOBinaryStringProvider
      * @covers ::IntegerToNBOBinaryString
+     *
+     * @param $value
+     * @param $expected
      */
-    public function test__IntegerToNBOBinaryString($value, $expected)
+    public function testIntegerToNBOBinaryString($value, $expected): void
     {
         $this->assertEquals($expected, BinaryStringHelper::IntegerToNBOBinaryString($value));
     }

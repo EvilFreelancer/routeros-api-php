@@ -2,6 +2,7 @@
 
 namespace RouterOS\Tests;
 
+use Exception;
 use PHPUnit\Framework\TestCase;
 use RouterOS\Client;
 use RouterOS\Exceptions\ConfigException;
@@ -27,7 +28,7 @@ class ClientTest extends TestCase
      */
     public $port_legacy;
 
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
 
@@ -41,7 +42,7 @@ class ClientTest extends TestCase
         $this->port_legacy = (int) getenv('ROS_PORT_LEGACY');
     }
 
-    public function test__construct(): void
+    public function testConstruct(): void
     {
         try {
             $config = new Config();
@@ -54,12 +55,12 @@ class ClientTest extends TestCase
             $this->assertIsObject($obj);
             $socket = $obj->getSocket();
             $this->assertIsResource($socket);
-        } catch (\Exception $e) {
-            $this->assertContains('Must be initialized ', $e->getMessage());
+        } catch (Exception $e) {
+            $this->assertStringContainsString('Must be initialized ', $e->getMessage());
         }
     }
 
-    public function test__construct2(): void
+    public function testConstruct2(): void
     {
         try {
             $config = new Config($this->router);
@@ -67,24 +68,24 @@ class ClientTest extends TestCase
             $this->assertIsObject($obj);
             $socket = $obj->getSocket();
             $this->assertIsResource($socket);
-        } catch (\Exception $e) {
-            $this->assertContains('Must be initialized ', $e->getMessage());
+        } catch (Exception $e) {
+            $this->assertStringContainsString('Must be initialized ', $e->getMessage());
         }
     }
 
-    public function test__construct3(): void
+    public function testConstruct3(): void
     {
         try {
             $obj = new Client($this->router);
             $this->assertIsObject($obj);
             $socket = $obj->getSocket();
             $this->assertIsResource($socket);
-        } catch (\Exception $e) {
-            $this->assertContains('Must be initialized ', $e->getMessage());
+        } catch (Exception $e) {
+            $this->assertStringContainsString('Must be initialized ', $e->getMessage());
         }
     }
 
-    public function test__constructEx(): void
+    public function testConstructEx(): void
     {
         $this->expectException(ConfigException::class);
 
@@ -94,7 +95,7 @@ class ClientTest extends TestCase
         ]);
     }
 
-    public function test__constructLegacy(): void
+    public function testConstructLegacy(): void
     {
         try {
             $obj = new Client([
@@ -105,8 +106,8 @@ class ClientTest extends TestCase
                 'legacy' => true
             ]);
             $this->assertIsObject($obj);
-        } catch (\Exception $e) {
-            $this->assertContains('Must be initialized ', $e->getMessage());
+        } catch (Exception $e) {
+            $this->assertStringContainsString('Must be initialized ', $e->getMessage());
         }
     }
 
@@ -115,7 +116,7 @@ class ClientTest extends TestCase
      *
      * login() method recognise legacy router response and swap to legacy mode
      */
-    public function test__constructLegacy2(): void
+    public function testConstructLegacy2(): void
     {
         try {
             $obj = new Client([
@@ -126,13 +127,13 @@ class ClientTest extends TestCase
                 'legacy' => false
             ]);
             $this->assertIsObject($obj);
-        } catch (\Exception $e) {
-            $this->assertContains('Must be initialized ', $e->getMessage());
+        } catch (Exception $e) {
+            $this->assertStringContainsString('Must be initialized ', $e->getMessage());
         }
     }
 
 
-    public function test__constructWrongPass(): void
+    public function testConstructWrongPass(): void
     {
         $this->expectException(ClientException::class);
 
@@ -144,13 +145,9 @@ class ClientTest extends TestCase
         ]);
     }
 
-    /**
-     * @expectedException ClientException
-     */
-    public function test__constructWrongNet(): void
+    public function testConstructWrongNet(): void
     {
         $this->expectException(ClientException::class);
-
         $obj = new Client([
             'user'     => $this->router['user'],
             'pass'     => $this->router['pass'],
@@ -216,7 +213,7 @@ class ClientTest extends TestCase
     {
         $obj = new Client($this->router);
 
-        $obj = $obj->write('/system/package/print')->readAsIterator();
+        $obj = $obj->query('/system/package/print')->readAsIterator();
         $this->assertIsObject($obj);
     }
 
@@ -228,7 +225,7 @@ class ClientTest extends TestCase
             'host' => $this->router['host'],
         ]);
 
-        $readTrap = $obj->wr('/interface', false);
+        $readTrap = $obj->query('/interface')->read(false);
         $this->assertCount(3, $readTrap);
         $this->assertEquals('!trap', $readTrap[0]);
     }
