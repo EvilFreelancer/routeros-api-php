@@ -39,13 +39,14 @@ class Client implements Interfaces\ClientInterface
     /**
      * Client constructor.
      *
-     * @param array|\RouterOS\Config $config
+     * @param array|\RouterOS\Interfaces\ConfigInterface $config      Array with configuration or Config object
+     * @param bool                                       $autoConnect If false it will skip auto-connect stage if not need to instantiate connection
      *
      * @throws \RouterOS\Exceptions\ClientException
      * @throws \RouterOS\Exceptions\ConfigException
      * @throws \RouterOS\Exceptions\QueryException
      */
-    public function __construct($config)
+    public function __construct($config, bool $autoConnect = true)
     {
         // If array then need create object
         if (is_array($config)) {
@@ -59,6 +60,11 @@ class Client implements Interfaces\ClientInterface
 
         // Save config if everything is okay
         $this->_config = $config;
+
+        // Skip next step if not need to instantiate connection
+        if (false === $autoConnect) {
+            return;
+        }
 
         // Throw error if cannot to connect
         if (false === $this->connect()) {
@@ -385,7 +391,7 @@ class Client implements Interfaces\ClientInterface
      * @param string $value
      * @param array  $matches
      */
-    private function pregResponse(string $value, &$matches)
+    private function pregResponse(string $value, &$matches): void
     {
         preg_match_all('/^[=|.](.*)=(.*)/', $value, $matches);
     }
@@ -454,7 +460,7 @@ class Client implements Interfaces\ClientInterface
      * @return bool
      * @throws ConfigException
      */
-    private function isLegacy(array &$response): bool
+    private function isLegacy(array $response): bool
     {
         return count($response) > 1 && $response[0] === '!done' && !$this->config('legacy');
     }
@@ -467,7 +473,7 @@ class Client implements Interfaces\ClientInterface
      * @throws \RouterOS\Exceptions\ConfigException
      * @throws \RouterOS\Exceptions\QueryException
      */
-    private function connect(): bool
+    public function connect(): bool
     {
         // By default we not connected
         $connected = false;
