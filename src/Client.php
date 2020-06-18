@@ -5,11 +5,19 @@ namespace RouterOS;
 use RouterOS\Exceptions\ClientException;
 use RouterOS\Exceptions\ConfigException;
 use RouterOS\Exceptions\QueryException;
+use RouterOS\Interfaces\QueryInterface;
 use RouterOS\Helpers\ArrayHelper;
+use function array_keys;
+use function array_shift;
 use function chr;
 use function count;
 use function is_array;
 use function is_string;
+use function md5;
+use function pack;
+use function preg_match_all;
+use function sleep;
+use function trim;
 
 /**
  * Class Client for RouterOS management
@@ -93,7 +101,6 @@ class Client implements Interfaces\ClientInterface
      * @return \RouterOS\Client
      * @throws \RouterOS\Exceptions\QueryException
      * @deprecated
-     * @codeCoverageIgnore
      */
     public function write($query): Client
     {
@@ -115,10 +122,10 @@ class Client implements Interfaces\ClientInterface
     /**
      * Send write query to RouterOS (modern version of write)
      *
-     * @param string|Query $endpoint   Path of API query or Query object
-     * @param array|null   $where      List of where filters
-     * @param string|null  $operations Some operations which need make on response
-     * @param string|null  $tag        Mark query with tag
+     * @param string|\RouterOS\Query $endpoint   Path of API query or Query object
+     * @param array|null             $where      List of where filters
+     * @param string|null            $operations Some operations which need make on response
+     * @param string|null            $tag        Mark query with tag
      *
      * @return \RouterOS\Client
      * @throws \RouterOS\Exceptions\QueryException
@@ -138,48 +145,10 @@ class Client implements Interfaces\ClientInterface
             // If array is multidimensional, then parse each line
             if (is_array($where[0])) {
                 foreach ($where as $item) {
-
-                    // Null by default
-                    $key      = null;
-                    $operator = null;
-                    $value    = null;
-
-                    switch (count($item)) {
-                        case 1:
-                            [$key] = $item;
-                            break;
-                        case 2:
-                            [$key, $operator] = $item;
-                            break;
-                        case 3:
-                            [$key, $operator, $value] = $item;
-                            break;
-                        default:
-                            throw new ClientException('From 1 to 3 parameters of "where" condition is allowed');
-                    }
-                    $query->where($key, $operator, $value);
+                    $query = $this->preQuery($item, $query);
                 }
             } else {
-                // Null by default
-                $key      = null;
-                $operator = null;
-                $value    = null;
-
-                switch (count($where)) {
-                    case 1:
-                        [$key] = $where;
-                        break;
-                    case 2:
-                        [$key, $operator] = $where;
-                        break;
-                    case 3:
-                        [$key, $operator, $value] = $where;
-                        break;
-                    default:
-                        throw new ClientException('From 1 to 3 parameters of "where" condition is allowed');
-                }
-
-                $query->where($key, $operator, $value);
+                $query = $this->preQuery($where, $query);
             }
 
         }
@@ -196,6 +165,40 @@ class Client implements Interfaces\ClientInterface
 
         // Submit query to RouterOS
         return $this->writeRAW($query);
+    }
+
+    /**
+     * Query helper
+     *
+     * @param array                               $item
+     * @param \RouterOS\Interfaces\QueryInterface $query
+     *
+     * @return \RouterOS\Query
+     * @throws \RouterOS\Exceptions\ClientException
+     * @throws \RouterOS\Exceptions\QueryException
+     */
+    private function preQuery(array $item, QueryInterface $query): QueryInterface
+    {
+        // Null by default
+        $key      = null;
+        $operator = null;
+        $value    = null;
+
+        switch (count($item)) {
+            case 1:
+                [$key] = $item;
+                break;
+            case 2:
+                [$key, $operator] = $item;
+                break;
+            case 3:
+                [$key, $operator, $value] = $item;
+                break;
+            default:
+                throw new ClientException('From 1 to 3 parameters of "where" condition is allowed');
+        }
+
+        return $query->where($key, $operator, $value);
     }
 
     /**
@@ -367,18 +370,12 @@ class Client implements Interfaces\ClientInterface
                     for ($j = $key + 1; $j <= $lines; $j++) {
                         // If we have lines after current one
                         if (isset($response[$j])) {
-                            $this->pregResponse($response[$j], $matches);
-                            if (isset($matches[1][0], $matches[2][0])) {
-                                $result['after'][$matches[1][0]] = $matches[2][0];
-                            }
+                            $this->preParseResponse($response[$j], $result, $matches);
                         }
                     }
                     break 2;
                 default:
-                    $this->pregResponse($value, $matches);
-                    if (isset($matches[1][0], $matches[2][0])) {
-                        $result[$i][$matches[1][0]] = $matches[2][0];
-                    }
+                    $this->preParseResponse($value, $result, $matches, $i);
                     break;
             }
         }
@@ -386,12 +383,28 @@ class Client implements Interfaces\ClientInterface
     }
 
     /**
+     * Response helper
+     *
+     * @param string     $value    Value which should be parsed
+     * @param array      $result   Array with parsed response
+     * @param null|array $matches  Matched words
+     * @param string|int $iterator Type of iterations or number of item
+     */
+    private function preParseResponse(string $value, array &$result, ?array &$matches, $iterator = 'after'): void
+    {
+        $this->pregResponse($value, $matches);
+        if (isset($matches[1][0], $matches[2][0])) {
+            $result[$iterator][$matches[1][0]] = $matches[2][0];
+        }
+    }
+
+    /**
      * Parse result from RouterOS by regular expression
      *
-     * @param string $value
-     * @param array  $matches
+     * @param string     $value
+     * @param null|array $matches
      */
-    private function pregResponse(string $value, &$matches): void
+    private function pregResponse(string $value, ?array &$matches): void
     {
         preg_match_all('/^[=|.](.*)=(.*)/', $value, $matches);
     }
@@ -458,7 +471,7 @@ class Client implements Interfaces\ClientInterface
      * @param array $response
      *
      * @return bool
-     * @throws ConfigException
+     * @throws \RouterOS\Exceptions\ConfigException
      */
     private function isLegacy(array $response): bool
     {

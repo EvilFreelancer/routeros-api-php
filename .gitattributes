@@ -1,0 +1,6 @@
+*.md    text eol=lf
+*.php   text eol=lf
+*.ini   text eol=lf
+*.json  text eol=lf
+*.yml   text eol=lf
+*.tcl   text eol=lf

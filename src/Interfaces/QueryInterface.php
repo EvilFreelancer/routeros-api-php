@@ -2,8 +2,6 @@
 
 namespace RouterOS\Interfaces;
 
-use RouterOS\Query;
-
 /**
  * Interface QueryInterface
  *
@@ -19,38 +17,54 @@ interface QueryInterface
      * @param bool|string|int $value    Value which need to check (by default true)
      * @param bool|string|int $operator It may be one from list [-,=,>,<]
      *
-     * @return \RouterOS\Query
+     * @return \RouterOS\Interfaces\QueryInterface
      * @throws \RouterOS\Exceptions\ClientException
      * @since 1.0.0
      */
-    public function where(string $key, $operator = '=', $value = null);
+    public function where(string $key, $operator = '=', $value = null): QueryInterface;
+
+    /**
+     * Setter for write/update queries
+     *
+     * @param string          $key   Key which need to find
+     * @param bool|string|int $value Value which need to check (by default true)
+     *
+     * @return \RouterOS\Interfaces\QueryInterface
+     * @throws \RouterOS\Exceptions\QueryException
+     * @since 1.1
+     */
+    public function equal(string $key, $value = null): QueryInterface;
 
     /**
      * Append additional operations
      *
      * @param string $operations
      *
+     * @return \RouterOS\Interfaces\QueryInterface
+     *
      * @since 1.0.0
      */
-    public function operations(string $operations);
+    public function operations(string $operations): QueryInterface;
 
     /**
      * Append tag to query (it should be at end)
      *
      * @param string $name
      *
+     * @return \RouterOS\Interfaces\QueryInterface
+     *
      * @since 1.0.0
      */
-    public function tag(string $name);
+    public function tag(string $name): QueryInterface;
 
     /**
      * Append to array yet another attribute of query
      *
      * @param string $word
      *
-     * @return \RouterOS\Query
+     * @return \RouterOS\Interfaces\QueryInterface
      */
-    public function add(string $word): Query;
+    public function add(string $word): QueryInterface;
 
     /**
      * Get attributes array of current query
@@ -64,27 +78,27 @@ interface QueryInterface
      *
      * @param array $attributes
      *
-     * @return \RouterOS\Query
+     * @return \RouterOS\Interfaces\QueryInterface
      * @since 0.7
      */
-    public function setAttributes(array $attributes): Query;
+    public function setAttributes(array $attributes): QueryInterface;
 
     /**
      * Get endpoint of current query
      *
      * @return string|null
      */
-    public function getEndpoint();
+    public function getEndpoint(): ?string;
 
     /**
      * Set endpoint of query
      *
      * @param string $endpoint
      *
-     * @return \RouterOS\Query
+     * @return \RouterOS\Interfaces\QueryInterface
      * @since 0.7
      */
-    public function setEndpoint(string $endpoint): Query;
+    public function setEndpoint(string $endpoint): QueryInterface;
 
     /**
      * Build body of query

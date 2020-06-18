@@ -19,42 +19,45 @@ class APILengthCoDec
     /**
      * Encode string to length of string
      *
+     * <<<<<<< HEAD
+     * =======
+     * Encode the length:
+     * - if length <= 0x7F (binary : 01111111 => 7 bits set to 1)
+     * - encode length with one byte
+     * - set the byte to length value, as length maximal value is 7 bits set to 1, the most significant bit is always 0
+     * - end
+     * - length <= 0x3FFF (binary : 00111111 11111111 => 14 bits set to 1)
+     * - encode length with two bytes
+     * - set length value to 0x8000 (=> 10000000 00000000)
+     * - add length : as length maximumal value is 14 bits to 1, this does not modify the 2 most significance bits (10)
+     * - end
+     * => minimal encoded value is 10000000 10000000
+     * - length <= 0x1FFFFF (binary : 00011111 11111111 11111111 => 21 bits set to 1)
+     * - encode length with three bytes
+     * - set length value to 0xC00000 (binary : 11000000 00000000 00000000)
+     * - add length : as length maximal value is 21 bits to 1, this does not modify the 3 most significance bits (110)
+     * - end
+     * => minimal encoded value is 11000000 01000000 00000000
+     * - length <= 0x0FFFFFFF (binary : 00001111 11111111 11111111 11111111 => 28 bits set to 1)
+     * - encode length with four bytes
+     * - set length value to 0xE0000000 (binary : 11100000 00000000 00000000 00000000)
+     * - add length : as length maximal value is 28 bits to 1, this does not modify the 4 most significance bits (1110)
+     * - end
+     * => minimal encoded value is 11100000 00100000 00000000 00000000
+     * - length <= 0x7FFFFFFFFF (binary : 00000111 11111111 11111111 11111111 11111111 => 35 bits set to 1)
+     * - encode length with five bytes
+     * - set length value to 0xF000000000 (binary : 11110000 00000000 00000000 00000000 00000000)
+     * - add length : as length maximal value is 35 bits to 1, this does not modify the 5 most significance bits (11110)
+     * - end
+     * - length > 0x7FFFFFFFFF : not supported
+     *
+     * >>>>>>> master
      * @param int|float $length
      *
      * @return  string
      */
     public static function encodeLength($length): string
     {
-        // Encode the length :
-        // - if length <= 0x7F (binary : 01111111 => 7 bits set to 1)
-        //      - encode length with one byte
-        //      - set the byte to length value, as length maximal value is 7 bits set to 1, the most significant bit is always 0
-        //      - end
-        // - length <= 0x3FFF (binary : 00111111 11111111 => 14 bits set to 1)
-        //      - encode length with two bytes
-        //      - set length value to 0x8000 (=> 10000000 00000000)
-        //      - add length : as length maximumal value is 14 bits to 1, this does not modify the 2 most significance bits (10)
-        //      - end
-        //      => minimal encoded value is 10000000 10000000
-        // - length <= 0x1FFFFF (binary : 00011111 11111111 11111111 => 21 bits set to 1)
-        //      - encode length with three bytes
-        //      - set length value to 0xC00000 (binary : 11000000 00000000 00000000)
-        //      - add length : as length maximal vlaue is 21 bits to 1, this does not modify the 3 most significance bits (110)
-        //      - end
-        //      => minimal encoded value is 11000000 01000000 00000000
-        // - length <= 0x0FFFFFFF (binary : 00001111 11111111 11111111 11111111 => 28 bits set to 1)
-        //      - encode length with four bytes
-        //      - set length value to 0xE0000000 (binary : 11100000 00000000 00000000 00000000)
-        //      - add length : as length maximal vlaue is 28 bits to 1, this does not modify the 4 most significance bits (1110)
-        //      - end
-        //      => minimal encoded value is 11100000 00100000 00000000 00000000
-        // - length <= 0x7FFFFFFFFF (binary : 00000111 11111111 11111111 11111111 11111111 => 35 bits set to 1)
-        //      - encode length with five bytes
-        //      - set length value to 0xF000000000 (binary : 11110000 00000000 00000000 00000000 00000000)
-        //      - add length : as length maximal vlaue is 35 bits to 1, this does not modify the 5 most significance bits (11110)
-        //      - end
-        // - length > 0x7FFFFFFFFF : not supported
-
         if ($length < 0) {
             throw new DomainException("Length of word could not to be negative ($length)");
         }
@@ -80,39 +83,35 @@ class APILengthCoDec
         return BinaryStringHelper::IntegerToNBOBinaryString(0xF000000000 + $length);
     }
 
-    // Decode length of data when reading :
-    // The 5 firsts bits of the first byte specify how the length is encoded.
-    // The position of the first 0 value bit, starting from the most significant postion. 
-    // - 0xxxxxxx => The 7 remaining bits of the first byte is the length :
-    //            => min value of length is 0x00 
-    //            => max value of length is 0x7F (127 bytes)
-    // - 10xxxxxx => The 6 remaining bits of the first byte plus the next byte represent the lenght
-    //            NOTE : the next byte MUST be at least 0x80 !!
-    //            => min value of length is 0x80 
-    //            => max value of length is 0x3FFF (16,383 bytes, near 16 KB)
-    // - 110xxxxx => The 5 remaining bits of th first byte and the two next bytes represent the length
-    //             => max value of length is 0x1FFFFF (2,097,151 bytes, near 2 MB)
-    // - 1110xxxx => The 4 remaining bits of the first byte and the three next bytes represent the length
-    //            => max value of length is 0xFFFFFFF (268,435,455 bytes, near 270 MB)
-    // - 11110xxx => The 3 remaining bits of the first byte and the four next bytes represent the length
-    //            => max value of length is 0x7FFFFFFF (2,147,483,647 byes, 2GB)
-    // - 11111xxx => This byte is not a length-encoded word but a control byte.
-    //          =>  Extracted from Mikrotik API doc : 
-    //              it is a reserved control byte. 
-    //              After receiving unknown control byte API client cannot proceed, because it cannot know how to interpret following bytes
-    //              Currently control bytes are not used
-
+    /**
+     * Decode length of data when reading :
+     * The 5 firsts bits of the first byte specify how the length is encoded.
+     * The position of the first 0 value bit, starting from the most significant postion.
+     * - 0xxxxxxx => The 7 remainings bits of the first byte is the length :
+     * => min value of length is 0x00
+     * => max value of length is 0x7F (127 bytes)
+     * - 10xxxxxx => The 6 remainings bits of the first byte plus the next byte represent the lenght
+     * NOTE : the next byte MUST be at least 0x80 !!
+     * => min value of length is 0x80
+     * => max value of length is 0x3FFF (16,383 bytes, near 16 KB)
+     * - 110xxxxx => The 5 remainings bits of th first byte and the two next bytes represent the length
+     * => max value of length is 0x1FFFFF (2,097,151 bytes, near 2 MB)
+     * - 1110xxxx => The 4 remainings bits of the first byte and the three next bytes represent the length
+     * => max value of length is 0xFFFFFFF (268,435,455 bytes, near 270 MB)
+     * - 11110xxx => The 3 remainings bits of the first byte and the four next bytes represent the length
+     * => max value of length is 0x7FFFFFFF (2,147,483,647 byes, 2GB)
+     * - 11111xxx => This byte is not a length-encoded word but a control byte.
+     * =>  Extracted from Mikrotik API doc:
+     * it is a reserved control byte.
+     * After receiving unknown control byte API client cannot proceed, because it cannot know how to interpret following bytes
+     * Currently control bytes are not used
+     *
+     * @param \RouterOS\Interfaces\StreamInterface $stream
+     *
+     * @return int
+     */
     public static function decodeLength(StreamInterface $stream): int
     {
-        // if (false === is_resource($stream)) {
-        //     throw new \InvalidArgumentException(
-        //         sprintf(
-        //             'Argument must be a stream resource type. %s given.',
-        //             gettype($stream)
-        //         )
-        //     );
-        // }
-
         // Read first byte
         $firstByte = ord($stream->read(1));
 
@@ -192,7 +191,7 @@ class APILengthCoDec
         }
 
         // Now the only solution is 5 most significance bits are set to 1 (11111xxx)
-        // This is a control word, not implemented by Mikrotik for the moment 
+        // This is a control word, not implemented by Mikrotik for the moment
         throw new \UnexpectedValueException('Control Word found');
     }
 }
