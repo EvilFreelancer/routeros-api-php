@@ -11,21 +11,21 @@ trait SocketTrait
      *
      * @var resource|null
      */
-    private $_socket;
+    private $socket;
 
     /**
      * Code of error
      *
      * @var int
      */
-    private $_socket_err_num;
+    private $socket_err_num;
 
     /**
      * Description of socket error
      *
      * @var string
      */
-    private $_socket_err_str;
+    private $socket_err_str;
 
     /**
      * Initiate socket session
@@ -51,8 +51,8 @@ trait SocketTrait
         // Initiate socket client
         $socket = @stream_socket_client(
             $proto . $this->config('host') . ':' . $this->config('port'),
-            $this->_socket_err_num,
-            $this->_socket_err_str,
+            $this->socket_err_num,
+            $this->socket_err_str,
             $this->config('timeout'),
             STREAM_CLIENT_CONNECT,
             $context
@@ -60,7 +60,7 @@ trait SocketTrait
 
         // Throw error is socket is not initiated
         if (false === $socket) {
-            throw new ClientException('Unable to establish socket session, ' . $this->_socket_err_str);
+            throw new ClientException('Unable to establish socket session, ' . $this->socket_err_str);
         }
 
         //Timeout read
@@ -77,7 +77,7 @@ trait SocketTrait
      */
     private function closeSocket(): bool
     {
-        return fclose($this->_socket);
+        return fclose($this->socket);
     }
 
     /**
@@ -89,7 +89,7 @@ trait SocketTrait
      */
     private function setSocket($socket): void
     {
-        $this->_socket = $socket;
+        $this->socket = $socket;
     }
 
     /**
@@ -99,6 +99,6 @@ trait SocketTrait
      */
     public function getSocket()
     {
-        return $this->_socket;
+        return $this->socket;
     }
 }
