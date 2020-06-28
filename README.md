@@ -6,7 +6,7 @@
 [![Code Coverage](https://scrutinizer-ci.com/g/EvilFreelancer/routeros-api-php/badges/coverage.png?b=master)](https://scrutinizer-ci.com/g/EvilFreelancer/routeros-api-php/?branch=master)
 [![Scrutinizer CQ](https://scrutinizer-ci.com/g/evilfreelancer/routeros-api-php/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/evilfreelancer/routeros-api-php/)
 
-# RouterOS PHP7 API Client
+# RouterOS API Client
 
     composer require evilfreelancer/routeros-api-php
 
@@ -16,6 +16,11 @@ to work with PHP7 in accordance with the PSR standards.
 
 You can use this library with pre-6.43 and post-6.43 versions of
 RouterOS firmware, it will be detected automatically on connection stage.
+
+## Minimum requirements
+
+* `php` >= 7.2
+* `ext-sockets`
 
 ## Laravel framework support
 
