@@ -2,6 +2,7 @@
 
 namespace RouterOS\Streams;
 
+use InvalidArgumentException;
 use RouterOS\Interfaces\StreamInterface;
 use RouterOS\Exceptions\StreamException;
 
@@ -31,18 +32,18 @@ class StringStream implements StreamInterface
         $this->buffer = $string;
     }
 
+
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      *
-     * @throws \InvalidArgumentException when length parameter is invalid
-     * @throws StreamException when the stream have been tatly red and read methd is called again
+     * @throws \RouterOS\Exceptions\StreamException
      */
     public function read(int $length): string
     {
         $remaining = strlen($this->buffer);
 
         if ($length < 0) {
-            throw new \InvalidArgumentException('Cannot read a negative count of bytes from a stream');
+            throw new InvalidArgumentException('Cannot read a negative count of bytes from a stream');
         }
 
         if (0 === $remaining) {
@@ -65,12 +66,9 @@ class StringStream implements StreamInterface
     }
 
     /**
-     * Fake write method, do nothing except return the "writen" length
+     * @inheritDoc
      *
-     * @param   string   $string The string to write
-     * @param   int|null $length the number of characters to write
-     * @return  int number of "writen" bytes
-     * @throws  \InvalidArgumentException on invalid length
+     * @throws \InvalidArgumentException on invalid length
      */
     public function write(string $string, int $length = null): int
     {
@@ -79,18 +77,16 @@ class StringStream implements StreamInterface
         }
 
         if ($length < 0) {
-            throw new \InvalidArgumentException('Cannot write a negative count of bytes');
+            throw new InvalidArgumentException('Cannot write a negative count of bytes');
         }
 
         return min($length, strlen($string));
     }
 
     /**
-     * Close stream connection
-     *
-     * @return  void
+     * @inheritDoc
      */
-    public function close()
+    public function close(): void
     {
         $this->buffer = '';
     }
