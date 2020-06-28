@@ -23,7 +23,7 @@ class ConfigTest extends TestCase
         $obj    = new Config();
         $params = $obj->getParameters();
 
-        $this->assertCount(5, $params);
+        $this->assertCount(6, $params);
         $this->assertEquals(false, $params['legacy']);
         $this->assertEquals(false, $params['ssl']);
         $this->assertEquals(10, $params['timeout']);
@@ -36,7 +36,7 @@ class ConfigTest extends TestCase
         $obj    = new Config(['timeout' => 100]);
         $params = $obj->getParameters();
 
-        $this->assertCount(5, $params);
+        $this->assertCount(6, $params);
         $this->assertEquals(100, $params['timeout']);
     }
 

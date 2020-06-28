@@ -15,6 +15,7 @@ class ServiceProviderTests extends TestCase
         "readAsIterator",
         "parseResponse",
         "connect",
+        "export",
         "getSocket",
         "w",
         "q",
