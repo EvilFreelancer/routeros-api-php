@@ -9,7 +9,6 @@ class ServiceProviderTests extends TestCase
 {
     private $client = [
         "__construct",
-        "write",
         "query",
         "read",
         "readAsIterator",
@@ -17,13 +16,10 @@ class ServiceProviderTests extends TestCase
         "connect",
         "export",
         "getSocket",
-        "w",
         "q",
         "r",
         "ri",
-        "wr",
         "qr",
-        "wri",
         "qri",
     ];
 
