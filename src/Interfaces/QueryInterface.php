@@ -18,7 +18,7 @@ interface QueryInterface
      * @param bool|string|int $operator It may be one from list [-,=,>,<]
      *
      * @return \RouterOS\Interfaces\QueryInterface
-     * @throws \RouterOS\Exceptions\ClientException
+     * @throws \RouterOS\Exceptions\QueryException
      * @since 1.0.0
      */
     public function where(string $key, $operator = '=', $value = null): QueryInterface;

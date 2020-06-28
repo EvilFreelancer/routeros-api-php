@@ -17,6 +17,46 @@ use function gettype;
 class Config implements ConfigInterface
 {
     /**
+     * By default legacy login on RouterOS pre-6.43 is not supported
+     */
+    public const LEGACY = false;
+
+    /**
+     * Default port number
+     */
+    public const PORT = 8728;
+
+    /**
+     * Default ssl port number
+     */
+    public const PORT_SSL = 8729;
+
+    /**
+     * Do not use SSL by default
+     */
+    public const SSL = false;
+
+    /**
+     * Max timeout for answer from router
+     */
+    public const TIMEOUT = 10;
+
+    /**
+     * Count of reconnect attempts
+     */
+    public const ATTEMPTS = 10;
+
+    /**
+     * Delay between attempts in seconds
+     */
+    public const ATTEMPTS_DELAY = 1;
+
+    /**
+     * Delay between attempts in seconds
+     */
+    public const SSH_PORT = 22;
+
+    /**
      * List of allowed parameters of config
      */
     public const ALLOWED = [
@@ -48,12 +88,12 @@ class Config implements ConfigInterface
      * @var array
      */
     private $_parameters = [
-        'legacy'   => Client::LEGACY,
-        'ssl'      => Client::SSL,
-        'timeout'  => Client::TIMEOUT,
-        'attempts' => Client::ATTEMPTS,
-        'delay'    => Client::ATTEMPTS_DELAY,
-        'ssh_port' => Client::SSH_PORT,
+        'legacy'   => self::LEGACY,
+        'ssl'      => self::SSL,
+        'timeout'  => self::TIMEOUT,
+        'attempts' => self::ATTEMPTS,
+        'delay'    => self::ATTEMPTS_DELAY,
+        'ssh_port' => self::SSH_PORT,
     ];
 
     /**
@@ -111,8 +151,8 @@ class Config implements ConfigInterface
         if ($parameter === 'port' && (!isset($this->_parameters['port']) || null === $this->_parameters['port'])) {
             // then use default with or without ssl encryption
             return (isset($this->_parameters['ssl']) && $this->_parameters['ssl'])
-                ? Client::PORT_SSL
-                : Client::PORT;
+                ? self::PORT_SSL
+                : self::PORT;
         }
         return null;
     }

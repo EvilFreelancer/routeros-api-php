@@ -6,6 +6,7 @@ use DivineOmega\SSHConnection\SSHConnection;
 use RouterOS\Exceptions\ClientException;
 use RouterOS\Exceptions\ConfigException;
 use RouterOS\Exceptions\QueryException;
+use RouterOS\Interfaces\ClientInterface;
 use RouterOS\Interfaces\QueryInterface;
 use RouterOS\Helpers\ArrayHelper;
 use function array_keys;
@@ -97,13 +98,13 @@ class Client implements Interfaces\ClientInterface
     /**
      * Send write query to RouterOS
      *
-     * @param string|array|\RouterOS\Query $query
+     * @param string|array|\RouterOS\Interfaces\QueryInterface $query
      *
-     * @return \RouterOS\Client
+     * @return \RouterOS\Interfaces\ClientInterface
      * @throws \RouterOS\Exceptions\QueryException
      * @deprecated
      */
-    public function write($query): Client
+    public function write($query): ClientInterface
     {
         if (is_string($query)) {
             $query = new Query($query);
@@ -133,7 +134,7 @@ class Client implements Interfaces\ClientInterface
      * @throws \RouterOS\Exceptions\ClientException
      * @since 1.0.0
      */
-    public function query($endpoint, array $where = null, string $operations = null, string $tag = null): Client
+    public function query($endpoint, array $where = null, string $operations = null, string $tag = null): ClientInterface
     {
         // If endpoint is string then build Query object
         $query = ($endpoint instanceof Query)
@@ -175,8 +176,8 @@ class Client implements Interfaces\ClientInterface
      * @param \RouterOS\Interfaces\QueryInterface $query
      *
      * @return \RouterOS\Query
-     * @throws \RouterOS\Exceptions\ClientException
      * @throws \RouterOS\Exceptions\QueryException
+     * @throws \RouterOS\Exceptions\ClientException
      */
     private function preQuery(array $item, QueryInterface $query): QueryInterface
     {
@@ -197,6 +198,7 @@ class Client implements Interfaces\ClientInterface
                 break;
             default:
                 throw new ClientException('From 1 to 3 parameters of "where" condition is allowed');
+                break;
         }
 
         return $query->where($key, $operator, $value);
@@ -205,13 +207,13 @@ class Client implements Interfaces\ClientInterface
     /**
      * Send write query object to RouterOS
      *
-     * @param \RouterOS\Query $query
+     * @param \RouterOS\Interfaces\QueryInterface $query
      *
-     * @return \RouterOS\Client
+     * @return \RouterOS\Interfaces\ClientInterface
      * @throws \RouterOS\Exceptions\QueryException
      * @since 1.0.0
      */
-    private function writeRAW(Query $query): Client
+    private function writeRAW(QueryInterface $query): ClientInterface
     {
         // Send commands via loop to router
         foreach ($query->getQuery() as $command) {
