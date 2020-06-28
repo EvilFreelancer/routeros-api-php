@@ -2,8 +2,6 @@
 
 namespace RouterOS\Interfaces;
 
-use RouterOS\Config;
-
 /**
  * Interface ConfigInterface
  *
@@ -18,18 +16,18 @@ interface ConfigInterface
      * @param string $name
      * @param mixed  $value
      *
-     * @return \RouterOS\Config
+     * @return \RouterOS\Interfaces\ConfigInterface
      */
-    public function set(string $name, $value): Config;
+    public function set(string $name, $value): ConfigInterface;
 
     /**
      * Remove parameter from array by name
      *
      * @param string $parameter
      *
-     * @return \RouterOS\Config
+     * @return \RouterOS\Interfaces\ConfigInterface
      */
-    public function delete(string $parameter): Config;
+    public function delete(string $parameter): ConfigInterface;
 
     /**
      * Return parameter of current config by name

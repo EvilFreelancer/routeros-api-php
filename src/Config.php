@@ -60,26 +60,16 @@ class Config implements ConfigInterface
      * List of allowed parameters of config
      */
     public const ALLOWED = [
-        // Address of Mikrotik RouterOS
-        'host'     => 'string',
-        // Username
-        'user'     => 'string',
-        // Password
-        'pass'     => 'string',
-        // RouterOS API port number for access (if not set use default or default with SSL if SSL enabled)
-        'port'     => 'integer',
-        // Enable ssl support (if port is not set this parameter must change default port to ssl port)
-        'ssl'      => 'boolean',
-        // Support of legacy login scheme (true - pre 6.43, false - post 6.43)
-        'legacy'   => 'boolean',
-        // Max timeout for answer from RouterOS
-        'timeout'  => 'integer',
-        // Count of attempts to establish TCP session
-        'attempts' => 'integer',
-        // Delay between attempts in seconds
-        'delay'    => 'integer',
-        // Number of SSH port
-        'ssh_port' => 'integer',
+        'host'     => 'string',  // Address of Mikrotik RouterOS
+        'user'     => 'string',  // Username
+        'pass'     => 'string',  // Password
+        'port'     => 'integer', // RouterOS API port number for access (if not set use default or default with SSL if SSL enabled)
+        'ssl'      => 'boolean', // Enable ssl support (if port is not set this parameter must change default port to ssl port)
+        'legacy'   => 'boolean', // Support of legacy login scheme (true - pre 6.43, false - post 6.43)
+        'timeout'  => 'integer', // Max timeout for answer from RouterOS
+        'attempts' => 'integer', // Count of attempts to establish TCP session
+        'delay'    => 'integer', // Delay between attempts in seconds
+        'ssh_port' => 'integer', // Number of SSH port
     ];
 
     /**
@@ -112,15 +102,11 @@ class Config implements ConfigInterface
     }
 
     /**
-     * Set parameter into array
+     * @inheritDoc
      *
-     * @param string $name
-     * @param mixed  $value
-     *
-     * @return \RouterOS\Config
-     * @throws \RouterOS\Exceptions\ConfigException
+     * @throws \RouterOS\Exceptions\ConfigException when name of configuration key is invalid or not allowed
      */
-    public function set(string $name, $value): Config
+    public function set(string $name, $value): ConfigInterface
     {
         // Check of key in array
         if (ArrayHelper::checkIfKeyNotExist($name, self::ALLOWED)) {
@@ -158,14 +144,11 @@ class Config implements ConfigInterface
     }
 
     /**
-     * Remove parameter from array by name
+     * @inheritDoc
      *
-     * @param string $name
-     *
-     * @return \RouterOS\Config
-     * @throws \RouterOS\Exceptions\ConfigException
+     * @throws \RouterOS\Exceptions\ConfigException when parameter is not allowed
      */
-    public function delete(string $name): Config
+    public function delete(string $name): ConfigInterface
     {
         // Check of key in array
         if (ArrayHelper::checkIfKeyNotExist($name, self::ALLOWED)) {
@@ -179,12 +162,9 @@ class Config implements ConfigInterface
     }
 
     /**
-     * Return parameter of current config by name
+     * @inheritDoc
      *
-     * @param string $name
-     *
-     * @return mixed
-     * @throws \RouterOS\Exceptions\ConfigException
+     * @throws \RouterOS\Exceptions\ConfigException when parameter is not allowed
      */
     public function get(string $name)
     {
@@ -197,9 +177,7 @@ class Config implements ConfigInterface
     }
 
     /**
-     * Return array with all parameters of configuration
-     *
-     * @return array
+     * @inheritDoc
      */
     public function getParameters(): array
     {
