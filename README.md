@@ -526,6 +526,75 @@ $client->query($query1)->query($query2)->query($query3);
 $client->q($query1)->q($query2)->q($query3);
 ```
 
+## Known issues
+
+### Unable to establish socket session, Operation timed out
+
+This error means that the library cannot connect to your router,
+it may mean router turned off (then need turn on), or the API service not enabled.
+
+Go to `Mikrotik Router OS -> IP -> Services` and enable `api` service.
+
+Or via command line:
+
+```shell script
+/ip service enable api 
+```
+
+### How to update/remove/create something via API?
+
+Instead of `->where()` method of `Query` class you need to
+use `->equal()` method:
+
+```php
+// Create query which should remove security profile
+$query = new \RouterOS\Query('/interface/wireless/security-profiles/remove');
+
+// It will generate queries, which stared from "?" symbol:
+$query->where('.id', '*1');
+
+/*
+// Sample with ->where() method
+RouterOS\Query Object
+(
+    [_attributes:RouterOS\Query:private] => Array
+        (
+            [0] => ?.id=*1
+        )
+
+    [_operations:RouterOS\Query:private] => 
+    [_tag:RouterOS\Query:private] => 
+    [_endpoint:RouterOS\Query:private] => /interface/wireless/security-profiles/remove
+)
+*/
+
+// So, as you can see, instead of `->where()` need to use `->equal()`
+// It will generate queries, which stared from "=" symbol:
+$query->equal('.id', '*1');
+
+/*
+// Sample with ->equal() method
+RouterOS\Query Object
+(
+    [_attributes:RouterOS\Query:private] => Array
+        (
+            [0] => =.id=*1
+        )
+
+    [_operations:RouterOS\Query:private] => 
+    [_tag:RouterOS\Query:private] => 
+    [_endpoint:RouterOS\Query:private] => /interface/wireless/security-profiles/remove
+)
+*/
+```
+
+### Undefined character (any non-English languages)
+
+RouterOS does not support national languages, only English (and API of RouterOS too).
+
+You can try to reproduce it via web, for example add the comment to any
+element of your system, then save and reload the page, you will see unreadable characters.
+
 ## Testing
 
 You can use my [other project](https://github.com/EvilFreelancer/docker-routeros)
