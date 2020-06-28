@@ -5,7 +5,6 @@ namespace RouterOS;
 use DivineOmega\SSHConnection\SSHConnection;
 use RouterOS\Exceptions\ClientException;
 use RouterOS\Exceptions\ConfigException;
-use RouterOS\Exceptions\QueryException;
 use RouterOS\Interfaces\ClientInterface;
 use RouterOS\Interfaces\QueryInterface;
 use RouterOS\Helpers\ArrayHelper;
@@ -14,7 +13,6 @@ use function array_shift;
 use function chr;
 use function count;
 use function is_array;
-use function is_string;
 use function md5;
 use function pack;
 use function preg_match_all;
@@ -36,15 +34,21 @@ class Client implements Interfaces\ClientInterface
      *
      * @var \RouterOS\Config
      */
-    private $_config;
+    private $config;
 
     /**
      * API communication object
      *
      * @var \RouterOS\APIConnector
      */
+    private $connector;
 
-    private $_connector;
+    /**
+     * Some strings with custom output
+     *
+     * @var string
+     */
+    private $customOutput;
 
     /**
      * Client constructor.
@@ -69,7 +73,7 @@ class Client implements Interfaces\ClientInterface
         }
 
         // Save config if everything is okay
-        $this->_config = $config;
+        $this->config = $config;
 
         // Skip next step if not need to instantiate connection
         if (false === $autoConnect) {
@@ -92,46 +96,21 @@ class Client implements Interfaces\ClientInterface
      */
     private function config(string $parameter)
     {
-        return $this->_config->get($parameter);
-    }
-
-    /**
-     * Send write query to RouterOS
-     *
-     * @param string|array|\RouterOS\Interfaces\QueryInterface $query
-     *
-     * @return \RouterOS\Interfaces\ClientInterface
-     * @throws \RouterOS\Exceptions\QueryException
-     * @deprecated
-     */
-    public function write($query): ClientInterface
-    {
-        if (is_string($query)) {
-            $query = new Query($query);
-        } elseif (is_array($query)) {
-            $endpoint = array_shift($query);
-            $query    = new Query($endpoint, $query);
-        }
-
-        if (!$query instanceof Query) {
-            throw new QueryException('Parameters cannot be processed');
-        }
-
-        // Submit query to RouterOS
-        return $this->writeRAW($query);
+        return $this->config->get($parameter);
     }
 
     /**
      * Send write query to RouterOS (modern version of write)
      *
-     * @param string|\RouterOS\Query $endpoint   Path of API query or Query object
-     * @param array|null             $where      List of where filters
-     * @param string|null            $operations Some operations which need make on response
-     * @param string|null            $tag        Mark query with tag
+     * @param array|string|\RouterOS\Interfaces\QueryInterface $endpoint   Path of API query or Query object
+     * @param array|null                                       $where      List of where filters
+     * @param string|null                                      $operations Some operations which need make on response
+     * @param string|null                                      $tag        Mark query with tag
      *
-     * @return \RouterOS\Client
+     * @return \RouterOS\Interfaces\ClientInterface
      * @throws \RouterOS\Exceptions\QueryException
      * @throws \RouterOS\Exceptions\ClientException
+     * @throws \RouterOS\Exceptions\ConfigException
      * @since 1.0.0
      */
     public function query($endpoint, array $where = null, string $operations = null, string $tag = null): ClientInterface
@@ -211,37 +190,62 @@ class Client implements Interfaces\ClientInterface
      *
      * @return \RouterOS\Interfaces\ClientInterface
      * @throws \RouterOS\Exceptions\QueryException
+     * @throws \RouterOS\Exceptions\ConfigException
      * @since 1.0.0
      */
     private function writeRAW(QueryInterface $query): ClientInterface
     {
+        $commands = $query->getQuery();
+
+        // Check if first command is export
+        if (strpos($commands[0], '/export') === 0) {
+
+            // Convert export command with all arguments to valid SSH command
+            $arguments = explode('/', $commands[0]);
+            unset($arguments[1]);
+            $arguments = implode(' ', $arguments);
+
+            // Call the router via ssh and store output of export
+            $this->customOutput = $this->export($arguments);
+
+            // Return current object
+            return $this;
+        }
+
         // Send commands via loop to router
-        foreach ($query->getQuery() as $command) {
-            $this->_connector->writeWord(trim($command));
+        foreach ($commands as $command) {
+            $this->connector->writeWord(trim($command));
         }
 
         // Write zero-terminator (empty string)
-        $this->_connector->writeWord('');
+        $this->connector->writeWord('');
 
+        // Return current object
         return $this;
     }
 
     /**
-     * Read RAW response from RouterOS
+     * Read RAW response from RouterOS, it can be /export command results also, not only array from API
      *
-     * @return array
+     * @return array|string
      * @since 1.0.0
      */
-    private function readRAW(): array
+    private function readRAW()
     {
         // By default response is empty
         $response = [];
         // We have to wait a !done or !fatal
         $lastReply = false;
 
+        // Convert strings to array and return results
+        if ($this->isCustomOutput()) {
+            // Return RAW configuration
+            return $this->customOutput;
+        }
+
         // Read answer from socket in loop
         while (true) {
-            $word = $this->_connector->readWord();
+            $word = $this->connector->readWord();
 
             if ('' === $word) {
                 if ($lastReply) {
@@ -278,7 +282,7 @@ class Client implements Interfaces\ClientInterface
      * Reply ends with a complete !done or !fatal block (ended with 'empty line')
      * A !fatal block precedes TCP connexion close
      *
-     * @param bool $parse
+     * @param bool $parse If need parse output to array
      *
      * @return mixed
      */
@@ -286,6 +290,12 @@ class Client implements Interfaces\ClientInterface
     {
         // Read RAW response
         $response = $this->readRAW();
+
+        // Return RAW configuration if custom output is set
+        if ($this->isCustomOutput()) {
+            $this->customOutput = null;
+            return $response;
+        }
 
         // Parse results and return
         return $parse ? $this->rosario($response) : $response;
@@ -455,7 +465,7 @@ class Client implements Interfaces\ClientInterface
         // => problem with legacy version, swap it and retry
         // Only tested with ROS pre 6.43, will test with post 6.43 => this could make legacy parameter obsolete?
         if ($legacyRetry && $this->isLegacy($response)) {
-            $this->_config->set('legacy', true);
+            $this->config->set('legacy', true);
             return $this->login();
         }
 
@@ -502,7 +512,7 @@ class Client implements Interfaces\ClientInterface
 
             // If socket is active
             if (null !== $this->getSocket()) {
-                $this->_connector = new APIConnector(new Streams\ResourceStream($this->getSocket()));
+                $this->connector = new APIConnector(new Streams\ResourceStream($this->getSocket()));
                 // If we logged in then exit from loop
                 if (true === $this->login()) {
                     $connected = true;
@@ -522,19 +532,31 @@ class Client implements Interfaces\ClientInterface
     }
 
     /**
-     * Execute export command on remote host
+     * Check if custom output is not empty
+     *
+     * @return bool
+     */
+    private function isCustomOutput(): bool
+    {
+        return $this->customOutput !== null;
+    }
+
+    /**
+     * Execute export command on remote host, it also will be used
+     * if "/export" command passed to query.
+     *
+     * @param string|null $arguments String with arguments which should be passed to export command
      *
      * @return string
      * @throws \RouterOS\Exceptions\ConfigException
-     * @throws \RuntimeException
-     *
      * @since 1.3.0
      */
-    public function export(): string
+    public function export(string $arguments = null): string
     {
         // Connect to remote host
         $connection =
             (new SSHConnection())
+                ->timeout($this->config('timeout'))
                 ->to($this->config('host'))
                 ->onPort($this->config('ssh_port'))
                 ->as($this->config('user') . '+etc')
@@ -542,7 +564,7 @@ class Client implements Interfaces\ClientInterface
                 ->connect();
 
         // Run export command
-        $command = $connection->run('/export');
+        $command = $connection->run('/export' . ' ' . $arguments);
 
         // Return the output
         return $command->getOutput();

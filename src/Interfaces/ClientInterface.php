@@ -26,33 +26,24 @@ interface ClientInterface
      * Reply ends with a complete !done or !fatal block (ended with 'empty line')
      * A !fatal block precedes TCP connexion close
      *
-     * @param bool $parse
+     * @param bool $parse If need parse output to array
      *
      * @return mixed
      */
-    public function read(bool $parse);
-
-    /**
-     * Send write query to RouterOS
-     *
-     * @param string|array|\RouterOS\Interfaces\QueryInterface $query
-     *
-     * @return \RouterOS\Interfaces\ClientInterface
-     * @throws \RouterOS\Exceptions\QueryException
-     * @deprecated
-     */
-    public function write($query): ClientInterface;
+    public function read(bool $parse = true);
 
     /**
      * Send write query to RouterOS (modern version of write)
      *
-     * @param string|\RouterOS\Interfaces\QueryInterface $endpoint   Path of API query or Query object
-     * @param array|null                                 $where      List of where filters
-     * @param string|null                                $operations Some operations which need make on response
-     * @param string|null                                $tag        Mark query with tag
+     * @param array|string|\RouterOS\Interfaces\QueryInterface $endpoint   Path of API query or Query object
+     * @param array|null                                       $where      List of where filters
+     * @param string|null                                      $operations Some operations which need make on response
+     * @param string|null                                      $tag        Mark query with tag
      *
      * @return \RouterOS\Interfaces\ClientInterface
      * @throws \RouterOS\Exceptions\QueryException
+     * @throws \RouterOS\Exceptions\ClientException
+     * @throws \RouterOS\Exceptions\ConfigException
      * @since 1.0.0
      */
     public function query($endpoint, array $where, string $operations, string $tag): ClientInterface;
