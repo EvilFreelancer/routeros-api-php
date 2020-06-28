@@ -14,12 +14,12 @@ $client = new Client([
 ]);
 
 for ($i = 0; $i < 10; $i++) {
-    $response = $client->wr('/ip/address/print');
+    $response = $client->qr('/ip/address/print');
     print_r($response);
 
-    $response = $client->wr('/ip/arp/print');
+    $response = $client->qr('/ip/arp/print');
     print_r($response);
 
-    $response = $client->wr('/interface/print');
+    $response = $client->qr('/interface/print');
     print_r($response);
 }

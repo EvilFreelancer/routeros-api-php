@@ -18,5 +18,5 @@ $client = new Client([
 $query = new Query('/ip/address/print');
 
 // Send query to RouterOS
-$response = $client->write($query)->read();
+$response = $client->query($query)->read();
 print_r($response);

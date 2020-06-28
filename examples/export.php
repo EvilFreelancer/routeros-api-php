@@ -20,5 +20,26 @@ $client = new Client($config);
 
 // Execute export command via ssh
 $response = $client->export();
+dump($response);
 
-print_r($response);
+/*
+// In results you will see something like this
+
+# jun/28/2020 16:31:21 by RouterOS 6.47
+# software id =
+#
+#
+#
+/interface wireless security-profiles
+set [ find default=yes ] supplicant-identity=MikroTik
+/ip dhcp-client
+add disabled=no interface=ether1
+
+ */
+
+// But here is another example
+$query = new Query('/export');
+
+// Execute export command via ssh but in style of library
+$response = $client->query($query)->read();
+dump($response);

@@ -24,7 +24,7 @@ $ips = [
 ];
 
 foreach ($ips as $ip) {
-    $response = $client->wr([
+    $response = $client->qr([
         '/queue/simple/print',
         '?target=' . $ip . '/32'
     ]);

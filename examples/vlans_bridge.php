@@ -35,14 +35,14 @@ foreach ($vlans as $vlanId => $ports) {
     // Add bridges
     $query = new Query('/interface/bridge/add');
     $query->add("=name=vlan$vlanId-bridge")->add('vlan-filtering=no');
-    $response = $client->write($query)->read();
+    $response = $client->query($query)->read();
     print_r($response);
 
     // Add ports to bridge
     foreach ($ports as $port) {
         $bridgePort = new Query('/interface/bridge/port/add');
         $bridgePort->add("=bridge=vlan$vlanId-bridge")->add("=pvid=$vlanId")->add("=interface=ether$port");
-        $response = $client->write($bridgePort)->read();
+        $response = $client->query($bridgePort)->read();
         print_r($response);
     }
 
@@ -50,7 +50,7 @@ foreach ($vlans as $vlanId => $ports) {
     foreach ($ports as $port) {
         $vlan = new Query('/interface/bridge/vlan/add');
         $vlan->add("=bridge=vlan$vlanId-bridge")->add("=untagged=ether$port")->add("=vlan-ids=$vlanId");
-        $response = $client->write($vlan)->read(false);
+        $response = $client->query($vlan)->read(false);
         print_r($response);
     }
 

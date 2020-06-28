@@ -21,7 +21,7 @@ $client = new Client($config);
 $query = new Query('/interface/getall');
 
 // Send query to RouterOS
-$request = $client->write($query);
+$request = $client->query($query);
 
 // Read answer from RouterOS
 $response = $client->read();

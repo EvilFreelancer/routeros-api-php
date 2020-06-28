@@ -28,7 +28,7 @@ $vlans = [
 foreach ($vlans as $vlanId => $ports) {
 
     // Add bridges
-    $response = $client->wr([
+    $response = $client->qr([
         '/interface/bridge/add',
         "=name=vlan$vlanId-bridge",
         'vlan-filtering=no'
@@ -37,7 +37,7 @@ foreach ($vlans as $vlanId => $ports) {
 
     // Add ports to bridge
     foreach ($ports as $port) {
-        $response = $client->wr([
+        $response = $client->qr([
             '/interface/bridge/port/add',
             "=bridge=vlan$vlanId-bridge",
             "=pvid=$vlanId",
@@ -48,7 +48,7 @@ foreach ($vlans as $vlanId => $ports) {
 
     // Add untagged ports to bridge with tagging
     foreach ($ports as $port) {
-        $response = $client->wr([
+        $response = $client->qr([
             '/interface/bridge/vlan/add',
             "=bridge=vlan$vlanId-bridge",
             "=untagged=ether$port",
