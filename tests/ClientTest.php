@@ -274,12 +274,20 @@ class ClientTest extends TestCase
 
     public function testExportMethod(): void
     {
+        if (!extension_loaded('openssl')) {
+            $this->markTestSkipped('The OpenSSL extension is not available.');
+        }
+
         $result = $this->client->export();
         $this->assertNotEmpty($result);
     }
 
     public function testExportQuery(): void
     {
+        if (!extension_loaded('openssl')) {
+            $this->markTestSkipped('The OpenSSL extension is not available.');
+        }
+
         $result = $this->client->query('/export');
         $this->assertNotEmpty($result);
     }
