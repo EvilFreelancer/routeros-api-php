@@ -177,7 +177,6 @@ class Client implements Interfaces\ClientInterface
                 break;
             default:
                 throw new ClientException('From 1 to 3 parameters of "where" condition is allowed');
-                break;
         }
 
         return $query->where($key, $operator, $value);
