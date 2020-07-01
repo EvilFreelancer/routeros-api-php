@@ -2,9 +2,8 @@
 
 namespace RouterOS\Tests;
 
+use DomainException;
 use PHPUnit\Framework\TestCase;
-use PHPUnit\Framework\Constraint\IsType;
-
 use RouterOS\APILengthCoDec;
 use RouterOS\Streams\StringStream;
 use RouterOS\Helpers\BinaryStringHelper;
@@ -24,7 +23,7 @@ class APILengthCoDecTest extends TestCase
      */
     public function testEncodeLengthNegative($length): void
     {
-        $this->expectException(\DomainException::class);
+        $this->expectException(DomainException::class);
         APILengthCoDec::encodeLength($length);
     }
 

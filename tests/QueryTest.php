@@ -104,6 +104,18 @@ class QueryTest extends TestCase
         $this->assertEquals($attrs[1], '?key2=value2');
     }
 
+
+    public function testEqual(): void
+    {
+        $obj = new Query('test');
+        $obj->equal('key1', 'value1');
+        $obj->equal('key2', 'value2');
+
+        $attrs = $obj->getAttributes();
+        $this->assertCount(2, $attrs);
+        $this->assertEquals($attrs[1], '=key2=value2');
+    }
+
     public function testTag(): void
     {
         $obj = new Query('/test/test');

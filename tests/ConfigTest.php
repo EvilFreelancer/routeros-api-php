@@ -76,7 +76,7 @@ class ConfigTest extends TestCase
         $obj->delete('wrong');
     }
 
-    public function testSetEx1(): void
+    public function testSetExceptionWrongType(): void
     {
         $this->expectException(ConfigException::class);
 
@@ -84,7 +84,7 @@ class ConfigTest extends TestCase
         $obj->set('delay', 'some string');
     }
 
-    public function testSetEx2(): void
+    public function testSetExceptionWrongKey(): void
     {
         $this->expectException(ConfigException::class);
 
