@@ -13,9 +13,10 @@ class ArrayHelper
     /**
      * Check if required single key in array of parameters
      *
-     * @param   string $key
-     * @param   array  $array
-     * @return  bool
+     * @param string $key
+     * @param array  $array
+     *
+     * @return bool
      */
     public static function checkIfKeyNotExist(string $key, array $array): bool
     {
@@ -25,9 +26,10 @@ class ArrayHelper
     /**
      * Check if required keys in array of parameters
      *
-     * @param   array $keys
-     * @param   array $array
-     * @return  array|bool Return true if all fine, and string with name of key which was not found
+     * @param array $keys
+     * @param array $array
+     *
+     * @return array|bool Return true if all fine, and string with name of key which was not found
      */
     public static function checkIfKeysNotExist(array $keys, array $array)
     {
