@@ -2,7 +2,6 @@
 
 namespace RouterOS;
 
-use RouterOS\Exceptions\ClientException;
 use RouterOS\Exceptions\QueryException;
 use RouterOS\Interfaces\QueryInterface;
 use function in_array;
