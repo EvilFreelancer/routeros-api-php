@@ -2,9 +2,9 @@
 
 namespace RouterOS\Laravel;
 
-use Illuminate\Support\Facades\Facade;
+use Illuminate\Support\Facades\Facade as BaseFacade;
 
-class ClientFacade extends Facade
+class Facade extends BaseFacade
 {
     /**
      * Get the registered name of the component.
@@ -13,6 +13,6 @@ class ClientFacade extends Facade
      */
     protected static function getFacadeAccessor(): string
     {
-        return ClientWrapper::class;
+        return Wrapper::class;
     }
 }

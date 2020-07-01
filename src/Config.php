@@ -6,6 +6,7 @@ use RouterOS\Exceptions\ConfigException;
 use RouterOS\Helpers\ArrayHelper;
 use RouterOS\Helpers\TypeHelper;
 use RouterOS\Interfaces\ConfigInterface;
+use function gettype;
 
 /**
  * Class Config with array of parameters
@@ -16,16 +17,73 @@ use RouterOS\Interfaces\ConfigInterface;
 class Config implements ConfigInterface
 {
     /**
+     * By default legacy login on RouterOS pre-6.43 is not supported
+     */
+    public const LEGACY = false;
+
+    /**
+     * Default port number
+     */
+    public const PORT = 8728;
+
+    /**
+     * Default ssl port number
+     */
+    public const PORT_SSL = 8729;
+
+    /**
+     * Do not use SSL by default
+     */
+    public const SSL = false;
+
+    /**
+     * Max timeout for answer from router
+     */
+    public const TIMEOUT = 10;
+
+    /**
+     * Count of reconnect attempts
+     */
+    public const ATTEMPTS = 10;
+
+    /**
+     * Delay between attempts in seconds
+     */
+    public const ATTEMPTS_DELAY = 1;
+
+    /**
+     * Delay between attempts in seconds
+     */
+    public const SSH_PORT = 22;
+
+    /**
+     * List of allowed parameters of config
+     */
+    public const ALLOWED = [
+        'host'     => 'string',  // Address of Mikrotik RouterOS
+        'user'     => 'string',  // Username
+        'pass'     => 'string',  // Password
+        'port'     => 'integer', // RouterOS API port number for access (if not set use default or default with SSL if SSL enabled)
+        'ssl'      => 'boolean', // Enable ssl support (if port is not set this parameter must change default port to ssl port)
+        'legacy'   => 'boolean', // Support of legacy login scheme (true - pre 6.43, false - post 6.43)
+        'timeout'  => 'integer', // Max timeout for answer from RouterOS
+        'attempts' => 'integer', // Count of attempts to establish TCP session
+        'delay'    => 'integer', // Delay between attempts in seconds
+        'ssh_port' => 'integer', // Number of SSH port
+    ];
+
+    /**
      * Array of parameters (with some default values)
      *
      * @var array
      */
     private $_parameters = [
-        'legacy'   => Client::LEGACY,
-        'ssl'      => Client::SSL,
-        'timeout'  => Client::TIMEOUT,
-        'attempts' => Client::ATTEMPTS,
-        'delay'    => Client::ATTEMPTS_DELAY
+        'legacy'   => self::LEGACY,
+        'ssl'      => self::SSL,
+        'timeout'  => self::TIMEOUT,
+        'attempts' => self::ATTEMPTS,
+        'delay'    => self::ATTEMPTS_DELAY,
+        'ssh_port' => self::SSH_PORT,
     ];
 
     /**
@@ -44,15 +102,11 @@ class Config implements ConfigInterface
     }
 
     /**
-     * Set parameter into array
+     * @inheritDoc
      *
-     * @param string $name
-     * @param mixed  $value
-     *
-     * @return \RouterOS\Config
-     * @throws \RouterOS\Exceptions\ConfigException
+     * @throws \RouterOS\Exceptions\ConfigException when name of configuration key is invalid or not allowed
      */
-    public function set(string $name, $value): Config
+    public function set(string $name, $value): ConfigInterface
     {
         // Check of key in array
         if (ArrayHelper::checkIfKeyNotExist($name, self::ALLOWED)) {
@@ -60,8 +114,8 @@ class Config implements ConfigInterface
         }
 
         // Check what type has this value
-        if (TypeHelper::checkIfTypeMismatch(\gettype($value), self::ALLOWED[$name])) {
-            throw new ConfigException("Parameter '$name' has wrong type '" . \gettype($value) . "' but should be '" . self::ALLOWED[$name] . "'");
+        if (TypeHelper::checkIfTypeMismatch(gettype($value), self::ALLOWED[$name])) {
+            throw new ConfigException("Parameter '$name' has wrong type '" . gettype($value) . "' but should be '" . self::ALLOWED[$name] . "'");
         }
 
         // Save value to array
@@ -83,21 +137,18 @@ class Config implements ConfigInterface
         if ($parameter === 'port' && (!isset($this->_parameters['port']) || null === $this->_parameters['port'])) {
             // then use default with or without ssl encryption
             return (isset($this->_parameters['ssl']) && $this->_parameters['ssl'])
-                ? Client::PORT_SSL
-                : Client::PORT;
+                ? self::PORT_SSL
+                : self::PORT;
         }
         return null;
     }
 
     /**
-     * Remove parameter from array by name
+     * @inheritDoc
      *
-     * @param string $name
-     *
-     * @return \RouterOS\Config
-     * @throws \RouterOS\Exceptions\ConfigException
+     * @throws \RouterOS\Exceptions\ConfigException when parameter is not allowed
      */
-    public function delete(string $name): Config
+    public function delete(string $name): ConfigInterface
     {
         // Check of key in array
         if (ArrayHelper::checkIfKeyNotExist($name, self::ALLOWED)) {
@@ -111,12 +162,9 @@ class Config implements ConfigInterface
     }
 
     /**
-     * Return parameter of current config by name
+     * @inheritDoc
      *
-     * @param string $name
-     *
-     * @return mixed
-     * @throws \RouterOS\Exceptions\ConfigException
+     * @throws \RouterOS\Exceptions\ConfigException when parameter is not allowed
      */
     public function get(string $name)
     {
@@ -129,9 +177,7 @@ class Config implements ConfigInterface
     }
 
     /**
-     * Return array with all parameters of configuration
-     *
-     * @return array
+     * @inheritDoc
      */
     public function getParameters(): array
     {

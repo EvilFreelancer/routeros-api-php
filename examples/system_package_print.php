@@ -21,7 +21,7 @@ $client = new Client($config);
 $query = new Query('/system/package/print');
 
 // Send query to RouterOS
-$request = $client->write($query);
+$request = $client->query($query);
 
 // Read answer from RouterOS
 $response = $client->read();

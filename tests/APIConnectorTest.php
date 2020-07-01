@@ -25,7 +25,7 @@ class APIConnectorTest extends TestCase
      * @param StreamInterface $stream        Cannot typehint, PHP refuse it
      * @param bool            $closeResource shall we close the resource ?
      */
-    public function test_construct(StreamInterface $stream, bool $closeResource = false)
+    public function testConstruct(StreamInterface $stream, bool $closeResource = false): void
     {
         $apiStream = new APIConnector($stream);
         $this->assertInstanceOf(APIConnector::class, $apiStream);
@@ -38,7 +38,7 @@ class APIConnectorTest extends TestCase
     {
         return [
             [new ResourceStream(fopen(__FILE__, 'rb')),], // Myself, sure I exists
-            [new ResourceStream(fsockopen('tcp://' . getenv('ROS_HOST'), getenv('ROS_PORT_MODERN'))),], // Socket
+            [new ResourceStream(fsockopen('tcp://' . getenv('ROS_HOST'), getenv('ROS_PORT_MODERN')))], // Socket
             [new ResourceStream(STDIN), false], // Try it, but do not close STDIN please !!!
             [new StringStream('Hello World !!!')], // Try it, but do not close STDIN please !!!
             [new StringStream('')], // Try it, but do not close STDIN please !!!
@@ -53,7 +53,7 @@ class APIConnectorTest extends TestCase
      * @param APIConnector $connector
      * @param string       $expected
      */
-    public function test__readWord(APIConnector $connector, string $expected)
+    public function testReadWord(APIConnector $connector, string $expected): void
     {
         $this->assertSame($expected, $connector->readWord());
     }
@@ -79,7 +79,7 @@ class APIConnectorTest extends TestCase
      * @param string       $toWrite
      * @param int          $expected
      */
-    public function test_writeWord(APIConnector $connector, string $toWrite, int $expected)
+    public function testWriteWord(APIConnector $connector, string $toWrite, int $expected): void
     {
         $this->assertEquals($expected, $connector->writeWord($toWrite));
     }

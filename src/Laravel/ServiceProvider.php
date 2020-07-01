@@ -4,7 +4,7 @@ namespace RouterOS\Laravel;
 
 use Illuminate\Support\ServiceProvider as BaseServiceProvider;
 
-class ClientServiceProvider extends BaseServiceProvider
+class ServiceProvider extends BaseServiceProvider
 {
     /**
      * Bootstrap any application services.
@@ -29,6 +29,6 @@ class ClientServiceProvider extends BaseServiceProvider
             __DIR__ . '/../../configs/routeros-api.php', 'routeros-api'
         );
 
-        $this->app->bind(ClientWrapper::class);
+        $this->app->bind(Wrapper::class);
     }
 }

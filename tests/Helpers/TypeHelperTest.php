@@ -7,7 +7,7 @@ use RouterOS\Helpers\TypeHelper;
 
 class TypeHelperTest extends TestCase
 {
-    public function testCheckIfTypeMismatch()
+    public function testCheckIfTypeMismatch(): void
     {
         $test1 = TypeHelper::checkIfTypeMismatch(gettype(true), gettype(false));
         $this->assertFalse($test1);

@@ -4,38 +4,34 @@ namespace RouterOS\Tests;
 
 use PHPUnit\Framework\TestCase;
 use RouterOS\Client;
+use RouterOS\ResponseIterator;
 
 class ResponseIteratorTest extends TestCase
 {
-    public function test__construct()
+    /**
+     * @var \RouterOS\Client
+     */
+    private $client;
+
+    public function setUp(): void
     {
-        $obj = new Client([
+        $this->client = new Client([
             'user' => getenv('ROS_USER'),
             'pass' => getenv('ROS_PASS'),
             'host' => getenv('ROS_HOST'),
         ]);
-
-        $obj = $obj->write('/system/package/print')->readAsIterator();
-        $this->assertIsObject($obj);
     }
 
-    public function testReadWrite()
+    public function testReadWrite(): void
     {
-        $obj = new Client([
-            'user' => getenv('ROS_USER'),
-            'pass' => getenv('ROS_PASS'),
-            'host' => getenv('ROS_HOST'),
-        ]);
+        $readTrap = $this->client->query('/system/logging/print')->readAsIterator();
+        $this->assertNotEmpty($readTrap);
 
-        $readTrap = $obj->write('/system/package/print')->readAsIterator();
-        // Read from RAW
-        $this->assertCount(13, $readTrap);
-
-        $readTrap = $obj->write('/ip/address/print')->readAsIterator();
+        $readTrap = $this->client->query('/ip/address/print')->readAsIterator();
         $this->assertCount(1, $readTrap);
         $this->assertEquals('ether1', $readTrap[0]['interface']);
 
-        $readTrap = $obj->write('/system/package/print')->readAsIterator();
+        $readTrap = $this->client->query('/system/logging/print')->readAsIterator();
         $key      = $readTrap->key();
         $this->assertEquals(0, $key);
         $current = $readTrap->current();
@@ -62,14 +58,9 @@ class ResponseIteratorTest extends TestCase
 
     public function testSerialize(): void
     {
-        $obj = new Client([
-            'user' => getenv('ROS_USER'),
-            'pass' => getenv('ROS_PASS'),
-            'host' => getenv('ROS_HOST'),
-        ]);
-
-        $read = $obj->write('/queue/simple/print')->readAsIterator();
+        $read      = $this->client->query('/queue/simple/print')->readAsIterator();
         $serialize = $read->serialize();
+
         $this->assertEquals('a:1:{i:0;a:1:{i:0;s:5:"!done";}}', $serialize);
     }
 

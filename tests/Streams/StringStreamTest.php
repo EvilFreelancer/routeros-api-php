@@ -19,9 +19,9 @@ class StringStreamTest extends TestCase
      * @covers ::__construct
      * @dataProvider constructProvider
      *
-     * @param   string $string
+     * @param string $string
      */
-    public function test__construct(string $string)
+    public function testConstruct(string $string): void
     {
         $this->assertInstanceOf(StringStream::class, new StringStream($string));
     }
@@ -36,19 +36,18 @@ class StringStreamTest extends TestCase
         ];
     }
 
-
     /**
      * Test that write function returns the effective written bytes
      *
      * @covers ::write
      * @dataProvider writeProvider
      *
-     * @param   string   $string   the string to write
-     * @param   int|null $length   the count if bytes to write
-     * @param   int      $expected the number of bytes that must be writen
+     * @param string   $string   the string to write
+     * @param int|null $length   the count if bytes to write
+     * @param int      $expected the number of bytes that must be writen
      */
 
-    public function test__write(string $string, $length, int $expected)
+    public function testWrite(string $string, $length, int $expected): void
     {
         $stream = new StringStream('Does not matters');
         if (null === $length) {
@@ -79,10 +78,10 @@ class StringStreamTest extends TestCase
 
     /**
      * @covers ::write
-     * @expectedException \InvalidArgumentException
      */
-    public function test__writeWithNegativeLength()
+    public function testWriteWithNegativeLength(): void
     {
+        $this->expectException(\InvalidArgumentException::class);
         $stream = new StringStream('Does not matters');
         $stream->write('PLOP', -1);
     }
@@ -92,7 +91,7 @@ class StringStreamTest extends TestCase
      *
      * @throws \RouterOS\Exceptions\StreamException
      */
-    public function test__read()
+    public function testRead(): void
     {
         $stream = new StringStream('123456789');
 
@@ -105,12 +104,11 @@ class StringStreamTest extends TestCase
     }
 
     /**
-     * @expectedException \InvalidArgumentException
-     *
      * @throws \RouterOS\Exceptions\StreamException
      */
-    public function test__readBadLength()
+    public function testReadBadLength(): void
     {
+        $this->expectException(\InvalidArgumentException::class);
         $stream = new StringStream('123456789');
         $stream->read(-1);
     }
@@ -118,14 +116,15 @@ class StringStreamTest extends TestCase
     /**
      * @covers ::read
      * @dataProvider readWhileEmptyProvider
-     * @expectedException \RouterOS\Exceptions\StreamException
      *
-     * @param   StringStream $stream
-     * @param   int          $length
-     * @throws  \RouterOS\Exceptions\StreamException
+     * @param StringStream $stream
+     * @param int          $length
+     *
+     * @throws \RouterOS\Exceptions\StreamException
      */
-    public function test__readWhileEmpty(StringStream $stream, int $length)
+    public function testReadWhileEmpty(StringStream $stream, int $length): void
     {
+        $this->expectException(\RouterOS\Exceptions\StreamException::class);
         $stream->read($length);
     }
 
@@ -133,7 +132,7 @@ class StringStreamTest extends TestCase
      * @return \Generator
      * @throws StreamException
      */
-    public function readWhileEmptyProvider()
+    public function readWhileEmptyProvider(): ?\Generator
     {
         $stream = new StringStream('123456789');
         $stream->read(9);
@@ -148,11 +147,9 @@ class StringStreamTest extends TestCase
         yield [$stream, 1];
     }
 
-    /**
-     * @expectedException \RouterOS\Exceptions\StreamException
-     */
-    public function testReadClosed()
+    public function testReadClosed(): void
     {
+        $this->expectException(\RouterOS\Exceptions\StreamException::class);
         $stream = new StringStream('123456789');
         $stream->close();
         $stream->read(1);

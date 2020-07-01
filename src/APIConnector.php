@@ -20,14 +20,23 @@ class APIConnector
     protected $stream;
 
     /**
-     * Constructor
+     * APIConnector constructor.
      *
-     * @param StreamInterface $stream
+     * @param \RouterOS\Interfaces\StreamInterface $stream
      */
-
     public function __construct(StreamInterface $stream)
     {
         $this->stream = $stream;
+    }
+
+    /**
+     * Close stream connection
+     *
+     * @return void
+     */
+    public function close(): void
+    {
+        $this->stream->close();
     }
 
     /**

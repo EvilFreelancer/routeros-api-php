@@ -22,5 +22,5 @@ $client = new Client($config);
 $query = new Query('/interface/bridge/host/print');
 
 // Send query to RouterOS
-$response = $client->write($query)->read();
+$response = $client->query($query)->read();
 print_r($response);

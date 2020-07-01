@@ -38,10 +38,10 @@ class ResourceStream implements StreamInterface
     }
 
     /**
-     * @param   int $length
-     * @return  string
-     * @throws  \RouterOS\Exceptions\StreamException
-     * @throws  \InvalidArgumentException
+     * @inheritDoc
+     *
+     * @throws \RouterOS\Exceptions\StreamException when length parameter is invalid
+     * @throws \InvalidArgumentException when the stream have been totally read and read method is called again
      */
     public function read(int $length): string
     {
@@ -60,17 +60,9 @@ class ResourceStream implements StreamInterface
     }
 
     /**
-     * Writes a string to a stream
+     * @inheritDoc
      *
-     * Write $length bytes of string, if not mentioned, write all the string
-     * Must be binary safe (as fread).
-     * if $length is greater than string length, write all string and return number of writen bytes
-     * if $length os smaller than string length, remaining bytes are losts.
-     *
-     * @param   string   $string
-     * @param   int|null $length the numer of bytes to read
-     * @return  int the number of written bytes
-     * @throws  \RouterOS\Exceptions\StreamException
+     * @throws \RouterOS\Exceptions\StreamException when not possible to write bytes
      */
     public function write(string $string, int $length = null): int
     {
@@ -89,12 +81,11 @@ class ResourceStream implements StreamInterface
     }
 
     /**
-     * Close stream connection
+     * @inheritDoc
      *
-     * @return  void
-     * @throws  \RouterOS\Exceptions\StreamException
+     * @throws \RouterOS\Exceptions\StreamException when not possible to close the stream
      */
-    public function close()
+    public function close(): void
     {
         $hasBeenClosed = false;
 

@@ -14,7 +14,7 @@ $client = new Client([
 ]);
 
 // Send query to RouterOS and parse response
-$response = $client->write('/ip/firewall/address-list/print')->read();
+$response = $client->query('/ip/firewall/address-list/print')->read();
 
 // You could treat response as an array except using array_* function
 

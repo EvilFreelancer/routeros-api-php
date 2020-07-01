@@ -8,33 +8,33 @@ use RouterOS\Query;
 
 class QueryTest extends TestCase
 {
-    public function test__construct(): void
+    public function testConstruct(): void
     {
         try {
             $obj = new Query('test');
             $this->assertIsObject($obj);
         } catch (\Exception $e) {
-            $this->assertContains('Must be initialized ', $e->getMessage());
+            $this->assertStringContainsString('Must be initialized ', $e->getMessage());
         }
     }
 
-    public function test__construct_arr(): void
+    public function testConstructArr(): void
     {
         try {
             $obj = new Query('test', ['line1', 'line2', 'line3']);
             $this->assertIsObject($obj);
         } catch (\Exception $e) {
-            $this->assertContains('Must be initialized ', $e->getMessage());
+            $this->assertStringContainsString('Must be initialized ', $e->getMessage());
         }
     }
 
-    public function test__construct_arr2(): void
+    public function testConstructArr2(): void
     {
         try {
             $obj = new Query(['test', 'line1', 'line2', 'line3']);
             $this->assertIsObject($obj);
         } catch (\Exception $e) {
-            $this->assertContains('Must be initialized ', $e->getMessage());
+            $this->assertStringContainsString('Must be initialized ', $e->getMessage());
         }
     }
 
@@ -42,14 +42,14 @@ class QueryTest extends TestCase
     {
         $obj  = new Query('test');
         $test = $obj->getEndpoint();
-        $this->assertEquals($test, 'test');
+        $this->assertEquals('test', $test);
     }
 
     public function testGetEndpoint2(): void
     {
         $obj  = new Query(['zzz', 'line1', 'line2', 'line3']);
         $test = $obj->getEndpoint();
-        $this->assertEquals($test, 'zzz');
+        $this->assertEquals('zzz', $test);
     }
 
     public function testGetEndpointEx(): void
@@ -65,7 +65,7 @@ class QueryTest extends TestCase
         $obj = new Query('test');
         $obj->setEndpoint('zzz');
         $test = $obj->getEndpoint();
-        $this->assertEquals($test, 'zzz');
+        $this->assertEquals('zzz', $test);
     }
 
     public function testGetAttributes(): void
@@ -102,6 +102,18 @@ class QueryTest extends TestCase
         $attrs = $obj->getAttributes();
         $this->assertCount(2, $attrs);
         $this->assertEquals($attrs[1], '?key2=value2');
+    }
+
+
+    public function testEqual(): void
+    {
+        $obj = new Query('test');
+        $obj->equal('key1', 'value1');
+        $obj->equal('key2', 'value2');
+
+        $attrs = $obj->getAttributes();
+        $this->assertCount(2, $attrs);
+        $this->assertEquals($attrs[1], '=key2=value2');
     }
 
     public function testTag(): void

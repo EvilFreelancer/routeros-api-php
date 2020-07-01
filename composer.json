@@ -33,22 +33,25 @@
   "extra": {
     "laravel": {
       "providers": [
-        "RouterOS\\Laravel\\ClientServiceProvider"
+        "RouterOS\\Laravel\\ServiceProvider"
       ],
       "aliases": {
-        "RouterOS": "RouterOS\\Laravel\\ClientFacade"
+        "RouterOS": "RouterOS\\Laravel\\Facade"
       }
     }
   },
   "require": {
     "php": "^7.2",
-    "ext-sockets": "*"
+    "ext-sockets": "*",
+    "divineomega/php-ssh-connection": "^2.2"
   },
   "require-dev": {
-    "phpunit/phpunit": "^7.0",
-    "orchestra/testbench": "^3.0",
+    "limedeck/phpunit-detailed-printer": "^5.0",
+    "orchestra/testbench": "^4.0|^5.0",
+    "phpunit/phpunit": "^8.0",
     "roave/security-advisories": "dev-master",
-    "squizlabs/php_codesniffer": "^3.5"
+    "squizlabs/php_codesniffer": "^3.5",
+    "larapack/dd": "^1.1"
   },
   "scripts": {
     "test": "phpunit --coverage-clover clover.xml",

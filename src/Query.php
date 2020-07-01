@@ -2,9 +2,11 @@
 
 namespace RouterOS;
 
-use RouterOS\Exceptions\ClientException;
 use RouterOS\Exceptions\QueryException;
 use RouterOS\Interfaces\QueryInterface;
+use function in_array;
+use function is_array;
+use function is_string;
 
 /**
  * Class Query for building queries
@@ -62,10 +64,10 @@ class Query implements QueryInterface
      */
     public function __construct($endpoint, array $attributes = [])
     {
-        if (\is_string($endpoint)) {
+        if (is_string($endpoint)) {
             $this->setEndpoint($endpoint);
             $this->setAttributes($attributes);
-        } elseif (\is_array($endpoint)) {
+        } elseif (is_array($endpoint)) {
             $query = array_shift($endpoint);
             $this->setEndpoint($query);
             $this->setAttributes($endpoint);
@@ -128,7 +130,7 @@ class Query implements QueryInterface
 
         if (null !== $operator && null !== $value) {
             // If operator is available in list
-            if (\in_array($operator, self::AVAILABLE_OPERATORS, true)) {
+            if (in_array($operator, self::AVAILABLE_OPERATORS, true)) {
                 $key = $operator . $key;
             } else {
                 throw new QueryException('Operator "' . $operator . '" in not in allowed list [' . implode(',', self::AVAILABLE_OPERATORS) . ']');

@@ -12,8 +12,8 @@ $client = new Client([
     'pass'    => 'admin'
 ]);
 
-$out = $client->write(['/queue/simple/add', '=name=test'])->read();
+$out = $client->query(['/queue/simple/add', '=name=test'])->read();
 print_r($out);
 
-$out = $client->write(['/queue/simple/add', '=name=test'])->read();
+$out = $client->query(['/queue/simple/add', '=name=test'])->read();
 print_r($out);

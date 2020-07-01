@@ -2,9 +2,8 @@
 
 namespace RouterOS\Tests;
 
+use DomainException;
 use PHPUnit\Framework\TestCase;
-use PHPUnit\Framework\Constraint\IsType;
-
 use RouterOS\APILengthCoDec;
 use RouterOS\Streams\StringStream;
 use RouterOS\Helpers\BinaryStringHelper;
@@ -18,11 +17,13 @@ class APILengthCoDecTest extends TestCase
 {
     /**
      * @dataProvider encodeLengthNegativeProvider
-     * @expectedException \DomainException
      * @covers ::encodeLength
+     *
+     * @param $length
      */
-    public function test__encodeLengthNegative($length)
+    public function testEncodeLengthNegative($length): void
     {
+        $this->expectException(DomainException::class);
         APILengthCoDec::encodeLength($length);
     }
 
@@ -37,8 +38,11 @@ class APILengthCoDecTest extends TestCase
     /**
      * @dataProvider encodedLengthProvider
      * @covers ::encodeLength
+     *
+     * @param $expected
+     * @param $length
      */
-    public function test__encodeLength($expected, $length)
+    public function testEncodeLength($expected, $length): void
     {
         $this->assertEquals(BinaryStringHelper::IntegerToNBOBinaryString((int) $expected), APILengthCoDec::encodeLength($length));
     }
@@ -76,8 +80,11 @@ class APILengthCoDecTest extends TestCase
     /**
      * @dataProvider encodedLengthProvider
      * @covers ::decodeLength
+     *
+     * @param $encodedLength
+     * @param $expected
      */
-    public function test__decodeLength($encodedLength, $expected)
+    public function testDecodeLength($encodedLength, $expected): void
     {
         // We have to provide $encodedLength as a "bytes" stream
         $stream = new StringStream(BinaryStringHelper::IntegerToNBOBinaryString($encodedLength));
@@ -87,10 +94,12 @@ class APILengthCoDecTest extends TestCase
     /**
      * @dataProvider decodeLengthControlWordProvider
      * @covers ::decodeLength
-     * @expectedException \UnexpectedValueException
+     *
+     * @param string $encodedLength
      */
-    public function test_decodeLengthControlWord(string $encodedLength)
+    public function testDecodeLengthControlWord(string $encodedLength): void
     {
+        $this->expectException(\UnexpectedValueException::class);
         APILengthCoDec::decodeLength(new StringStream($encodedLength));
     }
 

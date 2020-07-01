@@ -34,7 +34,7 @@ foreach ($vlans as $vlanId => $ports) {
         'vlan-filtering=no'
     ]);
 
-    $response = $client->wr($query);
+    $response = $client->qr($query);
     print_r($response);
 
     // Add ports to bridge
@@ -45,7 +45,7 @@ foreach ($vlans as $vlanId => $ports) {
             "=interface=ether$port"
         ]);
 
-        $response = $client->wr($bridgePort);
+        $response = $client->qr($bridgePort);
         print_r($response);
     }
 
@@ -57,7 +57,7 @@ foreach ($vlans as $vlanId => $ports) {
             "=vlan-ids=$vlanId"
         ]);
 
-        $response = $client->wr($vlan);
+        $response = $client->qr($vlan);
         print_r($response);
     }
 
