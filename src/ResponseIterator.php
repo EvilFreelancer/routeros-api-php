@@ -2,10 +2,10 @@
 
 namespace RouterOS;
 
-use \Iterator;
-use \ArrayAccess;
-use \Countable;
-use \Serializable;
+use Iterator;
+use ArrayAccess;
+use Countable;
+use Serializable;
 use function array_keys;
 use function array_slice;
 use function count;
