@@ -27,7 +27,7 @@ before_script:
 - ./preconf.tcl 12223 > /dev/null || true
 - ./preconf.tcl 22223 > /dev/null || true
 - composer self-update
-- composer install --prefer-source --no-interaction --dev
+- composer install --no-interaction --dev
 
 script:
 - vendor/bin/phpunit --coverage-clover=coverage.clover
