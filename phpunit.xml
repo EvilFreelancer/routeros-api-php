@@ -31,5 +31,6 @@
         <env name="ROS_PASS" value="admin"/>
         <env name="ROS_PORT_MODERN" value="8728"/>
         <env name="ROS_PORT_LEGACY" value="18728"/>
+        <env name="ROS_SSH_PORT" value="22222"/>
     </php>
 </phpunit>
