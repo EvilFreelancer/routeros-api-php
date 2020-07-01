@@ -274,8 +274,8 @@ class ClientTest extends TestCase
 
     public function testExportMethod(): void
     {
-        if (!extension_loaded('openssl')) {
-            $this->markTestSkipped('The OpenSSL extension is not available.');
+        if (!in_array(gethostname(), ['pasha-lt', 'pasha-pc'])) {
+            $this->markTestSkipped('Travis does not allow to use SSH protocol on testing stage');
         }
 
         $result = $this->client->export();
@@ -284,8 +284,8 @@ class ClientTest extends TestCase
 
     public function testExportQuery(): void
     {
-        if (!extension_loaded('openssl')) {
-            $this->markTestSkipped('The OpenSSL extension is not available.');
+        if (!in_array(gethostname(), ['pasha-lt', 'pasha-pc'])) {
+            $this->markTestSkipped('Travis does not allow to use SSH protocol on testing stage');
         }
 
         $result = $this->client->query('/export');
