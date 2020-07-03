@@ -39,7 +39,7 @@ trait SocketTrait
         // Default: Context for ssl
         $context = stream_context_create([
             'ssl' => [
-                'ciphers'          => 'ADH:ALL',
+                'ciphers'          => 'ADH:ALL@SECLEVEL=0',
                 'verify_peer'      => false,
                 'verify_peer_name' => false
             ]
