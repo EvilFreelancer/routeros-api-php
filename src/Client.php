@@ -197,7 +197,7 @@ class Client implements Interfaces\ClientInterface
         $commands = $query->getQuery();
 
         // Check if first command is export
-        if (strpos($commands[0], '/export') === 0) {
+        if (0 === strpos($commands[0], '/export')) {
 
             // Convert export command with all arguments to valid SSH command
             $arguments = explode('/', $commands[0]);
@@ -229,7 +229,7 @@ class Client implements Interfaces\ClientInterface
      * @return array|string
      * @since 1.0.0
      */
-    private function readRAW()
+    public function readRAW()
     {
         // By default response is empty
         $response = [];
@@ -321,8 +321,8 @@ class Client implements Interfaces\ClientInterface
      *
      * Based on RouterOSResponseArray solution by @arily
      *
-     * @link    https://github.com/arily/RouterOSResponseArray
-     * @since   1.0.0
+     * @see https://github.com/arily/RouterOSResponseArray
+     * @since 1.0.0
      */
     private function rosario(array $raw): array
     {
@@ -399,7 +399,7 @@ class Client implements Interfaces\ClientInterface
      *
      * @param string     $value    Value which should be parsed
      * @param array      $result   Array with parsed response
-     * @param null|array $matches  Matched words
+     * @param array|null $matches  Matched words
      * @param string|int $iterator Type of iterations or number of item
      */
     private function preParseResponse(string $value, array &$result, ?array &$matches, $iterator = 'after'): void
@@ -414,11 +414,11 @@ class Client implements Interfaces\ClientInterface
      * Parse result from RouterOS by regular expression
      *
      * @param string     $value
-     * @param null|array $matches
+     * @param array|null $matches
      */
-    private function pregResponse(string $value, ?array &$matches): void
+    protected function pregResponse(string $value, ?array &$matches): void
     {
-        preg_match_all('/^[=|.](.*)=(.*)/', $value, $matches);
+        preg_match_all('/^[=|.]([.\w-]+)=(.*)/', $value, $matches);
     }
 
     /**
@@ -441,13 +441,13 @@ class Client implements Interfaces\ClientInterface
             // Now need use this hash for authorization
             $query = new Query('/login', [
                 '=name=' . $this->config('user'),
-                '=response=00' . md5(chr(0) . $this->config('pass') . pack('H*', $response['after']['ret']))
+                '=response=00' . md5(chr(0) . $this->config('pass') . pack('H*', $response['after']['ret'])),
             ]);
         } else {
             // Just login with our credentials
             $query = new Query('/login', [
                 '=name=' . $this->config('user'),
-                '=password=' . $this->config('pass')
+                '=password=' . $this->config('pass'),
             ]);
 
             // If we set modern auth scheme but router with legacy firmware then need to retry query,
@@ -469,12 +469,12 @@ class Client implements Interfaces\ClientInterface
         }
 
         // If RouterOS answered with invalid credentials then throw error
-        if (!empty($response[0]) && $response[0] === '!trap') {
+        if (!empty($response[0]) && '!trap' === $response[0]) {
             throw new ClientException('Invalid user name or password');
         }
 
         // Return true if we have only one line from server and this line is !done
-        return (1 === count($response)) && isset($response[0]) && ($response[0] === '!done');
+        return (1 === count($response)) && isset($response[0]) && ('!done' === $response[0]);
     }
 
     /**
@@ -487,7 +487,7 @@ class Client implements Interfaces\ClientInterface
      */
     private function isLegacy(array $response): bool
     {
-        return count($response) > 1 && $response[0] === '!done' && !$this->config('legacy');
+        return count($response) > 1 && '!done' === $response[0] && !$this->config('legacy');
     }
 
     /**
@@ -537,7 +537,7 @@ class Client implements Interfaces\ClientInterface
      */
     private function isCustomOutput(): bool
     {
-        return $this->customOutput !== null;
+        return null !== $this->customOutput;
     }
 
     /**
