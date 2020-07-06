@@ -18,8 +18,28 @@ return [
     'user'     => 'admin',        // Username
     'pass'     => null,           // Password
     'port'     => 8728,           // RouterOS API port number for access (if not set use default or default with SSL if SSL enabled)
-    'ssl'      => false,          // Enable ssl support (if port is not set this parameter must change default port to ssl port)
     'ssh_port' => 22,             // Number of SSH port
+
+    /*
+     |--------------------------------------------------------------------------
+     | SSL settings
+     |--------------------------------------------------------------------------
+     |
+     | Settings of SSL connection, if disabled then other parameters will
+     | be skipped.
+     |
+     | @link https://wiki.mikrotik.com/wiki/Manual:API-SSL
+     | @link https://www.openssl.org/docs/man1.1.1/man3/SSL_CTX_set_security_level.html
+     |
+     */
+
+    'ssl'         => false,     // Enable ssl support (if port is not set this parameter must change default port to ssl port)
+    'ssl_options' => [
+        'ciphers'           => 'ADH:ALL', // ADH:ALL, ADH:ALL@SECLEVEL=0, ADH:ALL@SECLEVEL=1 ... ADH:ALL@SECLEVEL=5
+        'verify_peer'       => false,     // Require verification of SSL certificate used.
+        'verify_peer_name'  => false,     // Require verification of peer name.
+        'allow_self_signed' => false,     // Allow self-signed certificates. Requires verify_peer.
+    ],
 
     /*
      |--------------------------------------------------------------------------
