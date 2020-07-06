@@ -8,19 +8,19 @@ use RouterOS\Laravel\Wrapper;
 class ServiceProviderTests extends TestCase
 {
     private $client = [
-        "__construct",
-        "query",
-        "read",
-        "readAsIterator",
-        "parseResponse",
-        "connect",
-        "export",
-        "getSocket",
-        "q",
-        "r",
-        "ri",
-        "qr",
-        "qri",
+        '__construct',
+        'query',
+        'read',
+        'readAsIterator',
+        'parseResponse',
+        'connect',
+        'export',
+        'getSocket',
+        'q',
+        'r',
+        'ri',
+        'qr',
+        'qri',
     ];
 
     public function testAbstractsAreLoaded(): void
@@ -34,7 +34,7 @@ class ServiceProviderTests extends TestCase
         $config = \RouterOS::config([
             'host' => '192.168.1.3',
             'user' => 'admin',
-            'pass' => 'admin'
+            'pass' => 'admin',
         ]);
         $this->assertInstanceOf(Config::class, $config);
 
@@ -54,7 +54,7 @@ class ServiceProviderTests extends TestCase
         $client = \RouterOS::client([
             'host' => '192.168.1.3',
             'user' => 'admin',
-            'pass' => 'admin'
+            'pass' => 'admin',
         ], false);
 
         $this->assertEquals(get_class_methods($client), $this->client);

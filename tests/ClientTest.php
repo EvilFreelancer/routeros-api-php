@@ -122,7 +122,7 @@ class ClientTest extends TestCase
                 'pass'   => $this->config['pass'],
                 'host'   => $this->config['host'],
                 'port'   => $this->port_legacy,
-                'legacy' => true
+                'legacy' => true,
             ]);
             $this->assertIsObject($obj);
         } catch (Exception $e) {
@@ -143,7 +143,7 @@ class ClientTest extends TestCase
                 'pass'   => $this->config['pass'],
                 'host'   => $this->config['host'],
                 'port'   => $this->port_legacy,
-                'legacy' => false
+                'legacy' => false,
             ]);
             $this->assertIsObject($obj);
         } catch (Exception $e) {
@@ -159,7 +159,7 @@ class ClientTest extends TestCase
             'user'     => $this->config['user'],
             'pass'     => 'admin2',
             'host'     => $this->config['host'],
-            'attempts' => 2
+            'attempts' => 2,
         ]);
     }
 
@@ -172,7 +172,7 @@ class ClientTest extends TestCase
             'pass'     => $this->config['pass'],
             'host'     => $this->config['host'],
             'port'     => 11111,
-            'attempts' => 2
+            'attempts' => 2,
         ]);
     }
 
@@ -206,7 +206,7 @@ class ClientTest extends TestCase
 
         $read = $this->client->query('/interface/print', [
             ['type', 'ether'],
-            ['type', 'vlan']
+            ['type', 'vlan'],
         ], '|')->read();
         $this->assertCount(1, $read);
         $this->assertEquals('*1', $read[0]['.id']);

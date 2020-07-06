@@ -7,6 +7,7 @@ use PHPUnit\Framework\TestCase;
 use RouterOS\APILengthCoDec;
 use RouterOS\Streams\StringStream;
 use RouterOS\Helpers\BinaryStringHelper;
+use UnexpectedValueException;
 
 /**
  * Limit code coverage to the class
@@ -99,7 +100,7 @@ class APILengthCoDecTest extends TestCase
      */
     public function testDecodeLengthControlWord(string $encodedLength): void
     {
-        $this->expectException(\UnexpectedValueException::class);
+        $this->expectException(UnexpectedValueException::class);
         APILengthCoDec::decodeLength(new StringStream($encodedLength));
     }
 

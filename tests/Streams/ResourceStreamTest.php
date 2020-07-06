@@ -4,9 +4,9 @@ namespace RouterOS\Tests\Streams;
 
 use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
-use PHPUnit\Framework\Constraint\IsType;
 use RouterOS\Exceptions\StreamException;
 use RouterOS\Streams\ResourceStream;
+use stdClass;
 
 /**
  * Limit code coverage to the class RouterOS\APIStream
@@ -23,7 +23,6 @@ class ResourceStreamTest extends TestCase
      *
      * @param $notResource
      */
-
     public function testConstructNotResource($notResource): void
     {
         $this->expectException(InvalidArgumentException::class);
@@ -42,9 +41,9 @@ class ResourceStreamTest extends TestCase
             [3.14],       // float
             ['a string'], // string
             [
-                [0, 3.14]   // Array
+                [0, 3.14],   // Array
             ],
-            [new \stdClass()], // Object
+            [new stdClass()], // Object
             // What else ?
         ];
     }
@@ -83,8 +82,8 @@ class ResourceStreamTest extends TestCase
     public function constructProvider(): array
     {
         return [
-            [fopen(__FILE__, 'rb'),], // Myself, sure I exists
-            [fsockopen('tcp://' . getenv('ROS_HOST'), getenv('ROS_PORT_MODERN')),], // Socket
+            [fopen(__FILE__, 'rb')], // Myself, sure I exists
+            [fsockopen('tcp://' . getenv('ROS_HOST'), getenv('ROS_PORT_MODERN'))], // Socket
             [STDIN, false], // Try it, but do not close STDIN please !!!
             // What else ?
         ];
@@ -167,6 +166,7 @@ class ResourceStreamTest extends TestCase
         $resource = fopen(__FILE__, 'rb');
         $me       = new ResourceStream($resource);
         fclose($resource);
+
         return [
             [$me, 1],
         ];
@@ -269,5 +269,4 @@ class ResourceStreamTest extends TestCase
             [new ResourceStream(fopen('/dev/null', 'wb')), 'sasasaas'],  // Take that
         ];
     }
-
 }

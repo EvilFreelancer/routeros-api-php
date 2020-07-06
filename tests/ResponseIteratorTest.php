@@ -4,7 +4,6 @@ namespace RouterOS\Tests;
 
 use PHPUnit\Framework\TestCase;
 use RouterOS\Client;
-use RouterOS\ResponseIterator;
 
 class ResponseIteratorTest extends TestCase
 {

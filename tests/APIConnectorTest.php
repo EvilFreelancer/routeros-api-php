@@ -37,7 +37,7 @@ class APIConnectorTest extends TestCase
     public function constructProvider(): array
     {
         return [
-            [new ResourceStream(fopen(__FILE__, 'rb')),], // Myself, sure I exists
+            [new ResourceStream(fopen(__FILE__, 'rb'))], // Myself, sure I exists
             [new ResourceStream(fsockopen('tcp://' . getenv('ROS_HOST'), getenv('ROS_PORT_MODERN')))], // Socket
             [new ResourceStream(STDIN), false], // Try it, but do not close STDIN please !!!
             [new StringStream('Hello World !!!')], // Try it, but do not close STDIN please !!!

@@ -2,9 +2,9 @@
 
 namespace RouterOS\Tests\Streams;
 
+use Generator;
+use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
-use PHPUnit\Framework\Constraint\IsType;
-
 use RouterOS\Streams\StringStream;
 use RouterOS\Exceptions\StreamException;
 
@@ -81,7 +81,7 @@ class StringStreamTest extends TestCase
      */
     public function testWriteWithNegativeLength(): void
     {
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
         $stream = new StringStream('Does not matters');
         $stream->write('PLOP', -1);
     }
@@ -108,7 +108,7 @@ class StringStreamTest extends TestCase
      */
     public function testReadBadLength(): void
     {
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
         $stream = new StringStream('123456789');
         $stream->read(-1);
     }
@@ -124,7 +124,7 @@ class StringStreamTest extends TestCase
      */
     public function testReadWhileEmpty(StringStream $stream, int $length): void
     {
-        $this->expectException(\RouterOS\Exceptions\StreamException::class);
+        $this->expectException(StreamException::class);
         $stream->read($length);
     }
 
@@ -132,7 +132,7 @@ class StringStreamTest extends TestCase
      * @return \Generator
      * @throws StreamException
      */
-    public function readWhileEmptyProvider(): ?\Generator
+    public function readWhileEmptyProvider(): ?Generator
     {
         $stream = new StringStream('123456789');
         $stream->read(9);
@@ -149,7 +149,7 @@ class StringStreamTest extends TestCase
 
     public function testReadClosed(): void
     {
-        $this->expectException(\RouterOS\Exceptions\StreamException::class);
+        $this->expectException(StreamException::class);
         $stream = new StringStream('123456789');
         $stream->close();
         $stream->read(1);

@@ -3,7 +3,6 @@
 namespace RouterOS\Tests\Helpers;
 
 use PHPUnit\Framework\TestCase;
-
 use RouterOS\Helpers\BinaryStringHelper;
 
 /**
@@ -33,8 +32,8 @@ class BinaryStringHelperTest extends TestCase
 
             // strange behaviour :
             //   TypeError: Argument 1 passed to RouterOS\Tests\Helpers\BinaryStringHelperTest::test__IntegerToNBOBinaryString() must be of the type integer, float given
-            //   Seems that php auto convert to float 0xFFF.... 
-            // 
+            //   Seems that php auto convert to float 0xFFF....
+            //
             // [0xFFFFFFFFFFFFFFFF, chr(0xFF).chr(0xFF).chr(0xFF).chr(0xFF).chr(0xFF).chr(0xFF).chr(0xFF).chr(0xFF)],
 
             // Let's try random value

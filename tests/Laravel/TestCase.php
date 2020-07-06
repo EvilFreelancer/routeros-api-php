@@ -14,7 +14,7 @@ use Orchestra\Testbench\TestCase as Orchestra;
 abstract class TestCase extends Orchestra
 {
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     protected function getPackageProviders($app): array
     {
@@ -24,7 +24,7 @@ abstract class TestCase extends Orchestra
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     protected function getPackageAliases($app): array
     {

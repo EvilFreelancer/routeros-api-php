@@ -2,6 +2,7 @@
 
 namespace RouterOS\Tests;
 
+use Exception;
 use PHPUnit\Framework\TestCase;
 use RouterOS\Exceptions\QueryException;
 use RouterOS\Query;
@@ -13,7 +14,7 @@ class QueryTest extends TestCase
         try {
             $obj = new Query('test');
             $this->assertIsObject($obj);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->assertStringContainsString('Must be initialized ', $e->getMessage());
         }
     }
@@ -23,7 +24,7 @@ class QueryTest extends TestCase
         try {
             $obj = new Query('test', ['line1', 'line2', 'line3']);
             $this->assertIsObject($obj);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->assertStringContainsString('Must be initialized ', $e->getMessage());
         }
     }
@@ -33,7 +34,7 @@ class QueryTest extends TestCase
         try {
             $obj = new Query(['test', 'line1', 'line2', 'line3']);
             $this->assertIsObject($obj);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->assertStringContainsString('Must be initialized ', $e->getMessage());
         }
     }
@@ -57,7 +58,7 @@ class QueryTest extends TestCase
         $this->expectException(QueryException::class);
 
         $obj  = new Query(null);
-        $test = $obj->getEndpoint();
+        $obj->getEndpoint();
     }
 
     public function testSetEndpoint(): void
@@ -90,7 +91,7 @@ class QueryTest extends TestCase
 
         $attrs = $obj->getAttributes();
         $this->assertCount(1, $attrs);
-        $this->assertEquals($attrs[0], 'line');
+        $this->assertEquals('line', $attrs[0]);
     }
 
     public function testWhere(): void
@@ -101,7 +102,7 @@ class QueryTest extends TestCase
 
         $attrs = $obj->getAttributes();
         $this->assertCount(2, $attrs);
-        $this->assertEquals($attrs[1], '?key2=value2');
+        $this->assertEquals('?key2=value2', $attrs[1]);
     }
 
 
@@ -113,7 +114,7 @@ class QueryTest extends TestCase
 
         $attrs = $obj->getAttributes();
         $this->assertCount(2, $attrs);
-        $this->assertEquals($attrs[1], '=key2=value2');
+        $this->assertEquals('=key2=value2', $attrs[1]);
     }
 
     public function testTag(): void
@@ -124,7 +125,7 @@ class QueryTest extends TestCase
 
         $query = $obj->getQuery();
         $this->assertCount(3, $query);
-        $this->assertEquals($query[2], '.tag=test');
+        $this->assertEquals('.tag=test', $query[2]);
     }
 
     public function testOperator(): void
@@ -135,7 +136,7 @@ class QueryTest extends TestCase
 
         $query = $obj->getQuery();
         $this->assertCount(3, $query);
-        $this->assertEquals($query[2], '?#|');
+        $this->assertEquals('?#|', $query[2]);
     }
 
     public function testWhereEx(): void
@@ -153,8 +154,8 @@ class QueryTest extends TestCase
 
         $query = $obj->getQuery();
         $this->assertCount(2, $query);
-        $this->assertEquals($query[0], 'test');
-        $this->assertEquals($query[1], 'line');
+        $this->assertEquals('test', $query[0]);
+        $this->assertEquals('line', $query[1]);
     }
 
     public function testGetQueryEx(): void
