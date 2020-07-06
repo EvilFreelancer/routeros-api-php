@@ -10,6 +10,7 @@ class ServiceProviderTests extends TestCase
     private $client = [
         '__construct',
         'query',
+        'readRAW',
         'read',
         'readAsIterator',
         'parseResponse',

@@ -42,7 +42,13 @@ class ClientTest extends TestCase
             'ssh_port' => (int) getenv('ROS_SSH_PORT'),
         ];
 
-        $this->client = new Client($this->config);
+        $this->client = new class($this->config) extends Client {
+            // Convert protected method to public
+            public function pregResponse(string $value, ?array &$matches): void
+            {
+                parent::pregResponse($value, $matches);
+            }
+        };
 
         $this->port_modern = (int) getenv('ROS_PORT_MODERN');
         $this->port_legacy = (int) getenv('ROS_PORT_LEGACY');
@@ -174,6 +180,30 @@ class ClientTest extends TestCase
             'port'     => 11111,
             'attempts' => 2,
         ]);
+    }
+
+    public function pregResponseDataProvider(): array
+    {
+        return [
+            ['line' => '=.id=1', 'result' => [['=.id=1'], ['.id'], [1]]],
+            ['line' => '=name=kjhasdrlkh=5468=3456kh3l45', 'result' => [['=name=kjhasdrlkh=5468=3456kh3l45'], ['name'], ['kjhasdrlkh=5468=3456kh3l45']]],
+            ['line' => '=name==d===efault=a===123sadf=3=3===', 'result' => [['=name==d===efault=a===123sadf=3=3==='], ['name'], ['=d===efault=a===123sadf=3=3===']]],
+            ['line' => '=name============', 'result' => [['=name============'], ['name'], ['===========']]],
+            ['line' => '=on-login={:liahdf =aasdf(zz)a;ldfj}', 'result' => [['=on-login={:liahdf =aasdf(zz)a;ldfj}'], ['on-login'], ['{:liahdf =aasdf(zz)a;ldfj}']]],
+        ];
+    }
+
+    /**
+     * @dataProvider pregResponseDataProvider
+     *
+     * @param string $line
+     * @param array  $result
+     */
+    public function testPregResponse(string $line, array $result): void
+    {
+        $matches = [];
+        $this->client->pregResponse($line, $matches);
+        $this->assertEquals($matches, $result);
     }
 
     public function testQueryRead(): void
