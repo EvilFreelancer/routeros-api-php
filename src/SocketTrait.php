@@ -36,14 +36,10 @@ trait SocketTrait
      */
     private function openSocket(): void
     {
+        $options = ['ssl' => $this->config('ssl_options')];
+
         // Default: Context for ssl
-        $context = stream_context_create([
-            'ssl' => [
-                'ciphers'          => 'ADH:ALL',
-                'verify_peer'      => false,
-                'verify_peer_name' => false
-            ]
-        ]);
+        $context = stream_context_create($options);
 
         // Default: Proto tcp:// but for ssl we need ssl://
         $proto = $this->config('ssl') ? 'ssl://' : '';
