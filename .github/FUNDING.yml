@@ -1,3 +1,5 @@
 # These are supported funding model platforms
 
-patreon: efreelancer # Replace with a single Patreon username
+custom: ["https://www.donationalerts.com/r/evilfreelancer", "https://streamlabs.com/evilfreelancer/tip"]
+ko_fi: efreelancer
+patreon: efreelancer
