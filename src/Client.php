@@ -229,12 +229,14 @@ class Client implements Interfaces\ClientInterface
      * @return array|string
      * @since 1.0.0
      */
-    public function readRAW()
+    public function readRAW(array $options = [])
     {
         // By default response is empty
         $response = [];
         // We have to wait a !done or !fatal
         $lastReply = false;
+        // Count !re in response
+        $countResponse = 0;
 
         // Convert strings to array and return results
         if ($this->isCustomOutput()) {
@@ -245,6 +247,11 @@ class Client implements Interfaces\ClientInterface
         // Read answer from socket in loop
         while (true) {
             $word = $this->connector->readWord();
+
+            //Limit response number to finish the read
+            if (isset($options['count']) && $countResponse >= (int)$options['count']) {
+                $lastReply = true;
+            }
 
             if ('' === $word) {
                 if ($lastReply) {
@@ -266,6 +273,11 @@ class Client implements Interfaces\ClientInterface
             if ('!done' === $word || '!fatal' === $word) {
                 $lastReply = true;
             }
+
+            // If we get a !re line in response, we increment the variable
+            if ('!re' === $word) {
+                $countResponse++;
+            }
         }
 
         // Parse results and return
@@ -285,10 +297,10 @@ class Client implements Interfaces\ClientInterface
      *
      * @return mixed
      */
-    public function read(bool $parse = true)
+    public function read(bool $parse = true, array $options = [])
     {
         // Read RAW response
-        $response = $this->readRAW();
+        $response = $this->readRAW($options);
 
         // Return RAW configuration if custom output is set
         if ($this->isCustomOutput()) {
