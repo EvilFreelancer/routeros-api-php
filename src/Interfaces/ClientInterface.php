@@ -27,10 +27,11 @@ interface ClientInterface
      * A !fatal block precedes TCP connexion close
      *
      * @param bool $parse If need parse output to array
+     * @param array $options If need pass options
      *
      * @return mixed
      */
-    public function read(bool $parse = true);
+    public function read(bool $parse = true, array $options = []);
 
     /**
      * Send write query to RouterOS (modern version of write)
