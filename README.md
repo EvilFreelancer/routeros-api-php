@@ -8,7 +8,7 @@
 
 # RouterOS API Client
 
-    composer require proner/routeros-api-php
+    composer require evilfreelancer/routeros-api-php
 
 This library is partly based on [this old project](https://github.com/BenMenking/routeros-api), but unlike it has many
 innovations to ease development. In addition, the project is designed
