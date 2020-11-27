@@ -226,6 +226,8 @@ class Client implements Interfaces\ClientInterface
     /**
      * Read RAW response from RouterOS, it can be /export command results also, not only array from API
      *
+     * @param array $options
+     * 
      * @return array|string
      * @since 1.0.0
      */
@@ -294,6 +296,7 @@ class Client implements Interfaces\ClientInterface
      * A !fatal block precedes TCP connexion close
      *
      * @param bool $parse If need parse output to array
+     * @param array $options
      *
      * @return mixed
      */
