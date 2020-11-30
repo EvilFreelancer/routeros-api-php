@@ -249,6 +249,12 @@ class ClientTest extends TestCase
 
         // $this->assertCount(13, $read);
         $this->assertEquals('zzzz', $read[0]['tag']);
+
+        /*
+         * Build query with option count
+         */
+        $read = $this->client->query('/interface/monitor-traffic')->read(true, ['count' => 3]);
+        $this->assertCount(3, $read);
     }
 
     public function testReadAsIterator(): void
