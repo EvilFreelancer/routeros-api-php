@@ -226,8 +226,8 @@ class Client implements Interfaces\ClientInterface
     /**
      * Read RAW response from RouterOS, it can be /export command results also, not only array from API
      *
-     * @param array $options
-     * 
+     * @param array $options Additional options
+     *
      * @return array|string
      * @since 1.0.0
      */
@@ -251,7 +251,7 @@ class Client implements Interfaces\ClientInterface
             $word = $this->connector->readWord();
 
             //Limit response number to finish the read
-            if (isset($options['count']) && $countResponse >= (int)$options['count']) {
+            if (isset($options['count']) && $countResponse >= (int) $options['count']) {
                 $lastReply = true;
             }
 
@@ -295,8 +295,8 @@ class Client implements Interfaces\ClientInterface
      * Reply ends with a complete !done or !fatal block (ended with 'empty line')
      * A !fatal block precedes TCP connexion close
      *
-     * @param bool $parse If need parse output to array
-     * @param array $options
+     * @param bool  $parse   If need parse output to array
+     * @param array $options Additional options
      *
      * @return mixed
      */
@@ -318,12 +318,14 @@ class Client implements Interfaces\ClientInterface
     /**
      * Read using Iterators to improve performance on large dataset
      *
+     * @param array $options Additional options
+     *
      * @return \RouterOS\ResponseIterator
      * @since 1.0.0
      */
-    public function readAsIterator(): ResponseIterator
+    public function readAsIterator(array $options = []): ResponseIterator
     {
-        return new ResponseIterator($this);
+        return new ResponseIterator($this, $options);
     }
 
     /**
@@ -336,7 +338,7 @@ class Client implements Interfaces\ClientInterface
      *
      * Based on RouterOSResponseArray solution by @arily
      *
-     * @see https://github.com/arily/RouterOSResponseArray
+     * @see   https://github.com/arily/RouterOSResponseArray
      * @since 1.0.0
      */
     private function rosario(array $raw): array

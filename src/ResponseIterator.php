@@ -59,9 +59,10 @@ class ResponseIterator implements Iterator, ArrayAccess, Countable, Serializable
     /**
      * ResponseIterator constructor.
      *
-     * @param Client $client
+     * @param \RouterOS\Client $client
+     * @param array            $options Additional options
      */
-    public function __construct(Client $client)
+    public function __construct(Client $client, array $options = [])
     {
         // Set current to default
         $this->rewind();
@@ -70,9 +71,9 @@ class ResponseIterator implements Iterator, ArrayAccess, Countable, Serializable
         $this->client = $client;
 
         // Read RAW data from client
-        $raw = $client->read(false);
+        $raw = $client->read(false, $options);
 
-        // This RAW should't be an error
+        // This RAW shouldn't be an error
         $positions = array_keys($raw, '!re');
         $count     = count($raw);
         $result    = [];
