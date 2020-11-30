@@ -33,13 +33,14 @@ trait ShortsTrait
      * Alias for ->read() method
      *
      * @param bool $parse If need parse output to array
+     * @param array $options
      *
      * @return mixed
      * @since 0.7
      */
-    public function r(bool $parse = true)
+    public function r(bool $parse = true, array $options = [])
     {
-        return $this->read($parse);
+        return $this->read($parse, $options);
     }
 
     /**
