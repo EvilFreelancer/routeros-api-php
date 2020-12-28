@@ -2,7 +2,6 @@
 
 namespace RouterOS;
 
-use RouterOS\Exceptions\ClientException;
 use RouterOS\Exceptions\ConnectException;
 
 trait SocketTrait
