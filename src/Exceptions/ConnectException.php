@@ -3,9 +3,10 @@
 namespace RouterOS\Exceptions;
 
 /**
- * Class ClientException
- * Exception thrown when a connection cannot be established.
+ * Class ConnectException thrown when a connection cannot be established.
+ *
  * @package RouterOS\Exceptions
+ * @since   1.3.3
  */
 class ConnectException extends ClientException
 {
