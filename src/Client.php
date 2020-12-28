@@ -4,6 +4,8 @@ namespace RouterOS;
 
 use DivineOmega\SSHConnection\SSHConnection;
 use RouterOS\Exceptions\ClientException;
+use RouterOS\Exceptions\ConnectException;
+use RouterOS\Exceptions\BadCredentialsException;
 use RouterOS\Exceptions\ConfigException;
 use RouterOS\Interfaces\ClientInterface;
 use RouterOS\Interfaces\QueryInterface;
@@ -57,6 +59,7 @@ class Client implements Interfaces\ClientInterface
      * @param bool                                       $autoConnect If false it will skip auto-connect stage if not need to instantiate connection
      *
      * @throws \RouterOS\Exceptions\ClientException
+     * @throws \RouterOS\Exceptions\ConnectException
      * @throws \RouterOS\Exceptions\ConfigException
      * @throws \RouterOS\Exceptions\QueryException
      */
@@ -82,7 +85,7 @@ class Client implements Interfaces\ClientInterface
 
         // Throw error if cannot to connect
         if (false === $this->connect()) {
-            throw new ClientException('Unable to connect to ' . $config->get('host') . ':' . $config->get('port'));
+            throw new ConnectException('Unable to connect to ' . $config->get('host') . ':' . $config->get('port'));
         }
     }
 
@@ -445,6 +448,7 @@ class Client implements Interfaces\ClientInterface
      *
      * @return bool
      * @throws \RouterOS\Exceptions\ClientException
+     * @throws \RouterOS\Exceptions\BadCredentialsException
      * @throws \RouterOS\Exceptions\ConfigException
      * @throws \RouterOS\Exceptions\QueryException
      */
@@ -487,7 +491,7 @@ class Client implements Interfaces\ClientInterface
 
         // If RouterOS answered with invalid credentials then throw error
         if (!empty($response[0]) && '!trap' === $response[0]) {
-            throw new ClientException('Invalid user name or password');
+            throw new BadCredentialsException('Invalid user name or password');
         }
 
         // Return true if we have only one line from server and this line is !done

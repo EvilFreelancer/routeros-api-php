@@ -3,6 +3,7 @@
 namespace RouterOS;
 
 use RouterOS\Exceptions\ClientException;
+use RouterOS\Exceptions\ConnectException;
 
 trait SocketTrait
 {
@@ -32,6 +33,7 @@ trait SocketTrait
      *
      * @return void
      * @throws \RouterOS\Exceptions\ClientException
+     * @throws \RouterOS\Exceptions\ConnectException
      * @throws \RouterOS\Exceptions\ConfigException
      */
     private function openSocket(): void
@@ -56,7 +58,7 @@ trait SocketTrait
 
         // Throw error is socket is not initiated
         if (false === $socket) {
-            throw new ClientException('Unable to establish socket session, ' . $this->socket_err_str);
+            throw new ConnectException('Unable to establish socket session, ' . $this->socket_err_str);
         }
 
         //Timeout read
