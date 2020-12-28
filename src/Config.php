@@ -184,15 +184,15 @@ class Config implements ConfigInterface
      *
      * @throws \RouterOS\Exceptions\ConfigException when parameter is not allowed
      */
-    public function delete(string $name): ConfigInterface
+    public function delete(string $parameter): ConfigInterface
     {
         // Check of key in array
-        if (ArrayHelper::checkIfKeyNotExist($name, self::ALLOWED)) {
-            throw new ConfigException("Requested parameter '$name' not found in list [" . implode(',', array_keys(self::ALLOWED)) . ']');
+        if (ArrayHelper::checkIfKeyNotExist($parameter, self::ALLOWED)) {
+            throw new ConfigException("Requested parameter '$parameter' not found in list [" . implode(',', array_keys(self::ALLOWED)) . ']');
         }
 
         // Save value to array
-        unset($this->_parameters[$name]);
+        unset($this->_parameters[$parameter]);
 
         return $this;
     }
@@ -202,14 +202,14 @@ class Config implements ConfigInterface
      *
      * @throws \RouterOS\Exceptions\ConfigException when parameter is not allowed
      */
-    public function get(string $name)
+    public function get(string $parameter)
     {
         // Check of key in array
-        if (ArrayHelper::checkIfKeyNotExist($name, self::ALLOWED)) {
-            throw new ConfigException("Requested parameter '$name' not found in list [" . implode(',', array_keys(self::ALLOWED)) . ']');
+        if (ArrayHelper::checkIfKeyNotExist($parameter, self::ALLOWED)) {
+            throw new ConfigException("Requested parameter '$parameter' not found in list [" . implode(',', array_keys(self::ALLOWED)) . ']');
         }
 
-        return $this->getPort($name) ?? $this->_parameters[$name];
+        return $this->getPort($parameter) ?? $this->_parameters[$parameter];
     }
 
     /**
