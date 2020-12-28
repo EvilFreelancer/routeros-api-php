@@ -60,6 +60,7 @@ class Client implements Interfaces\ClientInterface
      *
      * @throws \RouterOS\Exceptions\ClientException
      * @throws \RouterOS\Exceptions\ConnectException
+     * @throws \RouterOS\Exceptions\BadCredentialsException
      * @throws \RouterOS\Exceptions\ConfigException
      * @throws \RouterOS\Exceptions\QueryException
      */
