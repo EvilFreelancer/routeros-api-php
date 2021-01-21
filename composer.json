@@ -41,18 +41,18 @@
     }
   },
   "require": {
-    "php": "^7.2",
+    "php": "^7.2|^8.0",
     "ext-sockets": "*",
     "divineomega/php-ssh-connection": "^2.2"
   },
   "require-dev": {
     "friendsofphp/php-cs-fixer": "^2.16",
-    "limedeck/phpunit-detailed-printer": "^5.0",
+    "limedeck/phpunit-detailed-printer": "^6.0",
     "orchestra/testbench": "^4.0|^5.0",
     "phpstan/phpstan": "^0.12.32",
     "phpstan/phpstan-strict-rules": "^0.12.2",
-    "phpunit/phpunit": "^8.0",
-    "rector/rector": "^0.7.41",
+    "phpunit/phpunit": "^9.0",
+    "rector/rector": "^0.9.12",
     "roave/security-advisories": "dev-master",
     "thecodingmachine/phpstan-strict-rules": "^0.12.0",
     "squizlabs/php_codesniffer": "^3.5",
