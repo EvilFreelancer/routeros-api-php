@@ -26,12 +26,12 @@
         </testsuite>
     </testsuites>
     <php>
-        <env name="ROS_HOST_LEGACY" value="127.0.0.1"/>
-        <env name="ROS_HOST_MODERN" value="127.0.0.1"/>
+        <env name="ROS_HOST_LEGACY" value="routeros-6-42"/>
+        <env name="ROS_HOST_MODERN" value="routeros-6-48"/>
+        <env name="ROS_PORT_LEGACY" value="8728"/>
         <env name="ROS_PORT_MODERN" value="8728"/>
-        <env name="ROS_PORT_LEGACY" value="18728"/>
         <env name="ROS_USER" value="admin"/>
         <env name="ROS_PASS" value="admin"/>
-        <env name="ROS_SSH_PORT" value="22222"/>
+        <env name="ROS_SSH_PORT" value="22"/>
     </php>
 </phpunit>

@@ -7,7 +7,6 @@ use PHPUnit\Framework\TestCase;
 use RouterOS\Client;
 use RouterOS\Exceptions\ConfigException;
 use RouterOS\Exceptions\QueryException;
-use RouterOS\Query;
 use RouterOS\Config;
 use RouterOS\Exceptions\ClientException;
 use RouterOS\Exceptions\ConnectException;
@@ -40,7 +39,7 @@ class ClientTest extends TestCase
         $this->config = [
             'user'     => getenv('ROS_USER'),
             'pass'     => getenv('ROS_PASS'),
-            'host'     => getenv('ROS_HOST'),
+            'host'     => getenv('ROS_HOST_MODERN'),
             'ssh_port' => (int) getenv('ROS_SSH_PORT'),
         ];
 
@@ -66,11 +65,11 @@ class ClientTest extends TestCase
                 ->set('host', $this->config['host']);
 
             $obj = new Client($config);
-            $this->assertIsObject($obj);
+            self::assertIsObject($obj);
             $socket = $obj->getSocket();
-            $this->assertIsResource($socket);
+            self::assertIsResource($socket);
         } catch (Exception $e) {
-            $this->assertStringContainsString('Must be initialized ', $e->getMessage());
+            self::assertStringContainsString('Must be initialized ', $e->getMessage());
         }
     }
 
@@ -79,11 +78,11 @@ class ClientTest extends TestCase
         try {
             $config = new Config($this->config);
             $obj    = new Client($config);
-            $this->assertIsObject($obj);
+            self::assertIsObject($obj);
             $socket = $obj->getSocket();
-            $this->assertIsResource($socket);
+            self::assertIsResource($socket);
         } catch (Exception $e) {
-            $this->assertStringContainsString('Must be initialized ', $e->getMessage());
+            self::assertStringContainsString('Must be initialized ', $e->getMessage());
         }
     }
 
@@ -91,11 +90,11 @@ class ClientTest extends TestCase
     {
         try {
             $obj = new Client($this->config);
-            $this->assertIsObject($obj);
+            self::assertIsObject($obj);
             $socket = $obj->getSocket();
-            $this->assertIsResource($socket);
+            self::assertIsResource($socket);
         } catch (Exception $e) {
-            $this->assertStringContainsString('Must be initialized ', $e->getMessage());
+            self::assertStringContainsString('Must be initialized ', $e->getMessage());
         }
     }
 
@@ -128,13 +127,13 @@ class ClientTest extends TestCase
             $obj = new Client([
                 'user'   => $this->config['user'],
                 'pass'   => $this->config['pass'],
-                'host'   => $this->config['host'],
+                'host'   => getenv('ROS_HOST_LEGACY'),
                 'port'   => $this->port_legacy,
                 'legacy' => true,
             ]);
-            $this->assertIsObject($obj);
+            self::assertIsObject($obj);
         } catch (Exception $e) {
-            $this->assertStringContainsString('Must be initialized ', $e->getMessage());
+            self::assertStringContainsString('Must be initialized ', $e->getMessage());
         }
     }
 
@@ -153,9 +152,9 @@ class ClientTest extends TestCase
                 'port'   => $this->port_legacy,
                 'legacy' => false,
             ]);
-            $this->assertIsObject($obj);
+            self::assertIsObject($obj);
         } catch (Exception $e) {
-            $this->assertStringContainsString('Must be initialized ', $e->getMessage());
+            self::assertStringContainsString('Must be initialized ', $e->getMessage());
         }
     }
 
@@ -205,7 +204,7 @@ class ClientTest extends TestCase
     {
         $matches = [];
         $this->client->pregResponse($line, $matches);
-        $this->assertEquals($matches, $result);
+        self::assertEquals($matches, $result);
     }
 
     public function testQueryRead(): void
@@ -215,22 +214,22 @@ class ClientTest extends TestCase
          */
 
         $read = $this->client->query('/system/package/print', ['name'])->read();
-        $this->assertNotEmpty($read);
+        self::assertNotEmpty($read);
 
         $read = $this->client->query('/system/package/print', ['.id', '*1'])->read();
-        $this->assertCount(1, $read);
+        self::assertCount(1, $read);
 
         $read = $this->client->query('/system/package/print', ['.id', '=', '*1'])->read();
-        $this->assertCount(1, $read);
+        self::assertCount(1, $read);
 
         $read = $this->client->query('/system/package/print', [['name']])->read();
-        $this->assertNotEmpty($read);
+        self::assertNotEmpty($read);
 
         $read = $this->client->query('/system/package/print', [['.id', '*1']])->read();
-        $this->assertCount(1, $read);
+        self::assertCount(1, $read);
 
         $read = $this->client->query('/system/package/print', [['.id', '=', '*1']])->read();
-        $this->assertCount(1, $read);
+        self::assertCount(1, $read);
 
         /*
          * Build query with operations
@@ -240,8 +239,8 @@ class ClientTest extends TestCase
             ['type', 'ether'],
             ['type', 'vlan'],
         ], '|')->read();
-        $this->assertCount(1, $read);
-        $this->assertEquals('*1', $read[0]['.id']);
+        self::assertCount(1, $read);
+        self::assertEquals('*1', $read[0]['.id']);
 
         /*
          * Build query with tag
@@ -249,34 +248,34 @@ class ClientTest extends TestCase
 
         $read = $this->client->query('/system/package/print', null, null, 'zzzz')->read();
 
-        // $this->assertCount(13, $read);
-        $this->assertEquals('zzzz', $read[0]['tag']);
+        // self::assertCount(13, $read);
+        self::assertEquals('zzzz', $read[0]['tag']);
 
         /*
          * Build query with option count
          */
         $read = $this->client->query('/interface/monitor-traffic')->read(true, ['count' => 3]);
-        $this->assertCount(3, $read);
+        self::assertCount(3, $read);
     }
 
     public function testReadAsIterator(): void
     {
         $result = $this->client->query('/system/package/print')->readAsIterator();
-        $this->assertIsObject($result);
+        self::assertIsObject($result);
     }
 
     public function testWriteReadString(): void
     {
         $readTrap = $this->client->query('/interface')->read(false);
-        $this->assertCount(3, $readTrap);
-        $this->assertEquals('!trap', $readTrap[0]);
+        self::assertCount(3, $readTrap);
+        self::assertEquals('!trap', $readTrap[0]);
     }
 
     public function testFatal(): void
     {
         $readTrap = $this->client->query('/quit')->read();
-        $this->assertCount(2, $readTrap);
-        $this->assertEquals('!fatal', $readTrap[0]);
+        self::assertCount(2, $readTrap);
+        self::assertEquals('!fatal', $readTrap[0]);
     }
 
     public function queryExceptionDataProvider(): array
@@ -313,20 +312,20 @@ class ClientTest extends TestCase
     public function testExportMethod(): void
     {
         if (!in_array(gethostname(), ['pasha-lt', 'pasha-pc'])) {
-            $this->markTestSkipped('Travis does not allow to use SSH protocol on testing stage');
+            self::markTestSkipped('Travis does not allow to use SSH protocol on testing stage');
         }
 
         $result = $this->client->export();
-        $this->assertNotEmpty($result);
+        self::assertNotEmpty($result);
     }
 
     public function testExportQuery(): void
     {
         if (!in_array(gethostname(), ['pasha-lt', 'pasha-pc'])) {
-            $this->markTestSkipped('Travis does not allow to use SSH protocol on testing stage');
+            self::markTestSkipped('Travis does not allow to use SSH protocol on testing stage');
         }
 
         $result = $this->client->query('/export');
-        $this->assertNotEmpty($result);
+        self::assertNotEmpty($result);
     }
 }

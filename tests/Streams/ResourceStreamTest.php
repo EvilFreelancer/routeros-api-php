@@ -83,7 +83,7 @@ class ResourceStreamTest extends TestCase
     {
         return [
             [fopen(__FILE__, 'rb')], // Myself, sure I exists
-            [fsockopen('tcp://' . getenv('ROS_HOST'), getenv('ROS_PORT_MODERN'))], // Socket
+            [fsockopen('tcp://' . getenv('ROS_HOST_MODERN'), getenv('ROS_PORT_MODERN'))], // Socket
             [STDIN, false], // Try it, but do not close STDIN please !!!
             // What else ?
         ];
@@ -150,26 +150,19 @@ class ResourceStreamTest extends TestCase
      * Test read to invalid resource
      *
      * @covers ::read
-     * @dataProvider readBadResourceProvider
-     *
-     * @param ResourceStream $stream Cannot typehint, PHP refuse it
-     * @param int            $length
+     * @throws \RouterOS\Exceptions\StreamException
      */
-    public function testReadBadResource(ResourceStream $stream, int $length): void
+    public function testReadBadResource(): void
     {
         $this->expectException(StreamException::class);
-        $stream->read($length);
-    }
 
-    public function readBadResourceProvider(): array
-    {
-        $resource = fopen(__FILE__, 'rb');
-        $me       = new ResourceStream($resource);
+        $resource = fopen(__DIR__, 'rb');
+        $stream   = new ResourceStream($resource);
         fclose($resource);
 
-        return [
-            [$me, 1],
-        ];
+        //dd($stream);
+
+        $stream->read(1);
     }
 
     /**

@@ -17,7 +17,7 @@ class ResponseIteratorTest extends TestCase
         $this->client = new Client([
             'user' => getenv('ROS_USER'),
             'pass' => getenv('ROS_PASS'),
-            'host' => getenv('ROS_HOST'),
+            'host' => getenv('ROS_HOST_MODERN'),
         ]);
     }
 

@@ -25,12 +25,7 @@ class ResourceStream implements StreamInterface
     public function __construct($stream)
     {
         if (!is_resource($stream)) {
-            throw new \InvalidArgumentException(
-                sprintf(
-                    'Argument must be a valid resource type. %s given.',
-                    gettype($stream)
-                )
-            );
+            throw new \InvalidArgumentException(sprintf('Argument must be a valid resource type. %s given.', gettype($stream)));
         }
 
         // TODO: Should we verify the resource type?
@@ -38,7 +33,7 @@ class ResourceStream implements StreamInterface
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      *
      * @throws \RouterOS\Exceptions\StreamException when length parameter is invalid
      * @throws \InvalidArgumentException when the stream have been totally read and read method is called again
@@ -49,8 +44,11 @@ class ResourceStream implements StreamInterface
             throw new \InvalidArgumentException('Cannot read zero ot negative count of bytes from a stream');
         }
 
-        // TODO: Ignore errors here, but why?
-        $result = @fread($this->stream, $length);
+        if (!is_resource($this->stream)) {
+            throw new StreamException('Stream is not writable');
+        }
+
+        $result = fread($this->stream, $length);
 
         if (false === $result) {
             throw new StreamException("Error reading $length bytes");
@@ -60,7 +58,7 @@ class ResourceStream implements StreamInterface
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      *
      * @throws \RouterOS\Exceptions\StreamException when not possible to write bytes
      */
@@ -70,8 +68,11 @@ class ResourceStream implements StreamInterface
             $length = strlen($string);
         }
 
-        // TODO: Ignore errors here, but why?
-        $result = @fwrite($this->stream, $string, $length);
+        if (!is_resource($this->stream)) {
+            throw new StreamException('Stream is not writable');
+        }
+
+        $result = fwrite($this->stream, $string, $length);
 
         if (false === $result) {
             throw new StreamException("Error writing $length bytes");
@@ -81,7 +82,7 @@ class ResourceStream implements StreamInterface
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      *
      * @throws \RouterOS\Exceptions\StreamException when not possible to close the stream
      */
