@@ -50,6 +50,11 @@ class ResourceStream implements StreamInterface
 
         $result = fread($this->stream, $length);
 
+        // Stream in blocking mode timed out
+        if(socket_get_status($this->stream)['timed_out']){
+            throw new StreamException('Stream timed out');
+        }
+
         if (false === $result) {
             throw new StreamException("Error reading $length bytes");
         }

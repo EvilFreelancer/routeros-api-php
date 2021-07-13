@@ -90,6 +90,11 @@ class Config implements ConfigInterface
     public const SSH_PORT = 22;
 
     /**
+     * By default stream on non-blocking mode
+     */
+    public const BLOCKING = false;
+
+    /**
      * List of allowed parameters of config
      */
     public const ALLOWED = [
@@ -104,6 +109,7 @@ class Config implements ConfigInterface
         'attempts'    => 'integer', // Count of attempts to establish TCP session
         'delay'       => 'integer', // Delay between attempts in seconds
         'ssh_port'    => 'integer', // Number of SSH port
+        'blocking'    => 'boolean', // Set blocking mode on a stream
     ];
 
     /**
@@ -119,6 +125,7 @@ class Config implements ConfigInterface
         'attempts'    => self::ATTEMPTS,
         'delay'       => self::ATTEMPTS_DELAY,
         'ssh_port'    => self::SSH_PORT,
+        'blocking'    => self::BLOCKING,
     ];
 
     /**

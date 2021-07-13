@@ -60,6 +60,11 @@ trait SocketTrait
             throw new ConnectException('Unable to establish socket session, ' . $this->socket_err_str);
         }
 
+        // Set blocking mode on a stream
+        if ($this->config('blocking') === true){
+            stream_set_blocking($socket, true);
+        }
+
         //Timeout read
         stream_set_timeout($socket, $this->config('timeout'));
 
