@@ -38,7 +38,7 @@ return [
         'ciphers'           => 'ADH:ALL', // ADH:ALL, ADH:ALL@SECLEVEL=0, ADH:ALL@SECLEVEL=1 ... ADH:ALL@SECLEVEL=5
         'verify_peer'       => false,     // Require verification of SSL certificate used.
         'verify_peer_name'  => false,     // Require verification of peer name.
-        'allow_self_signed' => false,     // Allow self-signed certificates. Requires verify_peer.
+        'allow_self_signed' => false,     // Allow self-signed certificates. Requires verify_peer=true.
     ],
 
     /*
