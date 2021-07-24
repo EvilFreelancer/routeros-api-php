@@ -145,10 +145,12 @@ $client = new Client([
     'ssh_port' => 22222,
 ]);
 
-// Execute export command via ssh, because API /export method has a bug
+// Execute export command via ssh
+$response = $client->query('/export');
+// or
 $response = $client->export();
 
-print_r($response);
+var_dump($response);
 ``` 
 
 Examples with "where" conditions, "operations" and "tag":
