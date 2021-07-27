@@ -34,11 +34,13 @@ return [
      */
 
     'ssl'         => false,     // Enable ssl support (if port is not set this parameter must change default port to ssl port)
+
+    // @see https://www.php.net/manual/en/context.ssl.php
     'ssl_options' => [
         'ciphers'           => 'ADH:ALL', // ADH:ALL, ADH:ALL@SECLEVEL=0, ADH:ALL@SECLEVEL=1 ... ADH:ALL@SECLEVEL=5
         'verify_peer'       => false,     // Require verification of SSL certificate used.
         'verify_peer_name'  => false,     // Require verification of peer name.
-        'allow_self_signed' => false,     // Allow self-signed certificates. Requires verify_peer.
+        'allow_self_signed' => false,     // Allow self-signed certificates. Requires verify_peer=true.
     ],
 
     /*
@@ -51,9 +53,11 @@ return [
      |
      */
 
-    'legacy'   => false, // Support of legacy login scheme (true - pre 6.43, false - post 6.43)
-    'timeout'  => 10,    // Max timeout for answer from RouterOS
-    'attempts' => 10,    // Count of attempts to establish TCP session
-    'delay'    => 1,     // Delay between attempts in seconds
+    'legacy'         => false, // Support of legacy login scheme (true - pre 6.43, false - post 6.43)
+    'timeout'        => 10,    // Max timeout for instantiating connection with RouterOS
+    'socket_timeout' => 30,    // Max timeout for read from RouterOS
+    'ssh_timeout'    => 30,    // Max timeout for read from RouterOS via SSH proto (for "/export" command)
+    'attempts'       => 10,    // Count of attempts to establish TCP session
+    'delay'          => 1,     // Delay between attempts in seconds
 
 ];

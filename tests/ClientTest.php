@@ -123,6 +123,8 @@ class ClientTest extends TestCase
 
     public function testConstructLegacy(): void
     {
+        $this->markTestSkipped('There is no reason to test legacy anymore, test will be removed in future.');
+
         try {
             $obj = new Client([
                 'user'   => $this->config['user'],
@@ -144,6 +146,8 @@ class ClientTest extends TestCase
      */
     public function testConstructLegacy2(): void
     {
+        $this->markTestSkipped('There is no reason to test legacy anymore, test will be removed in future.');
+
         try {
             $obj = new Client([
                 'user'   => $this->config['user'],
@@ -312,7 +316,7 @@ class ClientTest extends TestCase
     public function testExportMethod(): void
     {
         if (!in_array(gethostname(), ['pasha-lt', 'pasha-pc'])) {
-            self::markTestSkipped('Travis does not allow to use SSH protocol on testing stage');
+            self::markTestSkipped('Travis does not allow to use SSH protocol on testing stage.');
         }
 
         $result = $this->client->export();
@@ -322,7 +326,7 @@ class ClientTest extends TestCase
     public function testExportQuery(): void
     {
         if (!in_array(gethostname(), ['pasha-lt', 'pasha-pc'])) {
-            self::markTestSkipped('Travis does not allow to use SSH protocol on testing stage');
+            self::markTestSkipped('Travis does not allow to use SSH protocol on testing stage.');
         }
 
         $result = $this->client->query('/export');

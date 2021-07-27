@@ -61,12 +61,12 @@ trait SocketTrait
         }
 
         // Set blocking mode on a stream
-        if ($this->config('blocking') === true){
+        if ($this->config('socket_blocking') === true){
             stream_set_blocking($socket, true);
         }
 
         //Timeout read
-        stream_set_timeout($socket, $this->config('timeout'));
+        stream_set_timeout($socket, $this->config('socket_timeout'));
 
         // Save socket to static variable
         $this->setSocket($socket);

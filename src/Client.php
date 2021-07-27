@@ -577,10 +577,10 @@ class Client implements Interfaces\ClientInterface
         // Connect to remote host
         $connection =
             (new SSHConnection())
-                ->timeout($this->config('timeout'))
+                ->timeout($this->config('ssh_timeout'))
                 ->to($this->config('host'))
                 ->onPort($this->config('ssh_port'))
-                ->as($this->config('user') . '+etc')
+                ->as($this->config('user') . '+etc') // +etc mean "disable colors"
                 ->withPassword($this->config('pass'))
                 ->connect();
 
