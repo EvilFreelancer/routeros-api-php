@@ -8,18 +8,20 @@
 
 # RouterOS API Client
 
-    composer require evilfreelancer/routeros-api-php
+```shell
+composer require evilfreelancer/routeros-api-php
+```
 
 This library is partly based on [this old project](https://github.com/BenMenking/routeros-api), but unlike it has many
-innovations to ease development. In addition, the project is designed
-to work with PHP7 in accordance with the PSR standards.
+innovations to ease development. In addition, the project designed
+to work with PHP7/8 in accordance with the PSR standards.
 
 You can use this library with pre-6.43 and post-6.43 versions of
 RouterOS firmware, it will be detected automatically on connection stage.
 
 ## Minimum requirements
 
-* `php` >= 7.2
+* `php` >= 7.2|8.0
 * `ext-sockets`
 
 ## Laravel framework support
@@ -37,7 +39,7 @@ $config = new \RouterOS\Config([
 $client = new \RouterOS\Client($config);
 ```
 
-Call facade and pass array of parameters to `client` method:
+Use the facade and pass array of parameters to `client` method:
 
 ```php
 $client = \RouterOS::client([
@@ -66,8 +68,8 @@ $client = \RouterOS::client($config);
 ### Laravel installation
 
 By default, the package will automatically register its service provider, but
-if you are a happy owner of Laravel version less than 5.5, then in a project, which is using your package
-(after composer require is done, of course), add into`providers` block of your `config/app.php`:
+if you are a happy owner of Laravel version less than 5.5, then in a project, which is using the package
+(after `composer require` is done, of course), add into`providers` block of your `config/app.php`:
 
 ```php
 'providers' => [
@@ -78,7 +80,9 @@ if you are a happy owner of Laravel version less than 5.5, then in a project, wh
 
 Optionally, publish the configuration file if you want to change any defaults:
 
-    php artisan vendor:publish --provider="RouterOS\\Laravel\\ServiceProvider"
+```shell
+php artisan vendor:publish --provider="RouterOS\\Laravel\\ServiceProvider"
+```
 
 ## How to use
 
@@ -92,7 +96,8 @@ use \RouterOS\Query;
 $client = new Client([
     'host' => '192.168.1.3',
     'user' => 'admin',
-    'pass' => 'admin'
+    'pass' => 'admin',
+    'port' => 8728,
 ]);
 
 // Create "where" Query object for RouterOS
@@ -139,10 +144,11 @@ use \RouterOS\Client;
 
 // Initiate client with config object
 $client = new Client([
-    'host'     => '192.168.1.3',
-    'user'     => 'admin',
-    'pass'     => 'admin',
-    'ssh_port' => 22222,
+    'host'        => '192.168.1.3',
+    'user'        => 'admin',
+    'pass'        => 'admin',
+    'ssh_port'    => 22222,
+    'ssh_timeout' => 60, // if not set then 30 seconds by default 
 ]);
 
 // Execute export command via ssh
@@ -270,17 +276,21 @@ $client = new Client($config);
 
 ### List of available configuration parameters
 
-| Parameter | Type   | Default | Description |
-|-----------|--------|---------|-------------|
-| host      | string |         | (required) Address of Mikrotik RouterOS |
-| user      | string |         | (required) Username |
-| pass      | string |         | (required) Password |
-| port      | int    |         | RouterOS API port number for access (if not set use 8728 or 8729 if SSL enabled) |
-| ssl       | bool   | false   | Enable ssl support (if port is not set this parameter must change default port to ssl port) |
-| legacy    | bool   | false   | Support of legacy login scheme (true - pre 6.43, false - post 6.43) |
-| timeout   | int    | 10      | Max timeout for answer from RouterOS |
-| attempts  | int    | 10      | Count of attempts to establish TCP session |
-| delay     | int    | 1       | Delay between attempts in seconds |
+| Parameter      | Type   | Default | Description |
+|----------------|--------|---------|-------------|
+| host           | string |         | (required) Address of Mikrotik RouterOS |
+| user           | string |         | (required) Username |
+| pass           | string |         | (required) Password |
+| port           | int    |         | RouterOS API port number for access (if not set use 8728 or 8729 if SSL enabled) |
+| ssl            | bool   | false   | Enable ssl support (if port is not set this parameter must change default port to ssl port) |
+| ssl_options    | array  | [details](https://github.com/EvilFreelancer/routeros-api-php/blob/master/src/Config.php#L46) | See https://www.php.net/manual/en/context.ssl.php |
+| legacy         | bool   | false   | Support of legacy login scheme (true - pre 6.43, false - post 6.43) |
+| timeout        | int    | 10      | Max timeout for connecting to RouterOS (in seconds) |
+| socket_timeout | int    | 30      | Max read timeout from RouterOS (in seconds) |
+| attempts       | int    | 10      | Count of attempts to establish TCP session |
+| delay          | int    | 1       | Delay between attempts in seconds |
+| ssh_port       | int    | 22      | Number of SSH port for exporting configuration |
+| ssh_timeout    | int    | 30      | Max timeout from router via SSH (in seconds) |
 
 ### How to enable support of legacy login schema (RouterOS pre-6.43)
 
@@ -421,14 +431,14 @@ $query->equal('disabled', 'no');
 $query->equal('.id', 'ether1');
 $query->tag(4);
 
-// Or
+// Or, RAW mode
 
 $query = new Query('/interface/set');
 $query->add('=disabled=no');
 $query->add('=.id=ether1');
 $query->add('.tag=4');
 
-// Or
+// Or, RAW mode in format of array
     
 $query = new Query('/interface/set', [
     '=disabled=no',
