@@ -97,7 +97,7 @@ class Config implements ConfigInterface
     /**
      * By default stream on blocking mode
      */
-    public const BLOCKING = true;
+    public const SOCKET_BLOCKING = true;
 
     /**
      * Max read timeout from router via SSH (in seconds)
@@ -135,7 +135,7 @@ class Config implements ConfigInterface
         'ssl_options'       => self::SSL_OPTIONS,
         'timeout'           => self::TIMEOUT,
         'socket_timeout'    => self::SOCKET_TIMEOUT,
-        'socket_blocking'   => self::BLOCKING,
+        'socket_blocking'   => self::SOCKET_BLOCKING,
         'attempts'          => self::ATTEMPTS,
         'delay'             => self::ATTEMPTS_DELAY,
         'ssh_port'          => self::SSH_PORT,
