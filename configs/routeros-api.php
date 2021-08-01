@@ -53,11 +53,12 @@ return [
      |
      */
 
-    'legacy'         => false, // Support of legacy login scheme (true - pre 6.43, false - post 6.43)
-    'timeout'        => 10,    // Max timeout for instantiating connection with RouterOS
-    'socket_timeout' => 30,    // Max timeout for read from RouterOS
-    'ssh_timeout'    => 30,    // Max timeout for read from RouterOS via SSH proto (for "/export" command)
-    'attempts'       => 10,    // Count of attempts to establish TCP session
-    'delay'          => 1,     // Delay between attempts in seconds
+    'legacy'            => false, // Support of legacy login scheme (true - pre 6.43, false - post 6.43)
+    'timeout'           => 10,    // Max timeout for instantiating connection with RouterOS
+    'socket_timeout'    => 30,    // Max timeout for read from RouterOS
+    'socket_blocking'   => true,  // Set blocking mode on a socket stream
+    'ssh_timeout'       => 30,    // Max timeout for read from RouterOS via SSH proto (for "/export" command)
+    'attempts'          => 10,    // Count of attempts to establish TCP session
+    'delay'             => 1,     // Delay between attempts in seconds
 
 ];
