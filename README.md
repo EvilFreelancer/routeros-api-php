@@ -287,6 +287,7 @@ $client = new Client($config);
 | legacy         | bool   | false   | Support of legacy login scheme (true - pre 6.43, false - post 6.43) |
 | timeout        | int    | 10      | Max timeout for connecting to RouterOS (in seconds) |
 | socket_timeout | int    | 30      | Max read timeout from RouterOS (in seconds) |
+| socket_blocking| bool   | true    | Set blocking mode on a socket stream |
 | attempts       | int    | 10      | Count of attempts to establish TCP session |
 | delay          | int    | 1       | Delay between attempts in seconds |
 | ssh_port       | int    | 22      | Number of SSH port for exporting configuration |
