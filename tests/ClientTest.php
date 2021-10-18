@@ -27,12 +27,12 @@ class ClientTest extends TestCase
     /**
      * @var int
      */
-    public $port_modern;
+    public $portModern;
 
     /**
      * @var int
      */
-    public $port_legacy;
+    public $portLegacy;
 
     public function setUp(): void
     {
@@ -51,11 +51,14 @@ class ClientTest extends TestCase
             }
         };
 
-        $this->port_modern = (int) getenv('ROS_PORT_MODERN');
-        $this->port_legacy = (int) getenv('ROS_PORT_LEGACY');
+        $this->portModern = (int) getenv('ROS_PORT_MODERN');
+        $this->portLegacy = (int) getenv('ROS_PORT_LEGACY');
     }
 
-    public function testConstruct(): void
+    /**
+     * Config object changed via setters then passed to Client object
+     */
+    public function test_construct_configObjectSetters(): void
     {
         try {
             $config = new Config();
@@ -73,7 +76,10 @@ class ClientTest extends TestCase
         }
     }
 
-    public function testConstruct2(): void
+    /**
+     * Configuration array passed to Config object, then Config object passed to Client object
+     */
+    public function test_construct_configObjectArray(): void
     {
         try {
             $config = new Config($this->config);
@@ -86,7 +92,10 @@ class ClientTest extends TestCase
         }
     }
 
-    public function testConstruct3(): void
+    /**
+     * Configuration array passed directly to client object
+     */
+    public function test_construct_configClient(): void
     {
         try {
             $obj = new Client($this->config);
@@ -98,9 +107,13 @@ class ClientTest extends TestCase
         }
     }
 
-    public function testConstructException(): void
+    /**
+     * If "host" option is not found in configuration
+     */
+    public function test_construct_exceptionNoHost(): void
     {
         $this->expectException(ConfigException::class);
+        $this->expectExceptionMessage("One or few parameters 'host' of Config is not set or empty");
 
         new Client([
             'user' => $this->config['user'],
@@ -108,7 +121,10 @@ class ClientTest extends TestCase
         ]);
     }
 
-    public function testConstructExceptionBadHost(): void
+    /**
+     * If we try to use invalid port number
+     */
+    public function test_construct_exceptionBadPort(): void
     {
         $this->expectException(ConnectException::class);
 
@@ -121,7 +137,39 @@ class ClientTest extends TestCase
         ]);
     }
 
-    public function testConstructLegacy(): void
+    /**
+     * If we can't connect to router, for example bacause wrong port provided
+     */
+    public function test_construct_exceptionUnableToConnect(): void
+    {
+        $this->expectException(ConnectException::class);
+        $this->expectExceptionCode(111);
+
+        new Client([
+            'user'     => $this->config['user'],
+            'pass'     => $this->config['pass'],
+            'host'     => $this->config['host'],
+            'port'     => 11111,
+            'attempts' => 2,
+        ]);
+    }
+
+    /**
+     * If we can connecto router, but wrong password or login used
+     */
+    public function test_construct_exceptionBadCredentials(): void
+    {
+        $this->expectException(BadCredentialsException::class);
+
+        new Client([
+            'user'     => $this->config['user'],
+            'pass'     => 'admin2',
+            'host'     => $this->config['host'],
+            'attempts' => 2,
+        ]);
+    }
+
+    public function test_construct_legacyDefault(): void
     {
         $this->markTestSkipped('There is no reason to test legacy anymore, test will be removed in future.');
 
@@ -130,7 +178,7 @@ class ClientTest extends TestCase
                 'user'   => $this->config['user'],
                 'pass'   => $this->config['pass'],
                 'host'   => getenv('ROS_HOST_LEGACY'),
-                'port'   => $this->port_legacy,
+                'port'   => $this->portLegacy,
                 'legacy' => true,
             ]);
             self::assertIsObject($obj);
@@ -144,7 +192,7 @@ class ClientTest extends TestCase
      *
      * login() method recognise legacy router response and swap to legacy mode
      */
-    public function testConstructLegacy2(): void
+    public function test_construct_legacyAutodetect(): void
     {
         $this->markTestSkipped('There is no reason to test legacy anymore, test will be removed in future.');
 
@@ -153,38 +201,13 @@ class ClientTest extends TestCase
                 'user'   => $this->config['user'],
                 'pass'   => $this->config['pass'],
                 'host'   => $this->config['host'],
-                'port'   => $this->port_legacy,
+                'port'   => $this->portLegacy,
                 'legacy' => false,
             ]);
             self::assertIsObject($obj);
         } catch (Exception $e) {
             self::assertStringContainsString('Must be initialized ', $e->getMessage());
         }
-    }
-
-    public function testConstructWrongPass(): void
-    {
-        $this->expectException(BadCredentialsException::class);
-
-        new Client([
-            'user'     => $this->config['user'],
-            'pass'     => 'admin2',
-            'host'     => $this->config['host'],
-            'attempts' => 2,
-        ]);
-    }
-
-    public function testConstructWrongNet(): void
-    {
-        $this->expectException(ConnectException::class);
-
-        new Client([
-            'user'     => $this->config['user'],
-            'pass'     => $this->config['pass'],
-            'host'     => $this->config['host'],
-            'port'     => 11111,
-            'attempts' => 2,
-        ]);
     }
 
     public function pregResponseDataProvider(): array
@@ -204,14 +227,14 @@ class ClientTest extends TestCase
      * @param string $line
      * @param array  $result
      */
-    public function testPregResponse(string $line, array $result): void
+    public function test_pregResponse(string $line, array $result): void
     {
         $matches = [];
         $this->client->pregResponse($line, $matches);
         self::assertEquals($matches, $result);
     }
 
-    public function testQueryRead(): void
+    public function test_query_read(): void
     {
         /*
          * Build query with where
@@ -258,24 +281,25 @@ class ClientTest extends TestCase
         /*
          * Build query with option count
          */
+
         $read = $this->client->query('/interface/monitor-traffic')->read(true, ['count' => 3]);
         self::assertCount(3, $read);
     }
 
-    public function testReadAsIterator(): void
+    public function test_readAsIterator(): void
     {
         $result = $this->client->query('/system/package/print')->readAsIterator();
         self::assertIsObject($result);
     }
 
-    public function testWriteReadString(): void
+    public function test_query_readWithoutParsing(): void
     {
         $readTrap = $this->client->query('/interface')->read(false);
         self::assertCount(3, $readTrap);
         self::assertEquals('!trap', $readTrap[0]);
     }
 
-    public function testFatal(): void
+    public function test_query_fatalError(): void
     {
         $readTrap = $this->client->query('/quit')->read();
         self::assertCount(2, $readTrap);
@@ -286,13 +310,13 @@ class ClientTest extends TestCase
     {
         return [
             // Wrong amount of parameters
-            ['exception' => ClientException::class, 'endpoint' => '/quiet', 'attributes' => [[]]],
-            ['exception' => ClientException::class, 'endpoint' => '/quiet', 'attributes' => [[], ['a', 'b', 'c']]],
-            ['exception' => ClientException::class, 'endpoint' => '/quiet', 'attributes' => ['a', 'b', 'c', 'd']],
-            ['exception' => ClientException::class, 'endpoint' => '/quiet', 'attributes' => [['a', 'b', 'c', 'd']]],
-            ['exception' => ClientException::class, 'endpoint' => '/quiet', 'attributes' => [['a', 'b', 'c', 'd'], ['a', 'b', 'c']]],
+            ['exception' => ClientException::class, 'code' => 0, 'endpoint' => '/quiet', 'attributes' => [[]]],
+            ['exception' => ClientException::class, 'code' => 0, 'endpoint' => '/quiet', 'attributes' => [[], ['a', 'b', 'c']]],
+            ['exception' => ClientException::class, 'code' => 0, 'endpoint' => '/quiet', 'attributes' => ['a', 'b', 'c', 'd']],
+            ['exception' => ClientException::class, 'code' => 0, 'endpoint' => '/quiet', 'attributes' => [['a', 'b', 'c', 'd']]],
+            ['exception' => ClientException::class, 'code' => 0, 'endpoint' => '/quiet', 'attributes' => [['a', 'b', 'c', 'd'], ['a', 'b', 'c']]],
             // Wrong type of endpoint
-            ['exception' => QueryException::class, 'endpoint' => 1, 'attributes' => null],
+            ['exception' => QueryException::class, 'code' => 0, 'endpoint' => 1, 'attributes' => null],
         ];
     }
 
@@ -302,18 +326,15 @@ class ClientTest extends TestCase
      * @param string $exception
      * @param mixed  $endpoint
      * @param mixed  $attributes
-     *
-     * @throws \RouterOS\Exceptions\ClientException
-     * @throws \RouterOS\Exceptions\ConfigException
-     * @throws \RouterOS\Exceptions\QueryException
      */
-    public function testQueryException(string $exception, $endpoint, $attributes): void
+    public function test_query_exception(string $exception, int $code, $endpoint, $attributes): void
     {
         $this->expectException($exception);
+        $this->expectExceptionCode($code);
         $this->client->query($endpoint, $attributes);
     }
 
-    public function testExportMethod(): void
+    public function test_export_asMethod(): void
     {
         if (!in_array(gethostname(), ['pasha-lt', 'pasha-pc'])) {
             self::markTestSkipped('Travis does not allow to use SSH protocol on testing stage.');
@@ -323,7 +344,7 @@ class ClientTest extends TestCase
         self::assertNotEmpty($result);
     }
 
-    public function testExportQuery(): void
+    public function test_export_asQuery(): void
     {
         if (!in_array(gethostname(), ['pasha-lt', 'pasha-pc'])) {
             self::markTestSkipped('Travis does not allow to use SSH protocol on testing stage.');
