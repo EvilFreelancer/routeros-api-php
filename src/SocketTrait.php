@@ -14,20 +14,6 @@ trait SocketTrait
     private $socket;
 
     /**
-     * Code of error
-     *
-     * @var int
-     */
-    private $socket_err_num;
-
-    /**
-     * Description of socket error
-     *
-     * @var string
-     */
-    private $socket_err_str;
-
-    /**
      * Initiate socket session
      *
      * @return void
@@ -37,7 +23,19 @@ trait SocketTrait
      */
     private function openSocket(): void
     {
-        $options = ['ssl' => $this->config('ssl_options')];
+        $options = [];
+
+        // Pass SSL options
+        $sslOptions = $this->config('ssl_options');
+        if (!empty($sslOptions)) {
+            $options['ssl'] = $sslOptions;
+        }
+
+        // Pass socket context options, eg.: bindto, tcp_nodelay
+        $socketOptions = $this->config('socket_options');
+        if (!empty($socketOptions)) {
+            $options['socket'] = $socketOptions;
+        }
 
         // Default: Context for ssl
         $context = stream_context_create($options);
@@ -46,30 +44,30 @@ trait SocketTrait
         $proto = $this->config('ssl') ? 'ssl://' : '';
 
         // Initiate socket client
-        $socket = @stream_socket_client(
+        $socketClient = @stream_socket_client(
             $proto . $this->config('host') . ':' . $this->config('port'),
-            $this->socket_err_num,
-            $this->socket_err_str,
+            $socketErrorNumber,
+            $socketErrorString,
             $this->config('timeout'),
             STREAM_CLIENT_CONNECT,
             $context
         );
 
         // Throw error is socket is not initiated
-        if (false === $socket) {
-            throw new ConnectException('Unable to establish socket session, ' . $this->socket_err_str);
+        if (false === $socketClient) {
+            throw new ConnectException('Unable to establish socket session, ' . $socketErrorString, $socketErrorNumber);
         }
 
         // Set blocking mode on a stream
         if ($this->config('socket_blocking') === true){
-            stream_set_blocking($socket, true);
+            stream_set_blocking($socketClient, true);
         }
 
-        //Timeout read
-        stream_set_timeout($socket, $this->config('socket_timeout'));
+        // Timeout read
+        stream_set_timeout($socketClient, $this->config('socket_timeout'));
 
         // Save socket to static variable
-        $this->setSocket($socket);
+        $this->setSocket($socketClient);
     }
 
     /**
