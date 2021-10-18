@@ -28,7 +28,7 @@ interface ClientInterface
      * Reply ends with a complete !done or !fatal block (ended with 'empty line')
      * A !fatal block precedes TCP connexion close
      *
-     * @param bool $parse If need parse output to array
+     * @param bool  $parse   If need parse output to array
      * @param array $options If need pass options
      *
      * @return mixed
@@ -51,12 +51,8 @@ interface ClientInterface
      * @param array|string|\RouterOS\Interfaces\QueryInterface $endpoint   Path of API query or Query object
      * @param array|null                                       $where      List of where filters
      * @param string|null                                      $operations Some operations which need make on response
-     * @param string|null                                      $tag        Mark query with tag
+     * @param string|null                                      $tag        Mark a query with tag
      *
-     * @return \RouterOS\Interfaces\ClientInterface
-     * @throws \RouterOS\Exceptions\QueryException
-     * @throws \RouterOS\Exceptions\ClientException
-     * @throws \RouterOS\Exceptions\ConfigException
      * @since 1.0.0
      */
     public function query($endpoint, array $where = null, string $operations = null, string $tag = null): ClientInterface;
@@ -68,8 +64,7 @@ interface ClientInterface
      * @param string|null $arguments String with arguments which should be passed to export command
      *
      * @return string
-     * @throws \RouterOS\Exceptions\ConfigException
-     * @since 1.3.0
+     * @since  1.3.0
      */
     public function export(string $arguments = null): string;
 }

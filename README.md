@@ -284,10 +284,11 @@ $client = new Client($config);
 | port           | int    |         | RouterOS API port number for access (if not set use 8728 or 8729 if SSL enabled) |
 | ssl            | bool   | false   | Enable ssl support (if port is not set this parameter must change default port to ssl port) |
 | ssl_options    | array  | [details](https://github.com/EvilFreelancer/routeros-api-php/blob/master/src/Config.php#L46) | See https://www.php.net/manual/en/context.ssl.php |
-| legacy         | bool   | false   | Support of legacy login scheme (true - pre 6.43, false - post 6.43) |
+| legacy         | bool   | false   | Deprecated, will be removed from 1.5.0: Support of legacy login scheme (true - pre 6.43, false - post 6.43) |
 | timeout        | int    | 10      | Max timeout for connecting to RouterOS (in seconds) |
 | socket_timeout | int    | 30      | Max read timeout from RouterOS (in seconds) |
 | socket_blocking| bool   | true    | Set blocking mode on a socket stream |
+| socket_options | array  | [details](https://github.com/EvilFreelancer/routeros-api-php/blob/master/src/Config.php#L87) | See https://www.php.net/manual/en/context.socket.php |
 | attempts       | int    | 10      | Count of attempts to establish TCP session |
 | delay          | int    | 1       | Delay between attempts in seconds |
 | ssh_port       | int    | 22      | Number of SSH port for exporting configuration |
@@ -296,6 +297,7 @@ $client = new Client($config);
 ### How to enable support of legacy login schema (RouterOS pre-6.43)
 
 > From 0.8.1 this is not important, version of firmware will be detected automatically.
+> Deprecated, will be removed from 1.5.0
 
 ```php
 <?php

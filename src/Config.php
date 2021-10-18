@@ -84,7 +84,16 @@ class Config implements ConfigInterface
      *
      * @see https://www.php.net/manual/en/context.socket.php
      */
-    public const SOCKET_OPTIONS = [];
+    public const SOCKET_OPTIONS = [
+        // Examples:
+        // 'bindto' => '192.168.0.100:0',    // connect to the internet using the '192.168.0.100' IP
+        // 'bindto' => '192.168.0.100:7000', // connect to the internet using the '192.168.0.100' IP and port '7000'
+        // 'bindto' => '[2001:db8::1]:7000', // connect to the internet using the '2001:db8::1' IPv6 address and port '7000'
+        // 'bindto' => '0:7000',             // connect to the internet using port '7000'
+        // 'bindto' => '0:0',                // Forcing IPv4
+        // 'bindto' => '[::]:0',             // Forcing IPv6
+        // 'tcp_nodelay' => true,            // Setting this option to true will set SOL_TCP,NO_DELAY=1 appropriately, thus disabling the TCP Nagle algorithm.
+    ];
 
     /**
      * Count of reconnect attempts
