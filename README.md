@@ -19,6 +19,25 @@ to work with PHP7/8 in accordance with the PSR standards.
 You can use this library with pre-6.43 and post-6.43 versions of
 RouterOS firmware, it will be detected automatically on connection stage.
 
+## Table of Contents
+
+* [Minimum requirements](#Minimum-requirements)
+* [Laravel framework support](#Laravel-framework-support)
+  * [Laravel installation](#Laravel-installation)
+* [How to use](#How-to-use)
+* [How to configure the client](#How-to-configure-the-client)
+  * [List of available configuration parameters](#List-of-available-configuration-parameters)
+  * [How to enable support of legacy login schema (RouterOS pre-6.43)](#How-to-enable-support-of-legacy-login-schema-(RouterOS-pre-6.43))
+* [How to write queries](#How-to-write-queries)
+* [Read response as Iterator](#Read-response-as-Iterator)
+* [Short methods](#Short-methods)
+* [Known issues](#Known-issues)
+  * [Unable to establish socket session, Operation timed out](#Unable-to-establish-socket-session,-Operation-timed-out)
+  * [How to update/remove/create something via API?](#How-to-update/remove/create-something-via-API?)
+  * [Undefined character (any non-English languages)](#Undefined-character-(any-non-English-languages))
+* [Testing](#Testing)
+* [Links](#Links)
+
 ## Minimum requirements
 
 * `php` >= 7.2|8.0
