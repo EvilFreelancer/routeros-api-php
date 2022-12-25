@@ -10,6 +10,7 @@ use RouterOS\Exceptions\ConfigException;
 use RouterOS\Interfaces\ClientInterface;
 use RouterOS\Interfaces\QueryInterface;
 use RouterOS\Helpers\ArrayHelper;
+use Spatie\Ssh\Ssh;
 use function array_keys;
 use function array_shift;
 use function chr;
@@ -570,22 +571,47 @@ class Client implements Interfaces\ClientInterface
      *
      * @return string
      * @throws \RouterOS\Exceptions\ConfigException
+     * @throws \RouterOS\Exceptions\ClientException
      * @since 1.3.0
      */
     public function export(string $arguments = null): string
     {
-        // Connect to remote host
-        $connection =
-            (new SSHConnection())
-                ->timeout($this->config('ssh_timeout'))
-                ->to($this->config('host'))
-                ->onPort($this->config('ssh_port'))
-                ->as($this->config('user') . '+etc') // +etc mean "disable colors"
-                ->withPassword($this->config('pass'))
-                ->connect();
+        // Set params
+        $sshHost       = $this->config('host');
+        $sshPort       = $this->config('ssh_port');
+        $sshUser       = $this->config('user') . '+etc';
+        $sshPrivateKey = $this->config('ssh_private_key');
+        $sshTimeout    = $this->config('ssh_timeout');
 
-        // Run export command
-        $command = $connection->run('/export' . ' ' . $arguments);
+        try {
+            // Connect to remote host
+            $connection = Ssh::create($sshUser, $sshHost, $sshPort)
+                ->disableStrictHostKeyChecking()
+                ->usePrivateKey($sshPrivateKey);
+
+            // Run export command
+            $command = $connection->executeAsync('/export' . ' ' . $arguments);
+
+        } catch (\Throwable $e) {
+            throw new ClientException($e);
+        }
+
+        // Wait until command completed, or timeout reached
+        $startTime = time();
+        while (true) {
+            // Exit from loop if timeout reached
+            if (time() > $startTime + $sshTimeout) {
+                throw new ClientException('SSH timeout reached');
+            }
+
+            // Exit from loop if completed
+            if (!$command->isRunning()) {
+                break;
+            }
+
+            // Wait a sec
+            sleep(1);
+        }
 
         // Return the output
         return $command->getOutput();

@@ -45,7 +45,7 @@ class Config implements ConfigInterface
      */
     public const SSL_OPTIONS = [
         /*
-         * Sets the list of available ciphers. By default RouterOS available via 'ADH:ALL'.
+         * Sets the list of available ciphers. By default, RouterOS available via 'ADH:ALL'.
          *
          * @example 'ADH:ALL'             // Alias to ADH:ALL@SECLEVEL=1
          *          'ADH:ALL@SECLEVEL=0'  // Everything is permitted. This retains compatibility with previous versions of OpenSSL.
@@ -120,6 +120,8 @@ class Config implements ConfigInterface
      */
     public const SSH_TIMEOUT = 30;
 
+    public const SSH_PRIVATE_KEY = '~/.ssh/id_rsa';
+
     /**
      * List of allowed parameters of config
      */
@@ -139,6 +141,7 @@ class Config implements ConfigInterface
         'delay'           => 'integer', // Delay between attempts in seconds
         'ssh_port'        => 'integer', // Number of SSH port
         'ssh_timeout'     => 'integer', // Max timeout for read from RouterOS via SSH proto (for "/export" command)
+        'ssh_private_key' => 'string',  // Max timeout for read from RouterOS via SSH proto (for "/export" command)
     ];
 
     /**
@@ -158,6 +161,7 @@ class Config implements ConfigInterface
         'delay'           => self::ATTEMPTS_DELAY,
         'ssh_port'        => self::SSH_PORT,
         'ssh_timeout'     => self::SSH_TIMEOUT,
+        'ssh_private_key' => self::SSH_PRIVATE_KEY,
     ];
 
     /**
@@ -227,7 +231,8 @@ class Config implements ConfigInterface
     {
         // Check of key in array
         if (ArrayHelper::checkIfKeyNotExist($parameter, self::ALLOWED)) {
-            throw new ConfigException("Requested parameter '$parameter' not found in list [" . implode(',', array_keys(self::ALLOWED)) . ']');
+            $list = implode(',', array_keys(self::ALLOWED));
+            throw new ConfigException("Requested parameter '$parameter' not found in list [$list]");
         }
 
         // Save value to array
@@ -245,7 +250,8 @@ class Config implements ConfigInterface
     {
         // Check of key in array
         if (ArrayHelper::checkIfKeyNotExist($parameter, self::ALLOWED)) {
-            throw new ConfigException("Requested parameter '$parameter' not found in list [" . implode(',', array_keys(self::ALLOWED)) . ']');
+            $list = implode(',', array_keys(self::ALLOWED));
+            throw new ConfigException("Requested parameter '$parameter' not found in list [$list]");
         }
 
         return $this->getPort($parameter) ?? $this->_parameters[$parameter];
