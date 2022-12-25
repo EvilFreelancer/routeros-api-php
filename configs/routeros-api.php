@@ -81,8 +81,9 @@ return [
      |
      */
 
-    'ssh_port'    => 22, // Number of SSH port
-    'ssh_timeout' => 30, // Max timeout for read from RouterOS via SSH proto (for "/export" command)
+    'ssh_port'        => 22, // Number of SSH port
+    'ssh_timeout'     => 30, // Max timeout for read from RouterOS via SSH proto (for "/export" command)
+    'ssh_private_key' => '~/.ssh/id_rsa.pub', // Full path to required private key
 
     /*
      |--------------------------------------------------------------------------

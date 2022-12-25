@@ -295,23 +295,24 @@ $client = new Client($config);
 
 ### List of available configuration parameters
 
-| Parameter      | Type   | Default | Description |
-|----------------|--------|---------|-------------|
-| host           | string |         | (required) Address of Mikrotik RouterOS |
-| user           | string |         | (required) Username |
-| pass           | string |         | (required) Password |
-| port           | int    |         | RouterOS API port number for access (if not set use 8728 or 8729 if SSL enabled) |
-| ssl            | bool   | false   | Enable ssl support (if port is not set this parameter must change default port to ssl port) |
-| ssl_options    | array  | [details](https://github.com/EvilFreelancer/routeros-api-php/blob/master/src/Config.php#L46) | See https://www.php.net/manual/en/context.ssl.php |
-| legacy         | bool   | false   | Deprecated, will be removed from 1.5.0: Support of legacy login scheme (true - pre 6.43, false - post 6.43) |
-| timeout        | int    | 10      | Max timeout for connecting to RouterOS (in seconds) |
-| socket_timeout | int    | 30      | Max read timeout from RouterOS (in seconds) |
-| socket_blocking| bool   | true    | Set blocking mode on a socket stream |
-| socket_options | array  | [details](https://github.com/EvilFreelancer/routeros-api-php/blob/master/src/Config.php#L87) | See https://www.php.net/manual/en/context.socket.php |
-| attempts       | int    | 10      | Count of attempts to establish TCP session |
-| delay          | int    | 1       | Delay between attempts in seconds |
-| ssh_port       | int    | 22      | Number of SSH port for exporting configuration |
-| ssh_timeout    | int    | 30      | Max timeout from router via SSH (in seconds) |
+| Parameter       | Type   | Default                                                                                      | Description                                                                                                 |
+|-----------------|--------|----------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------|
+| host            | string |                                                                                              | (required) Address of Mikrotik RouterOS                                                                     |
+| user            | string |                                                                                              | (required) Username                                                                                         |
+| pass            | string |                                                                                              | (required) Password                                                                                         |
+| port            | int    |                                                                                              | RouterOS API port number for access (if not set use 8728 or 8729 if SSL enabled)                            |
+| ssl             | bool   | false                                                                                        | Enable ssl support (if port is not set this parameter must change default port to ssl port)                 |
+| ssl_options     | array  | [details](https://github.com/EvilFreelancer/routeros-api-php/blob/master/src/Config.php#L46) | See https://www.php.net/manual/en/context.ssl.php                                                           |
+| legacy          | bool   | false                                                                                        | Deprecated, will be removed from 1.5.0: Support of legacy login scheme (true - pre 6.43, false - post 6.43) |
+| timeout         | int    | 10                                                                                           | Max timeout for connecting to RouterOS (in seconds)                                                         |
+| socket_timeout  | int    | 30                                                                                           | Max read timeout from RouterOS (in seconds)                                                                 |
+| socket_blocking | bool   | true                                                                                         | Set blocking mode on a socket stream                                                                        |
+| socket_options  | array  | [details](https://github.com/EvilFreelancer/routeros-api-php/blob/master/src/Config.php#L87) | See https://www.php.net/manual/en/context.socket.php                                                        |
+| attempts        | int    | 10                                                                                           | Count of attempts to establish TCP session                                                                  |
+| delay           | int    | 1                                                                                            | Delay between attempts in seconds                                                                           |
+| ssh_port        | int    | 22                                                                                           | Number of SSH port for exporting configuration                                                              |
+| ssh_timeout     | int    | 30                                                                                           | Max timeout from router via SSH (in seconds)                                                                |
+| ssh_private_key | string | ~/.ssh/id_rsa                                                                                | Full path to required private key                                                                           |
 
 ### How to enable support of legacy login schema (RouterOS pre-6.43)
 
