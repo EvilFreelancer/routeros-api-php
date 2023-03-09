@@ -119,6 +119,7 @@ class ResponseIterator implements Iterator, ArrayAccess, Countable, Serializable
      *
      * @return mixed
      */
+    #[\ReturnTypeWillChange]
     public function current()
     {
         if (isset($this->parsed[$this->current])) {
@@ -143,6 +144,7 @@ class ResponseIterator implements Iterator, ArrayAccess, Countable, Serializable
      *
      * @return mixed
      */
+    #[\ReturnTypeWillChange]
     public function key()
     {
         return $this->current;
@@ -220,6 +222,7 @@ class ResponseIterator implements Iterator, ArrayAccess, Countable, Serializable
      *
      * @return bool|mixed
      */
+    #[\ReturnTypeWillChange]
     public function offsetGet($offset)
     {
         if (isset($this->parsed[$offset])) {
