@@ -29,6 +29,7 @@ RouterOS firmware, it will be detected automatically on connection stage.
   * [List of available configuration parameters](#List-of-available-configuration-parameters)
   * [How to enable support of legacy login schema (RouterOS pre-6.43)](#How-to-enable-support-of-legacy-login-schema-(RouterOS-pre-6.43))
 * [How to write queries](#How-to-write-queries)
+* [How to add access release user with IP/MAC at the firewall ](#How-to-add-access-release-user-with-IP/MAC-at-the-firewall)
 * [Read response as Iterator](#Read-response-as-Iterator)
 * [Short methods](#Short-methods)
 * [Known issues](#Known-issues)
@@ -486,6 +487,29 @@ $response = $client->query($query)->read();
 ```
 
 </details>
+
+## How to add access release user with IP/MAC at the firewall
+
+With this query below, you will be able to release direct access without needing authentication 
+for that ip linked to the mac.
+
+| Parameter | Type     | Default | Description                             |
+|-----------|----------|---------|-----------------------------------------|
+| list      | string   |         | (required) Name group                   |
+| Address   | string   |         | (required) Address of Mikrotik RouterOS |
+| Disabled  | bool     | true    | (required) Delete after time expires    |
+| Comment   | string   |         | Comments                                |
+| Timeout   | datetime |         | (required) Access timeout.              |    
+
+```php
+ $query = (new Query('/ip/firewall/address-list/add'))
+            ->equal('list', 'group_name')
+            ->equal('address', '10.0.0.1')
+            ->equal('disabled', 'false')
+            ->equal('comment', 'my ip is cool')
+            ->equal('timeout', '00:10:00');
+```
+
 
 ## Read response as Iterator
 
