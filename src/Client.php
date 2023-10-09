@@ -590,6 +590,7 @@ class Client implements Interfaces\ClientInterface
                 ->usePrivateKey($sshPrivateKey);
 
             // Run export command
+            $connection->removeBash();
             $command = $connection->executeAsync('/export' . ' ' . $arguments);
 
         } catch (\Throwable $e) {
