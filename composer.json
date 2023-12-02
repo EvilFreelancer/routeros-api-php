@@ -1,5 +1,5 @@
 {
-  "name": "vonsofh/routeros-api-php",
+  "name": "evilfreelancer/routeros-api-php",
   "type": "library",
   "description": "Modern Mikrotik RouterOS API PHP client for your applications (with Laravel support)",
   "keywords": [
