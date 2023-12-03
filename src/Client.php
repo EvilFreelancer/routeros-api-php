@@ -251,8 +251,14 @@ class Client implements Interfaces\ClientInterface
             return $this->customOutput;
         }
 
-        // Read answer from socket in loop
+        // Read answer from socket in loop, or until timeout reached
+        $startTime  = time();
         while (true) {
+            // Exit from loop if timeout reached
+            if (time() > $startTime + $this->config('socket_timeout')) {
+                throw new ClientException('Socket timeout reached');
+            }
+
             $word = $this->connector->readWord();
 
             //Limit response number to finish the read
