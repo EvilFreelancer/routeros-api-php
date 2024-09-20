@@ -598,7 +598,7 @@ class Client implements Interfaces\ClientInterface
 
             // Run export command
             $connection->removeBash();
-            $command = $connection->executeAsync('/export' . ' ' . $arguments);
+            $command = $connection->execute('/export' . ' ' . $arguments);
 
         } catch (\Throwable $e) {
             throw new ClientException($e);
