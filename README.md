@@ -1,10 +1,20 @@
 [![Latest Stable Version](https://poser.pugx.org/evilfreelancer/routeros-api-php/v/stable)](https://packagist.org/packages/evilfreelancer/routeros-api-php)
-[![Build Status](https://travis-ci.org/EvilFreelancer/routeros-api-php.svg?branch=master)](https://travis-ci.org/EvilFreelancer/routeros-api-php)
 [![Total Downloads](https://poser.pugx.org/evilfreelancer/routeros-api-php/downloads)](https://packagist.org/packages/evilfreelancer/routeros-api-php)
 [![License](https://poser.pugx.org/evilfreelancer/routeros-api-php/license)](https://packagist.org/packages/evilfreelancer/routeros-api-php)
-[![Code Climate](https://codeclimate.com/github/EvilFreelancer/routeros-api-php/badges/gpa.svg)](https://codeclimate.com/github/EvilFreelancer/routeros-api-php)
-[![Code Coverage](https://scrutinizer-ci.com/g/EvilFreelancer/routeros-api-php/badges/coverage.png?b=master)](https://scrutinizer-ci.com/g/EvilFreelancer/routeros-api-php/?branch=master)
-[![Scrutinizer CQ](https://scrutinizer-ci.com/g/evilfreelancer/routeros-api-php/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/evilfreelancer/routeros-api-php/)
+
+⚠️ Project Maintenance Notice
+
+This project is currently unmaintained by the original author. Due to limited time and shifting priorities, I am unable to actively develop, debug, or support this project.
+
+Key Points:
+- Community contributions are welcome! Feel free to fork the repo and submit Pull Requests for fixes, improvements, or new features.
+- I will review and merge reasonable PRs that align with the project’s scope.
+- No guarantees are provided for issue resolutions, feature requests, or direct support.
+- If you’d like to take over maintenance ownership, please contact me in issues.
+
+Future updates depend entirely on community involvement.
+
+Thank you for your understanding and contributions!
 
 # RouterOS API Client
 
