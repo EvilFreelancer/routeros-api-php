@@ -10,7 +10,6 @@ Key Points:
 - Community contributions are welcome! Feel free to fork the repo and submit Pull Requests for fixes, improvements, or new features.
 - I will review and merge reasonable PRs that align with the project’s scope.
 - No guarantees are provided for issue resolutions, feature requests, or direct support.
-- If you’d like to take over maintenance ownership, please contact me in issues.
 
 Future updates depend entirely on community involvement.
 
