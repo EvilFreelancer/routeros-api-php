@@ -106,7 +106,11 @@ if you are a happy owner of Laravel version less than 5.5, then in a project, wh
 ],
 ```
 
-Optionally, publish the configuration file if you want to change any defaults:
+#### Client configuration for Laravel
+
+You could configure the Client using Environment variables. Complete list of available Environment variables you could find at the [default configuration file](https://github.com/EvilFreelancer/routeros-api-php/blob/master/configs/routeros-api.php).
+
+Optionally you could publish the configuration file:
 
 ```shell
 php artisan vendor:publish --provider="RouterOS\\Laravel\\ServiceProvider"
