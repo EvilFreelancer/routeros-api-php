@@ -34,7 +34,7 @@ return [
     'delay'           => (int) env('ROUTEROS_DELAY', 1),                                          // Delay between attempts in seconds
     'timeout'         => (int) env('ROUTEROS_TIMEOUT', 10),                                       // Max timeout for instantiating connection with RouterOS
     'socket_timeout'  => (int) env('ROUTEROS_SOCKET_TIMEOUT', env('ROUTEROS_TIMEOUT', 30)),       // Max timeout for read from RouterOS
-    'socket_blocking' => (bool) env('ROUTEROS_SOKET_BLOCKING', true),                             // Set blocking mode on a socket stream
+    'socket_blocking' => (bool) env('ROUTEROS_SOCKET_BLOCKING', true),                            // Set blocking mode on a socket stream
 
     // @see https://www.php.net/manual/en/context.socket.php
     'socket_options'  => [
