@@ -374,7 +374,7 @@ class Client implements Interfaces\ClientInterface
                 }
 
                 // Save as result
-                $result[] = $this->parseResponse($item)[0];
+                if(null != $this->parseResponse($item)) $result[] = $this->parseResponse($item)[0];
             }
 
         } else {
