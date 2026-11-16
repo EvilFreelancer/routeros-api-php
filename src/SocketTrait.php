@@ -17,9 +17,9 @@ trait SocketTrait
      * Initiate socket session
      *
      * @return void
-     * @throws \RouterOS\Exceptions\ClientException
-     * @throws \RouterOS\Exceptions\ConnectException
-     * @throws \RouterOS\Exceptions\ConfigException
+     * @throws Exceptions\ClientException
+     * @throws ConnectException
+     * @throws Exceptions\ConfigException
      */
     private function openSocket(): void
     {
@@ -59,7 +59,7 @@ trait SocketTrait
         }
 
         // Set blocking mode on a stream
-        if ($this->config('socket_blocking') === true){
+        if (true === $this->config('socket_blocking')) {
             stream_set_blocking($socketClient, true);
         }
 

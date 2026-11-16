@@ -1,0 +1,66 @@
+name: Tests
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+jobs:
+  unit:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        php: ['7.4', '8.0', '8.1', '8.2', '8.3', '8.4', '8.5']
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build PHP ${{ matrix.php }}
+        run: PHP_VERSION=${{ matrix.php }} docker compose build php
+      - name: Install dependencies and run unit tests
+        run: PHP_VERSION=${{ matrix.php }} docker compose run --rm php sh -c 'composer update --no-interaction --prefer-dist && vendor/bin/phpunit --colors=never'
+      - name: Measure coverage
+        if: matrix.php == '8.4'
+        run: PHP_VERSION=${{ matrix.php }} docker compose run --rm php vendor/bin/phpunit --coverage-text --coverage-clover=clover.xml --colors=never
+      - name: Upload coverage
+        if: matrix.php == '8.4'
+        uses: actions/upload-artifact@v4
+        with:
+          name: clover-php-8.4
+          path: clover.xml
+
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: PHP_VERSION=8.4 docker compose build php
+      - run: PHP_VERSION=8.4 docker compose run --rm php composer update --no-interaction --prefer-dist
+      - run: PHP_VERSION=8.4 docker compose run --rm php composer validate --strict --no-check-lock
+      - run: PHP_VERSION=8.4 docker compose run --rm php composer run test:lint
+
+  integration:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - run: sudo apt-get update && sudo apt-get install -y expect
+      - run: PHP_VERSION=8.4 docker compose build php
+      - run: PHP_VERSION=8.4 docker compose run --rm php composer update --no-interaction --prefer-dist
+      - run: docker compose up -d routeros
+      - name: Configure RouterOS
+        run: |
+          for attempt in $(seq 1 18); do
+            if ./preconf.tcl 12223; then
+              exit 0
+            fi
+            sleep 10
+          done
+          docker compose logs routeros
+          exit 1
+      - name: Run integration tests
+        run: |
+          PHP_VERSION=8.4 docker compose run --rm \
+            -e ROS_HOST_MODERN=routeros \
+            -e ROS_HOST_LEGACY=routeros \
+            -e ROS_PORT_MODERN=8728 \
+            -e ROS_PORT_LEGACY=8728 \
+            php vendor/bin/phpunit --configuration phpunit.integration.xml --colors=never

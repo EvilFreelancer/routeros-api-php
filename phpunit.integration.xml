@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/9.6/phpunit.xsd"
+         backupGlobals="false"
+         bootstrap="vendor/autoload.php"
+         colors="true"
+         processIsolation="false"
+         stopOnFailure="false">
+    <testsuites>
+        <testsuite name="integration">
+            <directory suffix=".php">./tests/Integration</directory>
+        </testsuite>
+    </testsuites>
+    <php>
+        <env name="ROS_HOST_MODERN" value="127.0.0.1"/>
+        <env name="ROS_HOST_LEGACY" value="127.0.0.1"/>
+        <env name="ROS_PORT_MODERN" value="18728"/>
+        <env name="ROS_PORT_LEGACY" value="18728"/>
+        <env name="ROS_USER" value="admin"/>
+        <env name="ROS_PASS" value="admin"/>
+        <env name="ROS_SSH_PORT" value="12222"/>
+    </php>
+</phpunit>

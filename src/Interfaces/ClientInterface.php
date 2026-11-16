@@ -48,7 +48,7 @@ interface ClientInterface
     /**
      * Send write query to RouterOS (modern version of write)
      *
-     * @param array|string|\RouterOS\Interfaces\QueryInterface $endpoint   Path of API query or Query object
+     * @param array|string|QueryInterface $endpoint   Path of API query or Query object
      * @param array|null                                       $where      List of where filters
      * @param string|null                                      $operations Some operations which need make on response
      * @param string|null                                      $tag        Mark a query with tag

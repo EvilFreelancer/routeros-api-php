@@ -2,7 +2,6 @@
 
 namespace RouterOS\Streams;
 
-use InvalidArgumentException;
 use RouterOS\Interfaces\StreamInterface;
 use RouterOS\Exceptions\StreamException;
 
@@ -18,7 +17,7 @@ use RouterOS\Exceptions\StreamException;
 class StringStream implements StreamInterface
 {
     /**
-     * @var string $buffer Stores the string to use
+     * @var string Stores the string to use
      */
     protected $buffer;
 
@@ -32,18 +31,17 @@ class StringStream implements StreamInterface
         $this->buffer = $string;
     }
 
-
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      *
-     * @throws \RouterOS\Exceptions\StreamException
+     * @throws StreamException
      */
     public function read(int $length): string
     {
         $remaining = strlen($this->buffer);
 
         if ($length < 0) {
-            throw new InvalidArgumentException('Cannot read a negative count of bytes from a stream');
+            throw new \InvalidArgumentException('Cannot read a negative count of bytes from a stream');
         }
 
         if (0 === $remaining) {
@@ -51,7 +49,7 @@ class StringStream implements StreamInterface
         }
 
         if ($length >= $remaining) {
-            // returns all 
+            // returns all
             $result = $this->buffer;
             // No more in the buffer
             $this->buffer = '';
@@ -66,7 +64,7 @@ class StringStream implements StreamInterface
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      *
      * @throws \InvalidArgumentException on invalid length
      */
@@ -77,14 +75,14 @@ class StringStream implements StreamInterface
         }
 
         if ($length < 0) {
-            throw new InvalidArgumentException('Cannot write a negative count of bytes');
+            throw new \InvalidArgumentException('Cannot write a negative count of bytes');
         }
 
         return min($length, strlen($string));
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     public function close(): void
     {

@@ -3,14 +3,9 @@
 namespace RouterOS;
 
 use Iterator;
-use ArrayAccess;
-use Countable;
 use Serializable;
-use function array_keys;
-use function array_slice;
+
 use function count;
-use function serialize;
-use function unserialize;
 
 /**
  * This class was created by memory save reasons, it convert response
@@ -23,10 +18,10 @@ use function unserialize;
  * Based on RouterOSResponseArray solution by @arily
  *
  * @package RouterOS\Iterators
- * @link    https://github.com/arily/RouterOSResponseArray
+ * @see    https://github.com/arily/RouterOSResponseArray
  * @since   1.0.0
  */
-class ResponseIterator implements Iterator, ArrayAccess, Countable, Serializable
+class ResponseIterator implements \Iterator, \ArrayAccess, \Countable, \Serializable
 {
     /**
      * List of parser results from array
@@ -52,14 +47,14 @@ class ResponseIterator implements Iterator, ArrayAccess, Countable, Serializable
     /**
      * Object of main client
      *
-     * @var \RouterOS\Client
+     * @var Client
      */
     private $client;
 
     /**
      * ResponseIterator constructor.
      *
-     * @param \RouterOS\Client $client
+     * @param Client $client
      * @param array            $options Additional options
      */
     public function __construct(Client $client, array $options = [])
@@ -74,25 +69,21 @@ class ResponseIterator implements Iterator, ArrayAccess, Countable, Serializable
         $raw = $client->read(false, $options);
 
         // This RAW shouldn't be an error
-        $positions = array_keys($raw, '!re');
-        $count     = count($raw);
+        $positions = \array_keys($raw, '!re');
+        $count     = \count($raw);
         $result    = [];
 
-        if (isset($positions[1]))
-        {
-            foreach ($positions as $key => $position)
-            {
+        if (isset($positions[1])) {
+            foreach ($positions as $key => $position) {
                 // Get length of future block
                 $length = isset($positions[$key + 1])
                     ? $positions[$key + 1] - $position + 1
                     : $count - $position;
 
                 // Convert array to simple items, save as result
-                $result[] = array_slice($raw, $position, $length);
+                $result[] = \array_slice($raw, $position, $length);
             }
-        }
-        else
-        {
+        } elseif (isset($positions[0])) {
             $result = [$raw];
         }
 
@@ -104,7 +95,7 @@ class ResponseIterator implements Iterator, ArrayAccess, Countable, Serializable
      */
     public function next(): void
     {
-        ++$this->current;
+        $this->current++;
     }
 
     /**
@@ -112,7 +103,7 @@ class ResponseIterator implements Iterator, ArrayAccess, Countable, Serializable
      */
     public function prev(): void
     {
-        --$this->current;
+        $this->current--;
     }
 
     /**
@@ -120,19 +111,21 @@ class ResponseIterator implements Iterator, ArrayAccess, Countable, Serializable
      *
      * @return mixed
      */
-    public function current(): mixed
+    #[\ReturnTypeWillChange]
+    public function current()
     {
-        if (isset($this->parsed[$this->current]))
-        {
+        if (isset($this->parsed[$this->current])) {
             return $this->parsed[$this->current];
         }
 
-        if ($this->valid())
-        {
+        if ($this->valid()) {
 
-            if (!isset($this->parsed[$this->current]))
-            {
-                $value = $this->client->parseResponse($this->raw[$this->current])[0];
+            if (!isset($this->parsed[$this->current])) {
+                $parsed = $this->client->parseResponse($this->raw[$this->current]);
+                if (!isset($parsed[0])) {
+                    return null;
+                }
+                $value = $parsed[0];
                 $this->offsetSet($this->current, $value);
             }
 
@@ -147,7 +140,8 @@ class ResponseIterator implements Iterator, ArrayAccess, Countable, Serializable
      *
      * @return mixed
      */
-    public function key(): mixed
+    #[\ReturnTypeWillChange]
+    public function key()
     {
         return $this->current;
     }
@@ -169,7 +163,7 @@ class ResponseIterator implements Iterator, ArrayAccess, Countable, Serializable
      */
     public function count(): int
     {
-        return count($this->raw);
+        return \count($this->raw);
     }
 
     /**
@@ -188,12 +182,9 @@ class ResponseIterator implements Iterator, ArrayAccess, Countable, Serializable
      */
     public function offsetSet($offset, $value): void
     {
-        if (null === $offset)
-        {
+        if (null === $offset) {
             $this->parsed[] = $value;
-        }
-        else
-        {
+        } else {
             $this->parsed[$offset] = $value;
         }
     }
@@ -227,18 +218,16 @@ class ResponseIterator implements Iterator, ArrayAccess, Countable, Serializable
      *
      * @return bool|mixed
      */
-    public function offsetGet($offset): mixed
+    #[\ReturnTypeWillChange]
+    public function offsetGet($offset)
     {
-        if (isset($this->parsed[$offset]))
-        {
+        if (isset($this->parsed[$offset])) {
             return $this->parsed[$offset];
         }
 
-        if (isset($this->raw[$offset]) && $this->raw[$offset] !== null)
-        {
+        if (isset($this->raw[$offset]) && null !== $this->raw[$offset]) {
             $f = $this->client->parseResponse($this->raw[$offset]);
-            if ($f !== [])
-            {
+            if (isset($f[0])) {
                 return $this->parsed[$offset] = $f[0];
             }
         }
@@ -253,7 +242,32 @@ class ResponseIterator implements Iterator, ArrayAccess, Countable, Serializable
      */
     public function serialize(): string
     {
-        return serialize($this->raw);
+        return \serialize($this->__serialize());
+    }
+
+    /**
+     * Return serializable state without the client dependency.
+     */
+    public function __serialize(): array
+    {
+        foreach (\array_keys($this->raw) as $offset) {
+            $this->offsetGet($offset);
+        }
+
+        return [
+            'raw' => $this->raw,
+            'parsed' => $this->parsed,
+        ];
+    }
+
+    /**
+     * Restore raw and parsed rows.
+     */
+    public function __unserialize(array $data): void
+    {
+        $this->raw = $data['raw'];
+        $this->parsed = $data['parsed'];
+        $this->rewind();
     }
 
     /**
@@ -263,6 +277,11 @@ class ResponseIterator implements Iterator, ArrayAccess, Countable, Serializable
      */
     public function unserialize($serialized): void
     {
-        $this->raw = unserialize($serialized);
+        $data = \unserialize($serialized);
+        if (isset($data['raw'], $data['parsed'])) {
+            $this->__unserialize($data);
+        } else {
+            $this->raw = $data;
+        }
     }
 }

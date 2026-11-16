@@ -2,12 +2,10 @@
 
 namespace RouterOS\Tests;
 
-use DomainException;
 use PHPUnit\Framework\TestCase;
 use RouterOS\APILengthCoDec;
 use RouterOS\Streams\StringStream;
 use RouterOS\Helpers\BinaryStringHelper;
-use UnexpectedValueException;
 
 /**
  * Limit code coverage to the class
@@ -24,7 +22,7 @@ class APILengthCoDecTest extends TestCase
      */
     public function testEncodeLengthNegative($length): void
     {
-        $this->expectException(DomainException::class);
+        $this->expectException(\DomainException::class);
         APILengthCoDec::encodeLength($length);
     }
 
@@ -50,11 +48,11 @@ class APILengthCoDecTest extends TestCase
 
     public function encodedLengthProvider(): array
     {
-        // [encoded length value, length value] 
+        // [encoded length value, length value]
         $result = [
             [0, 0],        // Low limit value for 1 byte encoded length
             [0x39, 0x39],  // Arbitrary median value for 1 byte encoded length
-            [0x7f, 0x7F],  // High limit value for 1 byte encoded length
+            [0x7F, 0x7F],  // High limit value for 1 byte encoded length
 
             [0x8080, 0x80],   // Low limit value for 2 bytes encoded length
             [0x9C42, 0x1C42], // Arbitrary median value for 2 bytes encoded length
@@ -100,7 +98,7 @@ class APILengthCoDecTest extends TestCase
      */
     public function testDecodeLengthControlWord(string $encodedLength): void
     {
-        $this->expectException(UnexpectedValueException::class);
+        $this->expectException(\UnexpectedValueException::class);
         APILengthCoDec::decodeLength(new StringStream($encodedLength));
     }
 

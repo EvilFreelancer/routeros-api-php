@@ -16,7 +16,7 @@ trait ShortsTrait
     /**
      * Alias for ->query() method
      *
-     * @param array|string|\RouterOS\Interfaces\QueryInterface $endpoint   Path of API query or Query object
+     * @param array|string|Interfaces\QueryInterface $endpoint   Path of API query or Query object
      * @param array|null                                       $where      List of where filters
      * @param string|null                                      $operations Some operations which need make on response
      * @param string|null                                      $tag        Mark query with tag
@@ -59,7 +59,7 @@ trait ShortsTrait
     /**
      * Alias for ->query()->read() combination of methods
      *
-     * @param array|string|\RouterOS\Interfaces\QueryInterface $endpoint   Path of API query or Query object
+     * @param array|string|Interfaces\QueryInterface $endpoint   Path of API query or Query object
      * @param array|null                                       $where      List of where filters
      * @param string|null                                      $operations Some operations which need make on response
      * @param string|null                                      $tag        Mark query with tag
@@ -77,7 +77,7 @@ trait ShortsTrait
     /**
      * Alias for ->query()->readAsIterator() combination of methods
      *
-     * @param array|string|\RouterOS\Interfaces\QueryInterface $endpoint   Path of API query or Query object
+     * @param array|string|Interfaces\QueryInterface $endpoint   Path of API query or Query object
      * @param array|null                                       $where      List of where filters
      * @param string|null                                      $operations Some operations which need make on response
      * @param string|null                                      $tag        Mark query with tag

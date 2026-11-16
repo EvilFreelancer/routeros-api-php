@@ -13,7 +13,15 @@ expect "Password: "
 send "\n"
 expect "]:"
 send "n\r\n"
-expect ">\ "
+expect {
+    "new password>" {
+        send "admin\r"
+        expect "repeat new password>"
+        send "admin\r"
+        expect ">\ "
+    }
+    ">\ "
+}
 send "?\r\n"
 expect ">\ "
 send "\r\n"

@@ -38,6 +38,9 @@ class Wrapper
     {
         $config = config('routeros-api');
         $config = array_merge($config, $params);
+        if (null === $config['port']) {
+            unset($config['port']);
+        }
         $config = new Config($config);
 
         return $config;

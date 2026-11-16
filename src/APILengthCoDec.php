@@ -2,11 +2,8 @@
 
 namespace RouterOS;
 
-use DomainException;
-use OverflowException;
 use RouterOS\Interfaces\StreamInterface;
 use RouterOS\Helpers\BinaryStringHelper;
-use UnexpectedValueException;
 
 /**
  * class APILengthCoDec
@@ -58,7 +55,7 @@ class APILengthCoDec
     public static function encodeLength($length): string
     {
         if ($length < 0) {
-            throw new DomainException("Length of word could not to be negative ($length)");
+            throw new \DomainException("Length of word could not to be negative ($length)");
         }
 
         if ($length <= 0x7F) {
@@ -105,7 +102,7 @@ class APILengthCoDec
      * After receiving unknown control byte API client cannot proceed, because it cannot know how to interpret following bytes
      * Currently control bytes are not used
      *
-     * @param \RouterOS\Interfaces\StreamInterface $stream
+     * @param StreamInterface $stream
      *
      * @return int
      */
@@ -171,7 +168,7 @@ class APILengthCoDec
                 // How can we test it ?
 
                 // @codeCoverageIgnoreStart
-                throw new OverflowException("Your system is using 32 bits integers, cannot decode this value ($firstByte) on this system");
+                throw new \OverflowException("Your system is using 32 bits integers, cannot decode this value ($firstByte) on this system");
                 // @codeCoverageIgnoreEnd
             }
 
@@ -191,6 +188,6 @@ class APILengthCoDec
 
         // Now the only solution is 5 most significance bits are set to 1 (11111xxx)
         // This is a control word, not implemented by Mikrotik for the moment
-        throw new UnexpectedValueException('Control Word found');
+        throw new \UnexpectedValueException('Control Word found');
     }
 }

@@ -3,7 +3,7 @@
 $finder = PhpCsFixer\Finder::create()
     ->in(__DIR__ . DIRECTORY_SEPARATOR . 'tests')
     ->in(__DIR__ . DIRECTORY_SEPARATOR . 'src')
-    ->append(['.php_cs']);
+    ->append([__FILE__]);
 
 $rules = [
     '@Symfony'                   => true,
@@ -20,6 +20,7 @@ $rules = [
     'not_operator_with_space'    => false,
     'phpdoc_no_package'          => false,
     'single_trait_insert_per_statement' => false,
+    'fully_qualified_strict_types' => false,
     'ordered_imports'            => false,
     'no_extra_blank_lines'       => false,
     'blank_line_before_statement' => false,
@@ -27,7 +28,7 @@ $rules = [
 
 $rules['increment_style'] = ['style' => 'post'];
 
-return PhpCsFixer\Config::create()
+return (new PhpCsFixer\Config())
     ->setUsingCache(true)
     ->setRules($rules)
     ->setFinder($finder);
