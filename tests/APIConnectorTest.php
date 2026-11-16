@@ -38,7 +38,6 @@ class APIConnectorTest extends TestCase
     {
         return [
             [new ResourceStream(fopen(__FILE__, 'rb'))], // Myself, sure I exists
-            [new ResourceStream(fsockopen('tcp://' . getenv('ROS_HOST_MODERN'), getenv('ROS_PORT_MODERN')))], // Socket
             [new ResourceStream(STDIN), false], // Try it, but do not close STDIN please !!!
             [new StringStream('Hello World !!!')], // Try it, but do not close STDIN please !!!
             [new StringStream('')], // Try it, but do not close STDIN please !!!
@@ -94,5 +93,34 @@ class APIConnectorTest extends TestCase
             [new APIConnector(new StringStream('Have FUN !!!')), str_repeat(' ', 254), 256], // special value isn't it ?
             [new APIConnector(new StringStream('Have FUN !!!')), str_repeat(' ', 255), 257], // special value isn't it ?
         ];
+    }
+
+    public function testWriteWordHandlesPartialWrites(): void
+    {
+        $stream = new class implements StreamInterface {
+            public $buffer = '';
+
+            public function read(int $length): string
+            {
+                return '';
+            }
+
+            public function write(string $string, int $length = -1): int
+            {
+                $chunk = substr($string, 0, 2);
+                $this->buffer .= $chunk;
+
+                return strlen($chunk);
+            }
+
+            public function close(): void
+            {
+            }
+        };
+
+        $connector = new APIConnector($stream);
+
+        $this->assertSame(6, $connector->writeWord('hello'));
+        $this->assertSame(chr(5) . 'hello', $stream->buffer);
     }
 }

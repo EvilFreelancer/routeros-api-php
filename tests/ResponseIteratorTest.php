@@ -4,63 +4,86 @@ namespace RouterOS\Tests;
 
 use PHPUnit\Framework\TestCase;
 use RouterOS\Client;
+use RouterOS\ResponseIterator;
 
 class ResponseIteratorTest extends TestCase
 {
-    /**
-     * @var \RouterOS\Client
-     */
-    private $client;
-
-    public function setUp(): void
+    public function testIteratesAndCachesRows(): void
     {
-        $this->client = new Client([
-            'user' => getenv('ROS_USER'),
-            'pass' => getenv('ROS_PASS'),
-            'host' => getenv('ROS_HOST_MODERN'),
+        $iterator = $this->iterator([
+            '!re', '=.id=*1', '=name=first',
+            '!re', '=.id=*2', '=name=second',
+            '!done',
         ]);
+
+        self::assertCount(2, $iterator);
+        self::assertSame(0, $iterator->key());
+        self::assertSame(['.id' => '*1', 'name' => 'first'], $iterator->current());
+
+        $iterator->next();
+        self::assertSame(['.id' => '*2', 'name' => 'second'], $iterator[1]);
+        $iterator->prev();
+        self::assertTrue($iterator->valid());
+        self::assertTrue(isset($iterator[0]));
+
+        $iterator[0] = ['name' => 'cached'];
+        self::assertSame(['name' => 'cached'], $iterator->current());
+
+        unset($iterator[1]);
+        self::assertFalse(isset($iterator[1]));
+        self::assertCount(1, $iterator);
+
+        $iterator->rewind();
+        self::assertSame(0, $iterator->key());
     }
 
-    public function testReadWrite(): void
+    /**
+     * @dataProvider emptyResponseProvider
+     */
+    public function testResponseWithoutRowsIsEmpty(array $raw): void
     {
-        $readTrap = $this->client->query('/system/logging/print')->readAsIterator();
-        $this->assertNotEmpty($readTrap);
+        $iterator = $this->iterator($raw);
 
-        $readTrap = $this->client->query('/ip/address/print')->readAsIterator();
-        $this->assertCount(1, $readTrap);
-        $this->assertEquals('ether1', $readTrap[0]['interface']);
-
-        $readTrap = $this->client->query('/system/logging/print')->readAsIterator();
-        $key      = $readTrap->key();
-        $this->assertEquals(0, $key);
-        $current = $readTrap->current();
-        $this->assertEquals('*1', $current['.id']);
-
-        $readTrap->next();
-        $key = $readTrap->key();
-        $this->assertEquals(1, $key);
-        $current = $readTrap->current();
-        $this->assertEquals('*2', $current['.id']);
-
-        $readTrap->prev();
-        $key = $readTrap->key();
-        $this->assertEquals(0, $key);
-        $current = $readTrap->current();
-        $this->assertEquals('*1', $current['.id']);
-
-        $readTrap->prev(); // Check if key is not exist
-        $key = $readTrap->key();
-        $this->assertEquals(-1, $key);
-        $current = $readTrap->current();
-        $this->assertNull($current);
+        self::assertCount(0, $iterator);
+        self::assertFalse($iterator->valid());
+        self::assertNull($iterator->current());
+        self::assertFalse($iterator[0]);
     }
 
-    public function testSerialize(): void
+    public function emptyResponseProvider(): array
     {
-        $read      = $this->client->query('/queue/simple/print')->readAsIterator();
-        $serialize = $read->serialize();
-
-        $this->assertEquals('a:1:{i:0;a:1:{i:0;s:5:"!done";}}', $serialize);
+        return [
+            [['!done']],
+            [['!done', '=ret=123']],
+            [['!trap', '=message=failure', '!done']],
+        ];
     }
 
+    public function testRowWithoutAttributesHasNoValue(): void
+    {
+        $iterator = $this->iterator(['!re', '!done']);
+
+        self::assertNull($iterator->current());
+        self::assertFalse($iterator[0]);
+    }
+
+    public function testNativeSerializationRoundTripKeepsRows(): void
+    {
+        $iterator = $this->iterator(['!re', '=name=first', '!done']);
+
+        $restored = unserialize(serialize($iterator));
+
+        self::assertSame(['name' => 'first'], $restored[0]);
+    }
+
+    private function iterator(array $raw): ResponseIterator
+    {
+        $client = $this->getMockBuilder(Client::class)
+            ->disableOriginalConstructor()
+            ->onlyMethods(['read'])
+            ->getMock();
+        $client->method('read')->willReturn($raw);
+
+        return new ResponseIterator($client);
+    }
 }

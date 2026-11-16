@@ -40,11 +40,11 @@ class BinaryStringHelper
             // If we have already started to construct the string (i.e. there are more signficant digits)
             //   we must set the byte, even if it is a 0.
             //   0xFF00FF, for example, require to set the second byte byte with a 0 value
-            if (($value & $mask) || $buffer !== '') {
+            if (($value & $mask) || '' !== $buffer) {
                 // Get the current byte by shifting it to least significant position and add it to the string
                 // 0xFF12345678 => 0xFF
                 $byte   = $value >> (8 * $i);
-                $buffer .= chr($byte);
+                $buffer .= chr($byte & 0xFF);
 
                 // Set the most significant byte to 0 so we can restart the process being shure
                 // that the value is left padded with 0

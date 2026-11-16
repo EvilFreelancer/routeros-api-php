@@ -2,6 +2,7 @@
 
 namespace RouterOS;
 
+use RouterOS\Exceptions\StreamException;
 use RouterOS\Interfaces\StreamInterface;
 
 /**
@@ -15,14 +16,14 @@ use RouterOS\Interfaces\StreamInterface;
 class APIConnector
 {
     /**
-     * @var StreamInterface $stream The stream used to communicate with the router
+     * @var StreamInterface The stream used to communicate with the router
      */
     protected $stream;
 
     /**
      * APIConnector constructor.
      *
-     * @param \RouterOS\Interfaces\StreamInterface $stream
+     * @param StreamInterface $stream
      */
     public function __construct(StreamInterface $stream)
     {
@@ -63,7 +64,18 @@ class APIConnector
      */
     public function writeWord(string $word): int
     {
-        $encodedLength = APILengthCoDec::encodeLength(strlen($word));
-        return $this->stream->write($encodedLength . $word);
+        $data = APILengthCoDec::encodeLength(strlen($word)) . $word;
+        $length = strlen($data);
+        $written = 0;
+
+        while ($written < $length) {
+            $result = $this->stream->write(substr($data, $written));
+            if ($result <= 0) {
+                throw new StreamException('Unable to write the complete word to the stream');
+            }
+            $written += $result;
+        }
+
+        return $written;
     }
 }

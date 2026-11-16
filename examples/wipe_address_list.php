@@ -29,21 +29,20 @@ $client = new Client($config);
  *  Make an array with all the existing entries in a specific list
  */
 
-// Build query
-// This assumes a list called "MyList" exists on your mikrotik, containing one or more entries.
-$query = (new Query('/ip/firewall/address-list/find'))
-	->where('list', 'MyList');
-$ips = $client->query($query)->read();
-$ips=$ips["after"]["ret"];
+// Build a print query because RouterOS API supports query words on print commands.
+$query = (new Query('/ip/firewall/address-list/print'))
+    ->where('list', 'MyList');
+$entries = $client->query($query)->read();
+$ids = array_column($entries, '.id');
 
-// Mikrotik responds with a list of entries, where each entry is delimited by ";"
-// eg: "*65b;*65c;*66a"
-// the delete function likes commas and NOT semicolons, so we replace ; for ,
-// so we get "*65b,*65c,*66a"
-$ips=str_replace(';', ',', $ips);
-// now we just submit that with the remove command:
+// Nothing needs to be removed when the filter returned no rows.
+if ($ids === []) {
+    exit(0);
+}
+
+// The remove command accepts a comma-separated list of internal IDs.
 $query = (new Query('/ip/firewall/address-list/remove'))
-	->equal('.id',$ips);
+    ->equal('.id', implode(',', $ids));
 $ret = $client->query($query)->read();
 if (isset($ret["after"]))
 {

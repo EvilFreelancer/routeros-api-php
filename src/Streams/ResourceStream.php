@@ -54,7 +54,7 @@ class ResourceStream implements StreamInterface
     /**
      * {@inheritDoc}
      *
-     * @throws \RouterOS\Exceptions\StreamException when length parameter is invalid
+     * @throws StreamException when length parameter is invalid
      * @throws \InvalidArgumentException when the stream have been totally read and read method is called again
      */
     public function read(int $length): string
@@ -73,25 +73,26 @@ class ResourceStream implements StreamInterface
         while ($remaining > 0) {
             $chunk = fread($this->stream, $remaining);
 
-            if ($chunk === false) {
+            if (false === $chunk) {
                 throw new StreamException("Error reading $length bytes");
             }
 
-            if ($chunk === '') {
+            if ('' === $chunk) {
+                $info = stream_get_meta_data($this->stream);
+                if ($this->throwTimeoutException && !empty($info['timed_out'])) {
+                    throw new StreamException('Stream timed out');
+                }
+
                 break;
             }
 
             $result .= $chunk;
             $remaining -= strlen($chunk);
 
-            // PHP 8.4 may report timed_out=true even on successful partial reads
-            // Only throw timeout if we got no data AND stream actually timed out
-            if ($this->throwTimeoutException && strlen($result) < $length) {
-                $info = stream_get_meta_data($this->stream);
-                if ($info['timed_out']) {
-                    throw new StreamException('Stream timed out');
-                }
-            }
+        }
+
+        if (strlen($result) !== $length) {
+            throw new StreamException("Stream ended before $length bytes could be read");
         }
 
         return $result;
@@ -100,7 +101,7 @@ class ResourceStream implements StreamInterface
     /**
      * {@inheritDoc}
      *
-     * @throws \RouterOS\Exceptions\StreamException when not possible to write bytes
+     * @throws StreamException when not possible to write bytes
      */
     public function write(string $string, ?int $length = null): int
     {
@@ -124,7 +125,7 @@ class ResourceStream implements StreamInterface
     /**
      * {@inheritDoc}
      *
-     * @throws \RouterOS\Exceptions\StreamException when not possible to close the stream
+     * @throws StreamException when not possible to close the stream
      */
     public function close(): void
     {

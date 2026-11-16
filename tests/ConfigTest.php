@@ -2,7 +2,6 @@
 
 namespace RouterOS\Tests;
 
-use Exception;
 use PHPUnit\Framework\TestCase;
 use RouterOS\Config;
 use RouterOS\Exceptions\ConfigException;
@@ -14,7 +13,7 @@ class ConfigTest extends TestCase
         try {
             $obj = new Config();
             $this->assertIsObject($obj);
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $this->assertStringContainsString('Must be initialized ', $e->getMessage());
         }
     }
@@ -24,7 +23,8 @@ class ConfigTest extends TestCase
         $obj    = new Config();
         $params = $obj->getParameters();
 
-        $this->assertCount(12, $params);
+        $this->assertArrayHasKey('ssl_options', $params);
+        $this->assertArrayHasKey('throw_timeout_exception', $params);
         $this->assertEquals(false, $params['legacy']);
         $this->assertEquals(false, $params['ssl']);
         $this->assertEquals(10, $params['timeout']);
@@ -37,7 +37,7 @@ class ConfigTest extends TestCase
         $obj    = new Config(['timeout' => 100]);
         $params = $obj->getParameters();
 
-        $this->assertCount(12, $params);
+        $this->assertArrayHasKey('throw_timeout_exception', $params);
         $this->assertEquals(100, $params['timeout']);
     }
 

@@ -20,7 +20,7 @@ class ArrayHelper
      */
     public static function checkIfKeyNotExist(string $key, array $array): bool
     {
-        return (!array_key_exists($key, $array) && empty($array[$key]));
+        return !array_key_exists($key, $array) && empty($array[$key]);
     }
 
     /**

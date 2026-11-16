@@ -2,8 +2,6 @@
 
 namespace RouterOS\Tests\Streams;
 
-use Generator;
-use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 use RouterOS\Streams\StringStream;
 use RouterOS\Exceptions\StreamException;
@@ -46,7 +44,6 @@ class StringStreamTest extends TestCase
      * @param int|null $length   the count if bytes to write
      * @param int      $expected the number of bytes that must be writen
      */
-
     public function testWrite(string $string, $length, int $expected): void
     {
         $stream = new StringStream('Does not matters');
@@ -81,7 +78,7 @@ class StringStreamTest extends TestCase
      */
     public function testWriteWithNegativeLength(): void
     {
-        $this->expectException(InvalidArgumentException::class);
+        $this->expectException(\InvalidArgumentException::class);
         $stream = new StringStream('Does not matters');
         $stream->write('PLOP', -1);
     }
@@ -89,7 +86,7 @@ class StringStreamTest extends TestCase
     /**
      * Test read function
      *
-     * @throws \RouterOS\Exceptions\StreamException
+     * @throws StreamException
      */
     public function testRead(): void
     {
@@ -104,11 +101,11 @@ class StringStreamTest extends TestCase
     }
 
     /**
-     * @throws \RouterOS\Exceptions\StreamException
+     * @throws StreamException
      */
     public function testReadBadLength(): void
     {
-        $this->expectException(InvalidArgumentException::class);
+        $this->expectException(\InvalidArgumentException::class);
         $stream = new StringStream('123456789');
         $stream->read(-1);
     }
@@ -120,7 +117,7 @@ class StringStreamTest extends TestCase
      * @param StringStream $stream
      * @param int          $length
      *
-     * @throws \RouterOS\Exceptions\StreamException
+     * @throws StreamException
      */
     public function testReadWhileEmpty(StringStream $stream, int $length): void
     {
@@ -132,7 +129,7 @@ class StringStreamTest extends TestCase
      * @return \Generator
      * @throws StreamException
      */
-    public function readWhileEmptyProvider(): ?Generator
+    public function readWhileEmptyProvider(): ?\Generator
     {
         $stream = new StringStream('123456789');
         $stream->read(9);

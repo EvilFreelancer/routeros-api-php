@@ -6,7 +6,6 @@ use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 use RouterOS\Exceptions\StreamException;
 use RouterOS\Streams\ResourceStream;
-use stdClass;
 
 /**
  * Limit code coverage to the class RouterOS\APIStream
@@ -25,7 +24,7 @@ class ResourceStreamTest extends TestCase
      */
     public function testConstructNotResource($notResource): void
     {
-        $this->expectException(InvalidArgumentException::class);
+        $this->expectException(\InvalidArgumentException::class);
         new ResourceStream($notResource);
     }
 
@@ -43,7 +42,7 @@ class ResourceStreamTest extends TestCase
             [
                 [0, 3.14],   // Array
             ],
-            [new stdClass()], // Object
+            [new \stdClass()], // Object
             // What else ?
         ];
     }
@@ -83,7 +82,6 @@ class ResourceStreamTest extends TestCase
     {
         return [
             [fopen(__FILE__, 'rb')], // Myself, sure I exists
-            [fsockopen('tcp://' . getenv('ROS_HOST_MODERN'), getenv('ROS_PORT_MODERN'))], // Socket
             [STDIN, false], // Try it, but do not close STDIN please !!!
             // What else ?
         ];
@@ -98,7 +96,7 @@ class ResourceStreamTest extends TestCase
      * @param ResourceStream $stream   Cannot typehint, PHP refuse it
      * @param string         $expected the result we should have
      *
-     * @throws \RouterOS\Exceptions\StreamException
+     * @throws StreamException
      * @throws \InvalidArgumentException
      */
     public function testRead(ResourceStream $stream, string $expected): void
@@ -126,12 +124,12 @@ class ResourceStreamTest extends TestCase
      * @param ResourceStream $stream Cannot typehint, PHP refuse it
      * @param int            $length
      *
-     * @throws  \RouterOS\Exceptions\StreamException
+     * @throws  StreamException
      * @throws  \InvalidArgumentException
      */
     public function testReadBadLength(ResourceStream $stream, int $length): void
     {
-        $this->expectException(InvalidArgumentException::class);
+        $this->expectException(\InvalidArgumentException::class);
         $stream->read($length);
     }
 
@@ -150,7 +148,7 @@ class ResourceStreamTest extends TestCase
      * Test read to invalid resource
      *
      * @covers ::read
-     * @throws \RouterOS\Exceptions\StreamException
+     * @throws StreamException
      */
     public function testReadBadResource(): void
     {
@@ -160,9 +158,27 @@ class ResourceStreamTest extends TestCase
         $stream   = new ResourceStream($resource);
         fclose($resource);
 
-        //dd($stream);
+        // dd($stream);
 
         $stream->read(1);
+    }
+
+    public function testReadThrowsOnEndOfStreamBeforeRequestedLength(): void
+    {
+        $resource = fopen('php://temp', 'r+b');
+        fwrite($resource, 'ab');
+        rewind($resource);
+
+        $stream = new ResourceStream($resource);
+
+        $this->expectException(StreamException::class);
+        $this->expectExceptionMessage('Stream ended before 3 bytes could be read');
+
+        try {
+            $stream->read(3);
+        } finally {
+            fclose($resource);
+        }
     }
 
     /**
@@ -174,7 +190,7 @@ class ResourceStreamTest extends TestCase
      * @param ResourceStream $stream  to test
      * @param string         $toWrite the writed string
      *
-     * @throws  \RouterOS\Exceptions\StreamException
+     * @throws  StreamException
      */
     public function testWrite(ResourceStream $stream, string $toWrite): void
     {

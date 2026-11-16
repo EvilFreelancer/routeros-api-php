@@ -6,7 +6,6 @@ use RouterOS\Exceptions\ConfigException;
 use RouterOS\Helpers\ArrayHelper;
 use RouterOS\Helpers\TypeHelper;
 use RouterOS\Interfaces\ConfigInterface;
-use function gettype;
 
 /**
  * Class Config with array of parameters
@@ -177,7 +176,7 @@ class Config implements ConfigInterface
      *
      * @param array $parameters List of parameters which can be set on object creation stage
      *
-     * @throws \RouterOS\Exceptions\ConfigException
+     * @throws ConfigException
      * @since  0.6
      */
     public function __construct(array $parameters = [])
@@ -190,7 +189,7 @@ class Config implements ConfigInterface
     /**
      * {@inheritdoc}
      *
-     * @throws \RouterOS\Exceptions\ConfigException when name of configuration key is invalid or not allowed
+     * @throws ConfigException when name of configuration key is invalid or not allowed
      */
     public function set(string $name, $value): ConfigInterface
     {
@@ -200,8 +199,8 @@ class Config implements ConfigInterface
         }
 
         // Check what type has this value
-        if (TypeHelper::checkIfTypeMismatch(gettype($value), self::ALLOWED[$name])) {
-            throw new ConfigException("Parameter '$name' has wrong type '" . gettype($value) . "' but should be '" . self::ALLOWED[$name] . "'");
+        if (TypeHelper::checkIfTypeMismatch(\gettype($value), self::ALLOWED[$name])) {
+            throw new ConfigException("Parameter '$name' has wrong type '" . \gettype($value) . "' but should be '" . self::ALLOWED[$name] . "'");
         }
 
         // Save value to array
@@ -215,7 +214,7 @@ class Config implements ConfigInterface
      *
      * @param string $parameter
      *
-     * @return null|int
+     * @return int|null
      */
     private function getPort(string $parameter): ?int
     {
@@ -233,7 +232,7 @@ class Config implements ConfigInterface
     /**
      * {@inheritdoc}
      *
-     * @throws \RouterOS\Exceptions\ConfigException when parameter is not allowed
+     * @throws ConfigException when parameter is not allowed
      */
     public function delete(string $parameter): ConfigInterface
     {
@@ -252,7 +251,7 @@ class Config implements ConfigInterface
     /**
      * {@inheritdoc}
      *
-     * @throws \RouterOS\Exceptions\ConfigException when parameter is not allowed
+     * @throws ConfigException when parameter is not allowed
      */
     public function get(string $parameter)
     {

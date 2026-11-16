@@ -2,7 +2,6 @@
 
 namespace RouterOS\Tests;
 
-use Exception;
 use PHPUnit\Framework\TestCase;
 use RouterOS\Exceptions\QueryException;
 use RouterOS\Query;
@@ -14,7 +13,7 @@ class QueryTest extends TestCase
         try {
             $obj = new Query('test');
             $this->assertIsObject($obj);
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $this->assertStringContainsString('Must be initialized ', $e->getMessage());
         }
     }
@@ -24,7 +23,7 @@ class QueryTest extends TestCase
         try {
             $obj = new Query('test', ['line1', 'line2', 'line3']);
             $this->assertIsObject($obj);
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $this->assertStringContainsString('Must be initialized ', $e->getMessage());
         }
     }
@@ -34,7 +33,7 @@ class QueryTest extends TestCase
         try {
             $obj = new Query(['test', 'line1', 'line2', 'line3']);
             $this->assertIsObject($obj);
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $this->assertStringContainsString('Must be initialized ', $e->getMessage());
         }
     }
@@ -105,7 +104,6 @@ class QueryTest extends TestCase
         $this->assertEquals('?key2=value2', $attrs[1]);
     }
 
-
     public function testEqual(): void
     {
         $obj = new Query('test');
@@ -145,6 +143,34 @@ class QueryTest extends TestCase
 
         $obj = new Query('/richard/cheese');
         $obj->where('people', 'equals', 'shit');
+    }
+
+    /**
+     * @dataProvider whereOperatorProvider
+     */
+    public function testWhereOperator(string $operator, string $expected): void
+    {
+        $obj = new Query('/test/test');
+        $obj->where('key', $operator, 'value');
+
+        $this->assertSame(['/test/test', $expected], $obj->getQuery());
+    }
+
+    public function whereOperatorProvider(): array
+    {
+        return [
+            ['=', '?=key=value'],
+            ['>', '?>key=value'],
+            ['<', '?<key=value'],
+        ];
+    }
+
+    public function testRegexOperatorIsRejected(): void
+    {
+        $this->expectException(QueryException::class);
+
+        $obj = new Query('/ip/firewall/connection/print');
+        $obj->where('dst-address', '~', '192.168.1.200');
     }
 
     public function testGetQuery(): void

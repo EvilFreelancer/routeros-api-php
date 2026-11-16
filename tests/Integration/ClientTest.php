@@ -1,13 +1,13 @@
 <?php
 
-namespace RouterOS\Tests;
+namespace RouterOS\Tests\Integration;
 
-use Exception;
 use PHPUnit\Framework\TestCase;
 use RouterOS\Client;
 use RouterOS\Exceptions\ConfigException;
 use RouterOS\Exceptions\QueryException;
 use RouterOS\Config;
+use RouterOS\Query;
 use RouterOS\Exceptions\ClientException;
 use RouterOS\Exceptions\ConnectException;
 use RouterOS\Exceptions\BadCredentialsException;
@@ -20,7 +20,7 @@ class ClientTest extends TestCase
     public $config;
 
     /**
-     * @var \RouterOS\Client
+     * @var Client
      */
     public $client;
 
@@ -40,19 +40,18 @@ class ClientTest extends TestCase
             'user'     => getenv('ROS_USER'),
             'pass'     => getenv('ROS_PASS'),
             'host'     => getenv('ROS_HOST_MODERN'),
+            'port'     => (int) getenv('ROS_PORT_MODERN'),
             'ssh_port' => (int) getenv('ROS_SSH_PORT'),
         ];
 
         $this->client =
 
-            new class ($this->config) extends Client {
-
-            // Convert protected method to public
-            public function pregResponse(string $value, ?array &$matches): void
-            {
-                parent::pregResponse($value, $matches);
-            }
-
+            new class($this->config) extends Client {
+                // Convert protected method to public
+                public function pregResponse(string $value, ?array &$matches): void
+                {
+                    parent::pregResponse($value, $matches);
+                }
             };
 
         $this->portModern = (int) getenv('ROS_PORT_MODERN');
@@ -62,20 +61,21 @@ class ClientTest extends TestCase
     /**
      * Config object changed via setters then passed to Client object
      */
-    public function test_construct_configObjectSetters(): void
+    public function testConstructConfigObjectSetters(): void
     {
         try {
             $config = new Config();
             $config
                 ->set('user', $this->config['user'])
                 ->set('pass', $this->config['pass'])
-                ->set('host', $this->config['host']);
+                ->set('host', $this->config['host'])
+                ->set('port', $this->config['port']);
 
             $obj = new Client($config);
             self::assertIsObject($obj);
             $socket = $obj->getSocket();
             self::assertIsResource($socket);
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             self::assertStringContainsString('Must be initialized ', $e->getMessage());
         }
     }
@@ -83,7 +83,7 @@ class ClientTest extends TestCase
     /**
      * Configuration array passed to Config object, then Config object passed to Client object
      */
-    public function test_construct_configObjectArray(): void
+    public function testConstructConfigObjectArray(): void
     {
         try {
             $config = new Config($this->config);
@@ -91,7 +91,7 @@ class ClientTest extends TestCase
             self::assertIsObject($obj);
             $socket = $obj->getSocket();
             self::assertIsResource($socket);
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             self::assertStringContainsString('Must be initialized ', $e->getMessage());
         }
     }
@@ -99,14 +99,14 @@ class ClientTest extends TestCase
     /**
      * Configuration array passed directly to client object
      */
-    public function test_construct_configClient(): void
+    public function testConstructConfigClient(): void
     {
         try {
             $obj = new Client($this->config);
             self::assertIsObject($obj);
             $socket = $obj->getSocket();
             self::assertIsResource($socket);
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             self::assertStringContainsString('Must be initialized ', $e->getMessage());
         }
     }
@@ -114,7 +114,7 @@ class ClientTest extends TestCase
     /**
      * If "host" option is not found in configuration
      */
-    public function test_construct_exceptionNoHost(): void
+    public function testConstructExceptionNoHost(): void
     {
         $this->expectException(ConfigException::class);
         $this->expectExceptionMessage("One or few parameters 'host' of Config is not set or empty");
@@ -128,7 +128,7 @@ class ClientTest extends TestCase
     /**
      * If we try to use invalid port number
      */
-    public function test_construct_exceptionBadPort(): void
+    public function testConstructExceptionBadPort(): void
     {
         $this->expectException(ConnectException::class);
 
@@ -144,7 +144,7 @@ class ClientTest extends TestCase
     /**
      * If we can't connect to router, for example bacause wrong port provided
      */
-    public function test_construct_exceptionUnableToConnect(): void
+    public function testConstructExceptionUnableToConnect(): void
     {
         $this->expectException(ConnectException::class);
         $this->expectExceptionCode(PHP_OS_FAMILY === 'Windows' ? 10061 : 111);
@@ -161,7 +161,7 @@ class ClientTest extends TestCase
     /**
      * If we can connecto router, but wrong password or login used
      */
-    public function test_construct_exceptionBadCredentials(): void
+    public function testConstructExceptionBadCredentials(): void
     {
         $this->expectException(BadCredentialsException::class);
 
@@ -169,11 +169,12 @@ class ClientTest extends TestCase
             'user'     => $this->config['user'],
             'pass'     => 'admin2',
             'host'     => $this->config['host'],
+            'port'     => $this->config['port'],
             'attempts' => 2,
         ]);
     }
 
-    public function test_construct_legacyDefault(): void
+    public function testConstructLegacyDefault(): void
     {
         $this->markTestSkipped('There is no reason to test legacy anymore, test will be removed in future.');
 
@@ -186,7 +187,7 @@ class ClientTest extends TestCase
                 'legacy' => true,
             ]);
             self::assertIsObject($obj);
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             self::assertStringContainsString('Must be initialized ', $e->getMessage());
         }
     }
@@ -196,7 +197,7 @@ class ClientTest extends TestCase
      *
      * login() method recognise legacy router response and swap to legacy mode
      */
-    public function test_construct_legacyAutodetect(): void
+    public function testConstructLegacyAutodetect(): void
     {
         $this->markTestSkipped('There is no reason to test legacy anymore, test will be removed in future.');
 
@@ -209,7 +210,7 @@ class ClientTest extends TestCase
                 'legacy' => false,
             ]);
             self::assertIsObject($obj);
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             self::assertStringContainsString('Must be initialized ', $e->getMessage());
         }
     }
@@ -231,14 +232,14 @@ class ClientTest extends TestCase
      * @param string $line
      * @param array  $result
      */
-    public function test_pregResponse(string $line, array $result): void
+    public function testPregResponse(string $line, array $result): void
     {
         $matches = [];
         $this->client->pregResponse($line, $matches);
         self::assertEquals($matches, $result);
     }
 
-    public function test_query_read(): void
+    public function testQueryRead(): void
     {
         /*
          * Build query with where
@@ -271,7 +272,8 @@ class ClientTest extends TestCase
             ['type', 'vlan'],
         ], '|')->read();
         self::assertCount(1, $read);
-        self::assertEquals('*1', $read[0]['.id']);
+        self::assertArrayHasKey('.id', $read[0]);
+        self::assertSame('ether', $read[0]['type']);
 
         /*
          * Build query with tag
@@ -286,24 +288,28 @@ class ClientTest extends TestCase
          * Build query with option count
          */
 
-        $read = $this->client->query('/interface/monitor-traffic')->read(true, ['count' => 3]);
-        self::assertCount(3, $read);
+        $read = $this->client->query(new Query('/interface/monitor-traffic', [
+            '=interface=ether1',
+            '=once=',
+        ]))->read();
+        self::assertCount(1, $read);
+        self::assertArrayHasKey('rx-bits-per-second', $read[0]);
     }
 
-    public function test_readAsIterator(): void
+    public function testReadAsIterator(): void
     {
         $result = $this->client->query('/system/package/print')->readAsIterator();
         self::assertIsObject($result);
     }
 
-    public function test_query_readWithoutParsing(): void
+    public function testQueryReadWithoutParsing(): void
     {
         $readTrap = $this->client->query('/interface')->read(false);
         self::assertCount(3, $readTrap);
         self::assertEquals('!trap', $readTrap[0]);
     }
 
-    public function test_query_fatalError(): void
+    public function testQueryFatalError(): void
     {
         $readTrap = $this->client->query('/quit')->read();
         self::assertCount(2, $readTrap);
@@ -331,14 +337,14 @@ class ClientTest extends TestCase
      * @param mixed  $endpoint
      * @param mixed  $attributes
      */
-    public function test_query_exception(string $exception, int $code, $endpoint, $attributes): void
+    public function testQueryException(string $exception, int $code, $endpoint, $attributes): void
     {
         $this->expectException($exception);
         $this->expectExceptionCode($code);
         $this->client->query($endpoint, $attributes);
     }
 
-    public function test_export_asMethod(): void
+    public function testExportAsMethod(): void
     {
         if (!in_array(gethostname(), ['pasha-lt', 'pasha-pc'])) {
             self::markTestSkipped('Travis does not allow to use SSH protocol on testing stage.');
@@ -348,7 +354,7 @@ class ClientTest extends TestCase
         self::assertNotEmpty($result);
     }
 
-    public function test_export_asQuery(): void
+    public function testExportAsQuery(): void
     {
         if (!in_array(gethostname(), ['pasha-lt', 'pasha-pc'])) {
             self::markTestSkipped('Travis does not allow to use SSH protocol on testing stage.');
@@ -358,7 +364,7 @@ class ClientTest extends TestCase
         self::assertNotEmpty($result);
     }
 
-    public function test_parseResponse_emptyArrayHandling(): void
+    public function testParseResponseEmptyArrayHandling(): void
     {
         // Simulate responses that could come from nested script execution
         $emptyResponse = [];

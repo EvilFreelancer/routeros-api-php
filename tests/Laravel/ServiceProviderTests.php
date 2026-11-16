@@ -48,6 +48,19 @@ class ServiceProviderTests extends TestCase
         $this->assertArrayHasKey('timeout', $params);
         $this->assertArrayHasKey('attempts', $params);
         $this->assertArrayHasKey('delay', $params);
+        $this->assertSame('~/.ssh/id_rsa', $params['ssh_private_key']);
+    }
+
+    public function testConfigUsesSslDefaultPort(): void
+    {
+        $config = \RouterOS::config([
+            'host' => '192.168.1.3',
+            'user' => 'admin',
+            'pass' => 'admin',
+            'ssl' => true,
+        ]);
+
+        $this->assertSame(Config::PORT_SSL, $config->get('port'));
     }
 
     public function testClient(): void

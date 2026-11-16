@@ -19,6 +19,6 @@ class TypeHelper
      */
     public static function checkIfTypeMismatch($whatType, $isType): bool
     {
-        return ($whatType !== $isType);
+        return $whatType !== $isType;
     }
 }

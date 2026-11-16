@@ -17,7 +17,7 @@ return [
     'host'                    => env('ROUTEROS_HOST', '192.168.88.1'), // Address of Mikrotik RouterOS
     'user'                    => env('ROUTEROS_USER', 'admin'),        // Username
     'pass'                    => env('ROUTEROS_PASS'),                 // Password
-    'port'                    => (int) env('ROUTEROS_PORT', 8728),     // RouterOS API port number for access (if not set use default or default with SSL if SSL enabled)
+    'port'                    => null === env('ROUTEROS_PORT') ? null : (int) env('ROUTEROS_PORT'), // RouterOS API port number for access (if not set use default or default with SSL if SSL enabled)
 
     /*
      |--------------------------------------------------------------------------
@@ -83,7 +83,7 @@ return [
 
     'ssh_port'                => (int) env('ROUTEROS_SSH_PORT', 22),                             // Number of SSH port
     'ssh_timeout'             => (int) env('ROUTEROS_SSH_TIMEOUT', env('ROUTEROS_TIMEOUT', 30)), // Max timeout for read from RouterOS via SSH proto (for "/export" command)
-    'ssh_private_key'         => env('ROUTEROS_SSH_PRIVKEY', '~/.ssh/id_rsa.pub'),               // Full path to required private key
+    'ssh_private_key'         => env('ROUTEROS_SSH_PRIVKEY', '~/.ssh/id_rsa'),                   // Full path to required private key
 
     /*
      |--------------------------------------------------------------------------

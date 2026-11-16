@@ -1,29 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<phpunit backupGlobals="false"
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/9.6/phpunit.xsd"
+         backupGlobals="false"
          bootstrap="vendor/autoload.php"
          colors="true"
          processIsolation="false"
-         stopOnFailure="true">
-    <coverage>
+         stopOnFailure="false">
+    <coverage processUncoveredFiles="true">
         <include>
             <directory suffix=".php">./src</directory>
         </include>
-        <exclude>
-            <directory suffix="Test.php">./tests</directory>
-        </exclude>
     </coverage>
     <testsuites>
-        <testsuite name="RouterOS API on PHP tests">
-            <directory suffix=".php">./tests/</directory>
+        <testsuite name="unit">
+            <directory suffix=".php">./tests</directory>
+            <exclude>./tests/Integration</exclude>
         </testsuite>
     </testsuites>
-    <php>
-        <env name="ROS_HOST_MODERN" value="192.168.10.1"/>
-<env name="ROS_HOST_LEGACY" value="192.168.10.1"/>
-<env name="ROS_PORT_MODERN" value="8728"/>
-<env name="ROS_PORT_LEGACY" value="18728"/>
-<env name="ROS_USER" value="test"/>
-<env name="ROS_PASS" value="test"/>
-<env name="ROS_SSH_PORT" value="22"/>
-    </php>
 </phpunit>

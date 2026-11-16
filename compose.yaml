@@ -1,0 +1,33 @@
+services:
+  php:
+    build:
+      context: .
+      args:
+        PHP_VERSION: ${PHP_VERSION:-8.4}
+    environment:
+      COMPOSER_CACHE_DIR: /tmp/composer-cache
+    volumes:
+      - .:/app
+      - vendor:/app/vendor
+      - composer-cache:/tmp/composer-cache
+    working_dir: /app
+
+  routeros:
+    image: ${ROUTEROS_IMAGE:-evilfreelancer/docker-routeros:latest}
+    ports:
+      - "127.0.0.1:${ROUTEROS_API_PORT:-18728}:8728"
+      - "127.0.0.1:${ROUTEROS_TELNET_PORT:-12223}:23"
+      - "127.0.0.1:${ROUTEROS_SSH_PORT:-12222}:22"
+    volumes:
+      - routeros-data:/data
+    devices:
+      - /dev/net/tun
+    cap_add:
+      - NET_ADMIN
+
+volumes:
+  vendor:
+    name: routeros-api-php-vendor-${PHP_VERSION:-8.4}
+  composer-cache:
+    name: routeros-api-php-composer-cache
+  routeros-data:

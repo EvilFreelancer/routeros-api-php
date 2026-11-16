@@ -30,26 +30,36 @@ RouterOS firmware, it will be detected automatically on connection stage.
 
 ## Table of Contents
 
-* [Minimum requirements](#Minimum-requirements)
-* [Laravel framework support](#Laravel-framework-support)
-  * [Laravel installation](#Laravel-installation)
-* [How to use](#How-to-use)
-* [How to configure the client](#How-to-configure-the-client)
-  * [List of available configuration parameters](#List-of-available-configuration-parameters)
-  * [How to enable support of legacy login schema (RouterOS pre-6.43)](#How-to-enable-support-of-legacy-login-schema-(RouterOS-pre-6.43))
-* [How to write queries](#How-to-write-queries)
-* [Read response as Iterator](#Read-response-as-Iterator)
-* [Short methods](#Short-methods)
-* [Known issues](#Known-issues)
-  * [Unable to establish socket session, Operation timed out](#Unable-to-establish-socket-session,-Operation-timed-out)
-  * [How to update/remove/create something via API?](#How-to-update/remove/create-something-via-API?)
-  * [Undefined character (any non-English languages)](#Undefined-character-(any-non-English-languages))
-* [Testing](#Testing)
-* [Links](#Links)
+* [Minimum requirements](#minimum-requirements)
+* [Laravel framework support](#laravel-framework-support)
+  * [Laravel installation](#laravel-installation)
+* [How to use](#how-to-use)
+* [How to configure the client](#how-to-configure-the-client)
+  * [List of available configuration parameters](#list-of-available-configuration-parameters)
+  * [Legacy login before RouterOS 6.43](#how-to-enable-support-of-legacy-login-schema-routeros-pre-643)
+* [How to write queries](#how-to-write-queries)
+  * [Regular expression filters](#regular-expression-filters)
+  * [Detailed print output](#detailed-print-output)
+* [Read response as Iterator](#read-response-as-iterator)
+* [Short methods](#short-methods)
+* [Common tasks and troubleshooting](#common-tasks-and-troubleshooting)
+  * [Create, update, or remove an item](#create-update-or-remove-an-item)
+  * [Count rows without printing every row](#count-rows-without-printing-every-row)
+  * [Read complete multiline scripts and file contents](#read-complete-multiline-scripts-and-file-contents)
+  * [Run a RouterOS script](#run-a-routeros-script)
+  * [Avoid hanging on monitor commands](#avoid-hanging-on-monitor-commands)
+  * [Handle RouterOS command errors](#handle-routeros-command-errors)
+  * [Use a domain name, custom port, or several routers](#use-a-domain-name-custom-port-or-several-routers)
+  * [Fix connection refused and timeout errors](#fix-connection-refused-and-timeout-errors)
+  * [Export configuration through SSH](#export-configuration-through-ssh)
+  * [Reboot and reconnect](#reboot-and-reconnect)
+  * [Encoding and non-English text](#encoding-and-non-english-text)
+* [Testing](#testing)
+* [Links](#links)
 
 ## Minimum requirements
 
-* `php` >= 7.2|8.0
+* `php` >= 7.4 or 8.x
 * `ext-sockets`
 
 ## Laravel framework support
@@ -321,7 +331,8 @@ $client = new Client($config);
 | socket_timeout  | int    | 30                                                                                           | Max read timeout from RouterOS (in seconds)                                                                 |
 | socket_blocking | bool   | true                                                                                         | Set blocking mode on a socket stream                                                                        |
 | socket_options  | array  | [details](https://github.com/EvilFreelancer/routeros-api-php/blob/master/src/Config.php#L87) | See https://www.php.net/manual/en/context.socket.php                                                        |
-| attempts        | int    | 10                                                                                           | Count of attempts to establish TCP session                                                                  |
+| throw_timeout_exception | bool | true | Throw StreamException when a socket read times out |
+| attempts        | int    | 10 | Count of attempts to establish TCP session                                                                  |
 | delay           | int    | 1                                                                                            | Delay between attempts in seconds                                                                           |
 | ssh_port        | int    | 22                                                                                           | Number of SSH port for exporting configuration                                                              |
 | ssh_timeout     | int    | 30                                                                                           | Max timeout from router via SSH (in seconds)                                                                |
@@ -380,8 +391,8 @@ $query =
 // Set where interface is disabled and ID is ether1 (with tag 4)
 $query = 
     (new Query('/interface/set'))
-        ->where('disabled', 'no')
-        ->where('.id', 'ether1')
+        ->equal('disabled', 'no')
+        ->equal('.id', 'ether1')
         ->tag(4);
 
 // Get all ethernet and VLAN interfaces
@@ -394,7 +405,31 @@ $query =
 // Get all routes that have non-empty comment
 $query =
     (new Query('/ip/route/print'))
-        ->where('comment', '>', null);
+        ->where('comment', '>', '');
+```
+
+### Regular expression filters
+
+RouterOS CLI supports the `~` operator, but the RouterOS API does not. Sending `?~` query words is not a supported workaround. Use an exact API query where possible, then apply regular expression or substring filtering to the returned rows in PHP. To reduce response size, request only the required properties with `.proplist`.
+
+```php
+$query = new Query('/ip/firewall/connection/print', [
+    '.proplist=.id,src-address,dst-address',
+]);
+$connections = $client->query($query)->read();
+$matches = array_filter($connections, static function (array $connection): bool {
+    $host = explode(':', $connection['dst-address'] ?? '')[0];
+    return $host === '192.168.1.200';
+});
+```
+
+### Detailed print output
+
+Pass RouterOS-specific print arguments as raw attributes:
+
+```php
+$query = new Query('/ppp/secret/print', ['=detail=']);
+$response = $client->query($query)->read();
 ```
 
 <details>
@@ -423,11 +458,10 @@ $client->query('/ip/arp/print');
 // If you have only one where condition, you may use one dimensional array as second parameter of query method
 $client->query('/queue/simple/print', ['target', '192.168.1.250/32']);
 
-// If you need set few where conditions then need use multi dimensional array
-$client->query('/interface/bridge/add', [
-    ['name', 'vlan100-bridge'],
-    ['vlan-filtering', 'no']
-]);
+// Command attributes also use equal() when creating an item
+$query = (new Query('/interface/bridge/add'))
+    ->equal('name', 'vlan100-bridge')
+    ->equal('vlan-filtering', 'no');
 
 /**
  * By some reason you may need restrict scope of RouterOS response,
@@ -446,10 +480,11 @@ $client->query('/interface/print', [
  */
 
 // Enable interface (tag is 4)
-$client->query('/interface/set', [
-    ['disabled', 'no'],
-    ['.id', 'ether1']
-], null, 4);
+$query = (new Query('/interface/set'))
+    ->equal('disabled', 'no')
+    ->equal('.id', 'ether1')
+    ->tag(4);
+$client->query($query);
 
 /**
  * Or in OOP style  
@@ -574,97 +609,193 @@ $client->query($query1)->query($query2)->query($query3);
 $client->q($query1)->q($query2)->q($query3);
 ```
 
-## Known issues
+## Common tasks and troubleshooting
 
-### Unable to establish socket session, Operation timed out
+### Create, update, or remove an item
 
-This error means that the library cannot connect to your router,
-it may mean router turned off (then need turn on), or the API service not enabled.
-
-Go to `Mikrotik Router OS -> IP -> Services` and enable `api` service.
-
-Or via command line:
-
-```shell script
-/ip service enable api 
-```
-
-### How to update/remove/create something via API?
-
-Instead of `->where()` method of `Query` class you need to
-use `->equal()` method:
+Use `where()` only for filtering `print` responses. Use `equal()` for command attributes, including the `.id` used by `set` and `remove`.
 
 ```php
-// Create query which should remove security profile
-$query = new \RouterOS\Query('/interface/wireless/security-profiles/remove');
-
-// It will generate queries, which stared from "?" symbol:
-$query->where('.id', '*1');
-
-/*
-// Sample with ->where() method
-RouterOS\Query Object
-(
-    [_attributes:RouterOS\Query:private] => Array
-        (
-            [0] => ?.id=*1
-        )
-
-    [_operations:RouterOS\Query:private] => 
-    [_tag:RouterOS\Query:private] => 
-    [_endpoint:RouterOS\Query:private] => /interface/wireless/security-profiles/remove
-)
-*/
-
-// So, as you can see, instead of `->where()` need to use `->equal()`
-// It will generate queries, which stared from "=" symbol:
-$query->equal('.id', '*1');
-
-/*
-// Sample with ->equal() method
-RouterOS\Query Object
-(
-    [_attributes:RouterOS\Query:private] => Array
-        (
-            [0] => =.id=*1
-        )
-
-    [_operations:RouterOS\Query:private] => 
-    [_tag:RouterOS\Query:private] => 
-    [_endpoint:RouterOS\Query:private] => /interface/wireless/security-profiles/remove
-)
-*/
+$query = (new \RouterOS\Query('/ip/address/remove'))
+    ->equal('.id', '*1');
+$response = $client->query($query)->read();
 ```
 
-### Undefined character (any non-English languages)
+The same rule applies to PPP secrets, active PPP/HotSpot sessions, queues, address lists, interface settings, and other RouterOS commands.
 
-RouterOS does not support national languages, only English (and API of RouterOS too).
+### Count rows without printing every row
 
-You can try to reproduce it via web, for example add the comment to any
-element of your system, then save and reload the page, you will see unreadable characters.
+`count-only` is a command attribute. Its result is returned in the `ret` field of the final response.
+
+```php
+$query = (new Query('/ip/hotspot/user/print'))->equal('count-only');
+$response = $client->query($query)->read();
+$count = (int) ($response['after']['ret'] ?? 0);
+```
+
+### Read complete multiline scripts and file contents
+
+Multiline attributes are returned as one PHP string, including LF and CRLF line breaks. Do not concatenate rows or switch to `read(false)` just to retrieve the complete value.
+
+```php
+$query = (new Query('/system/script/print'))->where('name', 'my-script');
+$response = $client->query($query)->read();
+$source = $response[0]['source'] ?? '';
+```
+
+### Run a RouterOS script
+
+Pass the script name or number as the `number` attribute of `/system/script/run`.
+
+```php
+$query = (new Query('/system/script/run'))->equal('number', 'my-script');
+$response = $client->query($query)->read();
+```
+
+### Avoid hanging on monitor commands
+
+Continuous commands such as `monitor-traffic`, `listen`, and `torch` do not produce a final reply on their own. Prefer a finite command when one is available. For example, `monitor-traffic` supports `once` and requires an interface.
+
+```php
+$query = new Query('/interface/monitor-traffic', [
+    '=interface=ether1',
+    '=once=',
+]);
+$response = $client->query($query)->read();
+```
+
+For `/ping`, set its own `count` attribute. For a continuous listener, use tags and the RouterOS `/cancel` command instead of leaving `read()` waiting indefinitely.
+
+### Handle RouterOS command errors
+
+Connection, configuration, stream, and query-building failures throw exceptions. A command accepted by RouterOS but rejected during execution normally returns a `!trap` response instead of throwing an exception. The parsed message is available under `after.message`.
+
+```php
+$response = $client->query('/not/a/command')->read();
+if (isset($response['after']['message'])) {
+    throw new RuntimeException($response['after']['message']);
+}
+```
+
+Use `read(false)` when you need to inspect raw reply words such as `!trap`, `!fatal`, and `!done`.
+
+| Failure stage | Exception or result |
+| --- | --- |
+| Invalid or missing configuration | `\RouterOS\Exceptions\ConfigException` |
+| TCP connection or TLS negotiation | `\RouterOS\Exceptions\ConnectException` |
+| RouterOS rejects login credentials | `\RouterOS\Exceptions\BadCredentialsException` |
+| Socket read, write, EOF, or timeout | `\RouterOS\Exceptions\StreamException` |
+| Invalid query endpoint or operator | `\RouterOS\Exceptions\QueryException` |
+| Read loop or SSH export failure | `\RouterOS\Exceptions\ClientException` |
+| RouterOS rejects a valid command | `!trap`, exposed as `after.message` |
+
+### Use a domain name, custom port, or several routers
+
+`host` accepts an IP address or DNS hostname without a URL scheme. Set `port` explicitly when the API is not exposed on 8728 or 8729. Create a separate `Client` for every router instead of changing shared connection state.
+
+```php
+$client = new Client([
+    'host' => 'router.example.net',
+    'port' => 8790,
+    'user' => 'api-user',
+    'pass' => 'secret',
+    'timeout' => 5,
+    'socket_timeout' => 30,
+]);
+```
+
+### Fix connection refused and timeout errors
+
+`Connection refused` happens before authentication and usually means that no API listener accepted the TCP connection. Check the following from the machine or container running PHP:
+
+* Enable `/ip service set api disabled=no`, or configure `api-ssl` when `ssl` is enabled;
+* Allow the API port in RouterOS firewall and in intermediate firewalls;
+* Check that `host` and `port` are reachable from production, not only from your workstation;
+* Do not use `127.0.0.1` inside a container when the router is running on the Docker host or in another container;
+* Set `timeout` for connection establishment and `socket_timeout` for reads independently.
+
+`socket_blocking=true` is recommended for normal request/response usage. Set `throw_timeout_exception=false` only when an application deliberately handles incomplete or interrupted reads itself. Reducing `attempts` and `delay` bounds the time spent reconnecting, but does not repair an unreachable service. SSH export has a separate `ssh_timeout` setting.
+
+### Export configuration through SSH
+
+`/export` and `$client->export()` use SSH, not the RouterOS API port. Configure `ssh_port`, `ssh_timeout`, and `ssh_private_key`. The API password is not used for SSH password authentication.
+
+```php
+$client = new Client([
+    'host' => '192.168.88.1',
+    'user' => 'admin',
+    'pass' => 'api-password',
+    'ssh_private_key' => '/home/app/.ssh/id_rsa',
+]);
+$export = $client->export();
+```
+
+Import the corresponding public key for that RouterOS user, enable SSH, and verify the connection manually. PHP also needs permission to run the system `ssh` client, which can be restricted on shared hosting.
+
+### Reboot and reconnect
+
+A reboot closes the API session and can legitimately produce no data rows. The library does not automatically reconnect after reboot. Wait until the router and API service are available, then create a new `Client`.
+
+### Encoding and non-English text
+
+API words are binary-safe and the client preserves multibyte values. Use UTF-8 consistently in PHP source files, HTML output, logs, and database connections. If only a terminal or web page displays broken characters, inspect the raw API value and fix the output encoding instead of changing the stored text.
 
 ## Testing
 
-You can use my [other project](https://github.com/EvilFreelancer/docker-routeros)
-with RouterOS in Docker container for running unit testing on your
-computer, for this you just need to have [Expect](https://wiki.debian.org/Expect),
-[Docker](https://docs.docker.com/install/) and [Docker Compose](https://docs.docker.com/compose/install/).
+Unit tests run in Docker and do not require a RouterOS device. Docker Compose uses a separate `vendor` volume for each PHP version.
 
-Next clone the repo with RouterOS in Docker and exec
-`docker-compose up -d`, then you need preconfigure virtual routers
-via [preconf.tcl](https://github.com/EvilFreelancer/routeros-api-php/blob/master/preconf.tcl)
-script from root of routeros-api-php:
-
+```shell
+export PHP_VERSION=8.4
+docker compose build php
+docker compose run --rm php composer update --no-interaction --prefer-dist
+docker compose run --rm php vendor/bin/phpunit
+docker compose run --rm php vendor/bin/phpunit --coverage-text
 ```
+
+Use `composer update` when switching PHP versions because the library does not commit a shared `composer.lock`. Each version must resolve its own compatible development dependencies.
+
+Run the supported PHP matrix sequentially:
+
+```shell
+for version in 7.4 8.0 8.1 8.2 8.3 8.4 8.5; do
+    export PHP_VERSION=$version
+    docker compose build php || exit 1
+    docker compose run --rm php sh -c \
+        'composer update --no-interaction --prefer-dist && vendor/bin/phpunit' || exit 1
+done
+```
+
+Integration tests use [docker-routeros](https://github.com/EvilFreelancer/docker-routeros) and require Expect plus `/dev/net/tun`. The RouterOS management ports are published on the host loopback address only.
+
+```shell
+export PHP_VERSION=8.4
+docker compose up -d routeros
+```
+
+Wait for RouterOS to boot, then configure its test credentials. On a slow host, retry after 10 seconds if the guest is not ready yet.
+
+```shell
 ./preconf.tcl 12223
-./preconf.tcl 22223
 ```
 
-And after this you can run tests:
+Run the integration suite through the Compose network:
 
+```shell
+docker compose run --rm \
+    -e ROS_HOST_MODERN=routeros \
+    -e ROS_HOST_LEGACY=routeros \
+    -e ROS_PORT_MODERN=8728 \
+    -e ROS_PORT_LEGACY=8728 \
+    php vendor/bin/phpunit --configuration phpunit.integration.xml
 ```
-./vendor/bin/phpunit
+
+Stop the virtual router and remove its containers when finished:
+
+```shell
+docker compose down
 ```
+
+Add `-v` to that command only when you also want to delete the RouterOS disk and all cached dependency volumes.
 
 ## Links
 

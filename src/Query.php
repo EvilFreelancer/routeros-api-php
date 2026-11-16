@@ -4,9 +4,6 @@ namespace RouterOS;
 
 use RouterOS\Exceptions\QueryException;
 use RouterOS\Interfaces\QueryInterface;
-use function in_array;
-use function is_array;
-use function is_string;
 
 /**
  * Class Query for building queries
@@ -51,7 +48,7 @@ class Query implements QueryInterface
         '-',  // Does not have
         '=',  // Equal
         '>',  // More than
-        '<'   // Less than
+        '<',   // Less than
     ];
 
     /**
@@ -60,14 +57,14 @@ class Query implements QueryInterface
      * @param array|string $endpoint   Path of endpoint
      * @param array        $attributes List of attributes which should be set
      *
-     * @throws \RouterOS\Exceptions\QueryException
+     * @throws QueryException
      */
     public function __construct($endpoint, array $attributes = [])
     {
-        if (is_string($endpoint)) {
+        if (\is_string($endpoint)) {
             $this->setEndpoint($endpoint);
             $this->setAttributes($attributes);
-        } elseif (is_array($endpoint)) {
+        } elseif (\is_array($endpoint)) {
             $query = array_shift($endpoint);
             $this->setEndpoint($query);
             $this->setAttributes($endpoint);
@@ -84,7 +81,7 @@ class Query implements QueryInterface
      * @param bool|string|int $operator It may be one from list [-,=,>,<]
      *
      * @return \RouterOS\Interfaces\QueryInterface
-     * @throws \RouterOS\Exceptions\QueryException
+     * @throws QueryException
      * @since 1.0.0
      */
     public function where(string $key, $operator = null, $value = null): QueryInterface
@@ -99,7 +96,7 @@ class Query implements QueryInterface
      * @param bool|string|int $value Value which need to check (by default true)
      *
      * @return \RouterOS\Interfaces\QueryInterface
-     * @throws \RouterOS\Exceptions\QueryException
+     * @throws QueryException
      * @since 1.1
      */
     public function equal(string $key, $value = null): QueryInterface
@@ -115,7 +112,7 @@ class Query implements QueryInterface
      * @param bool|string|int $operator It may be one from list [-,=,>,<]
      *
      * @return \RouterOS\Interfaces\QueryInterface
-     * @throws \RouterOS\Exceptions\QueryException
+     * @throws QueryException
      */
     private function world(string $key, $operator = null, $value = null): QueryInterface
     {
@@ -130,8 +127,8 @@ class Query implements QueryInterface
 
         if (null !== $operator && null !== $value) {
             // If operator is available in list
-            if (in_array($operator, self::AVAILABLE_OPERATORS, true)) {
-                $key = $operator . $key;
+            if (\in_array($operator, self::AVAILABLE_OPERATORS, true)) {
+                $key = '?' . $operator . substr($key, 1);
             } else {
                 throw new QueryException('Operator "' . $operator . '" in not in allowed list [' . implode(',', self::AVAILABLE_OPERATORS) . ']');
             }
@@ -238,11 +235,11 @@ class Query implements QueryInterface
      * Build body of query
      *
      * @return array
-     * @throws \RouterOS\Exceptions\QueryException
+     * @throws QueryException
      */
     public function getQuery(): array
     {
-        if ($this->_endpoint === null) {
+        if (null === $this->_endpoint) {
             throw new QueryException('Endpoint of query is not set');
         }
 
@@ -251,12 +248,12 @@ class Query implements QueryInterface
         array_unshift($attributes, $this->_endpoint);
 
         // If operations is set then add to query
-        if (is_string($this->_operations) && !empty($this->_operations)) {
+        if (\is_string($this->_operations) && !empty($this->_operations)) {
             $attributes[] = $this->_operations;
         }
 
         // If tag is set then added to query
-        if (is_string($this->_tag) && !empty($this->_tag)) {
+        if (\is_string($this->_tag) && !empty($this->_tag)) {
             $attributes[] = $this->_tag;
         }
 
