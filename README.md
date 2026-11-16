@@ -2,19 +2,6 @@
 [![Total Downloads](https://poser.pugx.org/evilfreelancer/routeros-api-php/downloads)](https://packagist.org/packages/evilfreelancer/routeros-api-php)
 [![License](https://poser.pugx.org/evilfreelancer/routeros-api-php/license)](https://packagist.org/packages/evilfreelancer/routeros-api-php)
 
-⚠️ Project Maintenance Notice
-
-This project is currently unmaintained by the original author. Due to limited time and shifting priorities, I am unable to actively develop, debug, or support this project.
-
-Key Points:
-- Community contributions are welcome! Feel free to fork the repo and submit Pull Requests for fixes, improvements, or new features.
-- I will review and merge reasonable PRs that align with the project’s scope.
-- No guarantees are provided for issue resolutions, feature requests, or direct support.
-
-Future updates depend entirely on community involvement.
-
-Thank you for your understanding and contributions!
-
 # RouterOS API Client
 
 ```shell
